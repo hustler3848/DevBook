@@ -164,7 +164,7 @@ export default function Home() {
                   return (
                     <div
                       key={snippet.id}
-                      className="absolute w-full h-full transition-transform duration-500 ease-in-out origin-top-right"
+                      className="absolute w-full h-full transition-transform duration-500 ease-in-out origin-top-left"
                       style={{
                         transform: `rotate(${offset * 5 + 2}deg) translateX(${offset * 15}px) translateY(${Math.abs(offset) * -10}px) scale(${1 - Math.abs(offset) * 0.1})`,
                         zIndex: snippets.length - Math.abs(offset),
