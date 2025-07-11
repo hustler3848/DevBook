@@ -163,10 +163,10 @@ export default function Home() {
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
     if (isSmallScreen) {
-       // Tilted poker card stack for small screens
-       const yOffset = -10 + offset * 5;
-       const scale = 1 - offset * 0.05;
-       const rotation = -5 + offset * 5;
+       // Tilted poker card stack for small screens, fanning from bottom left
+       const yOffset = -10 + (offset * 2);
+       const scale = 1 - (offset * 0.05);
+       const rotation = -5 + (offset * 5);
 
       if (offset === 0) {
         return { transform: 'translateY(-10%) scale(1) rotate(0deg)', opacity: 1, zIndex: 3 };
@@ -241,7 +241,7 @@ export default function Home() {
                    return (
                      <div
                        key={snippet.id}
-                       className="absolute w-full h-full transition-all duration-500 ease-in-out"
+                       className="absolute w-full h-full transition-all duration-500 ease-in-out origin-bottom-left"
                        style={style}
                        onClick={() => cycleCard(index)}
                      >
