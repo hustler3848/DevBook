@@ -14,6 +14,7 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SnippetViewDialog } from '@/components/snippet-view-dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const communitySnippets = [
   { 
@@ -183,21 +184,37 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
                  </div>
             </CardContent>
             <CardFooter className="flex-col items-start gap-4">
-                 <div className="flex w-full items-center gap-2">
-                    <Button variant="outline" className="w-full" onClick={() => onSelect(snippet)}>
-                        <Eye className="mr-2" /> View
-                    </Button>
-                    <Button className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
-                        <Plus className="mr-2" /> Save
-                    </Button>
-                 </div>
+                <div className="flex w-full items-center gap-2">
+                    <div className="flex items-center gap-2 flex-grow">
+                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                        <span className="text-muted-foreground text-sm">{formatStars(snippet.stars)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => onSelect(snippet)}>
+                                    <Eye className="h-5 w-5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>View Snippet</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                             <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Plus className="h-5 w-5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Save to My Snippets</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+                </div>
                  <div className="w-full space-y-3 pt-2 text-sm">
                     <p className="text-muted-foreground line-clamp-2">{snippet.description}</p>
-                    <div className="flex items-center gap-2">
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                        <span className="text-muted-foreground">{formatStars(snippet.stars)} stars</span>
-                    </div>
-                     <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         {displayedTags.map(tag => (
                             <Badge key={tag} variant="secondary">
                             {tag}
@@ -287,3 +304,4 @@ export default function ExplorePage() {
     </>
   );
 }
+
