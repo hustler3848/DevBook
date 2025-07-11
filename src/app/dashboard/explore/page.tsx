@@ -3,23 +3,23 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Search, Star, Eye, Plus } from 'lucide-react';
+import { Search, Star, Eye, Plus, Copy } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-
+import { SnippetViewDialog } from '@/components/snippet-view-dialog';
 
 const communitySnippets = [
   { 
     id: 1, 
     title: 'Custom Framer Motion Animation', 
-    description: 'A reusable animation variant for stunning enter effects.', 
+    description: 'A reusable animation variant for stunning enter effects. This is a very common pattern when working with Framer Motion and can be easily extended to include more complex animations and transitions.', 
     tags: ['framer-motion', 'react', 'animation'], 
     language: 'TypeScript',
     author: 'Elena Petrova',
@@ -35,7 +35,7 @@ const communitySnippets = [
   { 
     id: 2, 
     title: 'Drizzle ORM Schema', 
-    description: 'Example schema for a posts and users table using Drizzle.', 
+    description: 'Example schema for a posts and users table using Drizzle. Drizzle ORM provides a type-safe SQL-like experience for TypeScript projects, making database interactions safer and more predictable.', 
     tags: ['drizzle', 'orm', 'database', 'typescript'], 
     language: 'TypeScript',
     author: 'John Smith',
@@ -52,7 +52,7 @@ export const users = pgTable('users', {
   { 
     id: 3, 
     title: 'Tailwind CSS Plugin', 
-    description: 'A simple plugin to add custom utilities for text shadows.', 
+    description: 'A simple plugin to add custom utilities for text shadows. Tailwind plugins are a powerful way to extend the framework with your own styles and logic.', 
     tags: ['tailwindcss', 'css', 'plugin'], 
     language: 'JavaScript',
     author: 'Emily White',
@@ -73,7 +73,7 @@ module.exports = plugin(function({ addUtilities }) {
   { 
     id: 4, 
     title: 'Python Data Class', 
-    description: 'A simple dataclass for representing a user with roles.', 
+    description: 'A simple dataclass for representing a user with roles. Dataclasses are a feature in Python that automatically generates special methods like __init__(), __repr__(), and more.', 
     tags: ['python', 'dataclass'], 
     language: 'Python',
     author: 'Chen Wei',
@@ -91,7 +91,7 @@ class User:
   {
     id: 5,
     title: 'Async Rust with Tokio',
-    description: 'A basic TCP echo server implemented using Tokio.',
+    description: 'A basic TCP echo server implemented using Tokio, the asynchronous runtime for Rust. This example demonstrates how to bind a listener and accept incoming connections.',
     tags: ['rust', 'async', 'tokio', 'networking'],
     language: 'Rust',
     author: 'Alex Johnson',
@@ -111,7 +111,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   {
     id: 6,
     title: 'Go Gin Middleware',
-    description: 'A custom logging middleware for the Gin web framework.',
+    description: 'A custom logging middleware for the Gin web framework. Middleware in Gin allows you to process a request before it reaches the main handler, which is useful for logging, authentication, and more.',
     tags: ['golang', 'gin', 'middleware', 'api'],
     language: 'Go',
     author: 'Maria Garcia',
@@ -134,9 +134,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   }
 ];
 
-type Snippet = typeof communitySnippets[0];
+export type Snippet = typeof communitySnippets[0];
 
-function CommunitySnippetCard({ snippet }: { snippet: Snippet }) {
+function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelect: (snippet: Snippet) => void }) {
     const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
@@ -178,7 +178,7 @@ function CommunitySnippetCard({ snippet }: { snippet: Snippet }) {
             </CardContent>
             <CardFooter className="flex-col items-start gap-4">
                  <div className="flex w-full items-center gap-2">
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={() => onSelect(snippet)}>
                         <Eye className="mr-2" /> View
                     </Button>
                     <Button className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
@@ -214,6 +214,7 @@ function CommunitySnippetCard({ snippet }: { snippet: Snippet }) {
 
 export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null);
 
   const filteredSnippets = useMemo(() => {
     return communitySnippets.filter(snippet => 
@@ -226,6 +227,7 @@ export default function ExplorePage() {
   }, [searchTerm]);
 
   return (
+    <>
     <div className="animate-fade-in-up space-y-6">
         <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
@@ -244,7 +246,7 @@ export default function ExplorePage() {
         {filteredSnippets.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredSnippets.map(snippet => (
-                    <CommunitySnippetCard key={snippet.id} snippet={snippet} />
+                    <CommunitySnippetCard key={snippet.id} snippet={snippet} onSelect={setSelectedSnippet} />
                 ))}
             </div>
         ) : (
@@ -254,5 +256,18 @@ export default function ExplorePage() {
             </div>
         )}
     </div>
+
+    {selectedSnippet && (
+      <SnippetViewDialog
+        snippet={selectedSnippet}
+        isOpen={!!selectedSnippet}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setSelectedSnippet(null);
+          }
+        }}
+      />
+    )}
+    </>
   );
 }
