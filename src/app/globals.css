@@ -98,23 +98,4 @@
       background-position: 0% 50%;
     }
   }
-
-  .card-grid {
-    position: relative;
-    --x: 0px;
-    --y: 0px;
-  }
-
-  .card-grid::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(
-      400px circle at var(--x) var(--y),
-      hsl(var(--primary) / 0.15),
-      transparent 80%
-    );
-    will-change: background;
-  }
 }

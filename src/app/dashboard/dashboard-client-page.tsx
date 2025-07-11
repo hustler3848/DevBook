@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,34 +80,13 @@ function SnippetCard({ snippet }: { snippet: Snippet }) {
 }
 
 export default function DashboardClientPage({ snippets }: DashboardClientPageProps) {
-  const gridRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const { left, top } = grid.getBoundingClientRect();
-      const x = e.clientX - left;
-      const y = e.clientY - top;
-      grid.style.setProperty('--x', `${x}px`);
-      grid.style.setProperty('--y', `${y}px`);
-    };
-
-    grid.addEventListener('mousemove', handleMouseMove);
-
-    return () => {
-      grid.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-  
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl sm:text-3xl font-bold font-headline">Your Snippets</h1>
       </div>
       
-      <div ref={gridRef} className="card-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {snippets.map(snippet => (
           <SnippetCard key={snippet.id} snippet={snippet} />
         ))}
