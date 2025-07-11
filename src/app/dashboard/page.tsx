@@ -14,6 +14,26 @@ const snippets = [
 ];
 
 function SnippetCard({ snippet }: { snippet: typeof snippets[0] }) {
+  const getTagColor = (tag: string) => {
+    let hash = 0;
+    for (let i = 0; i < tag.length; i++) {
+      hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const h = hash % 360;
+    // Using fixed saturation and lightness for pastel-like colors
+    return `hsl(${h}, 50%, 30%)`;
+  };
+
+  const getTagTextColor = (tag: string) => {
+    let hash = 0;
+    for (let i = 0; i < tag.length; i++) {
+      hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const h = hash % 360;
+     // Using fixed saturation and lightness for pastel-like colors
+    return `hsl(${h}, 100%, 85%)`;
+  }
+
   return (
     <Card className="glassmorphic flex flex-col h-full transition-colors duration-300">
       <CardHeader>
@@ -23,12 +43,21 @@ function SnippetCard({ snippet }: { snippet: typeof snippets[0] }) {
       <CardContent className="flex-grow">
         <div className="flex flex-wrap gap-2">
           {snippet.tags.map(tag => (
-            <Badge key={tag} variant="outline">{tag}</Badge>
+            <Badge 
+              key={tag} 
+              style={{ 
+                backgroundColor: getTagColor(tag), 
+                color: getTagTextColor(tag),
+                borderColor: getTagColor(tag) 
+              }}
+            >
+              {tag}
+            </Badge>
           ))}
         </div>
       </CardContent>
       <CardFooter>
-        <p className="text-sm font-semibold text-muted-foreground">{snippet.language}</p>
+        <p className="text-sm text-muted-foreground">{snippet.language}</p>
       </CardFooter>
     </Card>
   );
