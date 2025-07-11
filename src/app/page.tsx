@@ -144,6 +144,16 @@ const CodeCard = ({ snippet }: { snippet: any; }) => {
 };
 export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth < 1024);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const cycleCard = (clickedIndex: number) => {
     setActiveIndex(clickedIndex);
@@ -152,17 +162,29 @@ export default function Home() {
   const getCardStyle = (index: number) => {
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
-    // Center card
+    if (isSmallScreen) {
+       // Poker card stack for small screens
+      if (offset === 0) {
+        return { transform: 'translateY(-10%) scale(1)', opacity: 1, zIndex: 3 };
+      }
+      if (offset === 1) {
+        return { transform: 'translateY(-5%) scale(0.95)', opacity: 0.5, zIndex: 2 };
+      }
+      if (offset === 2) {
+         return { transform: 'translateY(0%) scale(0.9)', opacity: 0.3, zIndex: 1 };
+      }
+      return { transform: 'scale(0.8)', opacity: 0, zIndex: 0 };
+    }
+
+    // Fanned out for larger screens
     if (offset === 0) {
       return { transform: 'rotate(0deg) translateX(0) translateY(-20px) scale(1)', opacity: 1, zIndex: 3 };
     }
-    // Right card
     if (offset === 1) {
-      return { transform: 'rotate(3deg) translateX(120px) translateY(0) scale(0.9)', opacity: 0.7, zIndex: 2 };
+      return { transform: 'rotate(5deg) translateX(150px) translateY(0) scale(0.95)', opacity: 0.7, zIndex: 2 };
     }
-    // Left card
     if (offset === 2) {
-       return { transform: 'rotate(-3deg) translateX(-120px) translateY(0) scale(0.9)', opacity: 0.7, zIndex: 1 };
+       return { transform: 'rotate(-5deg) translateX(-150px) translateY(0) scale(0.95)', opacity: 0.7, zIndex: 1 };
     }
     
     // Hide other cards
