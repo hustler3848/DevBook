@@ -118,10 +118,14 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.5);
+    background-color: transparent;
     border-radius: 10px;
     border: 2px solid transparent;
     background-clip: content-box;
+  }
+
+  .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.5);
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
