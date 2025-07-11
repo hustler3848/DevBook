@@ -8,8 +8,7 @@ import { ArrowRight, Copy, Star } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
 
 
@@ -164,19 +163,23 @@ export default function Home() {
     
     if (isSmallScreen) {
        // Tilted poker card stack for small screens, fanning from bottom left
-       const yOffset = -10 + (offset * 2);
-       const scale = 1 - (offset * 0.05);
-       const rotation = -5 + (offset * 5);
+      const yOffset = -5;
+      const initialRotation = -10;
+      const rotationStep = 5;
 
-      if (offset === 0) {
-        return { transform: 'translateY(-10%) scale(1) rotate(0deg)', opacity: 1, zIndex: 3 };
+      const scale = 1 - (offset * 0.05);
+      const rotation = initialRotation + (offset * rotationStep);
+      
+      const zIndex = initialSnippets.length - offset;
+
+      if (offset < 3) { // Show 3 cards
+        return { 
+          transform: `translateY(${yOffset}%) scale(${scale}) rotate(${rotation}deg)`, 
+          opacity: 1, 
+          zIndex: zIndex 
+        };
       }
-      if (offset === 1) {
-        return { transform: `translateY(${yOffset}%) scale(${scale}) rotate(${rotation}deg)`, opacity: 0.7, zIndex: 2 };
-      }
-      if (offset === 2) {
-         return { transform: `translateY(${yOffset}%) scale(${scale}) rotate(${rotation}deg)`, opacity: 0.5, zIndex: 1 };
-      }
+
       return { transform: 'scale(0.8)', opacity: 0, zIndex: 0 };
     }
 
