@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Search, Star, Eye, Plus, ChevronDown, ChevronUp, Save, View } from 'lucide-react';
+import { Search, Star, Eye, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
@@ -139,7 +139,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 export type Snippet = typeof communitySnippets[0];
 
-function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelect: (snippet: Snippet) => void }) {
+function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snippet, onSelect: (snippet: Snippet) => void, onTagClick: (tag: string) => void }) {
     const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [showAllTags, setShowAllTags] = useState(false);
@@ -205,9 +205,11 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
 
                     <div className="flex flex-wrap items-center gap-2">
                         {displayedTags.map(tag => (
-                            <Badge key={tag} variant="secondary">
-                            {tag}
-                            </Badge>
+                             <button key={tag} onClick={() => onTagClick(tag)} className="rounded-full">
+                                <Badge variant="secondary" className="cursor-pointer hover:bg-accent">
+                                    {tag}
+                                </Badge>
+                             </button>
                         ))}
                         {snippet.tags.length > 2 && (
                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowAllTags(!showAllTags)}>
@@ -233,16 +235,43 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
 export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    communitySnippets.forEach(snippet => {
+      snippet.tags.forEach(tag => tags.add(tag));
+    });
+    return ['All', ...Array.from(tags)];
+  }, []);
+
+  const handleTagClick = (tag: string) => {
+    if (tag === 'All') {
+        setActiveTag(null);
+    } else {
+        setActiveTag(tag);
+    }
+  };
 
   const filteredSnippets = useMemo(() => {
-    return communitySnippets.filter(snippet => 
-      snippet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      snippet.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      snippet.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      snippet.language.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      snippet.author.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
+    let snippets = communitySnippets;
+
+    if (activeTag) {
+        snippets = snippets.filter(snippet => snippet.tags.includes(activeTag));
+    }
+
+    if (searchTerm) {
+        snippets = snippets.filter(snippet => 
+            snippet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            snippet.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            snippet.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            snippet.language.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            snippet.author.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+
+    return snippets;
+  }, [searchTerm, activeTag]);
 
   return (
     <>
@@ -262,19 +291,40 @@ export default function ExplorePage() {
             />
         </div>
       </div>
+
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3 -mx-4 px-4 sm:mx-0 sm:px-0 mb-6 border-b">
+         <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2">
+            {allTags.map(tag => (
+                <Button 
+                    key={tag} 
+                    variant={activeTag === tag || (tag === 'All' && !activeTag) ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => handleTagClick(tag)}
+                    className="shrink-0"
+                >
+                    {tag}
+                </Button>
+            ))}
+         </div>
+      </div>
         
-        {filteredSnippets.length > 0 ? (
-            <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredSnippets.map(snippet => (
-                    <CommunitySnippetCard key={snippet.id} snippet={snippet} onSelect={setSelectedSnippet} />
-                ))}
-            </div>
-        ) : (
-            <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg">
-                <h2 className="text-xl font-semibold">No Snippets Found</h2>
-                <p className="text-muted-foreground mt-2">Try adjusting your search term.</p>
-            </div>
-        )}
+      {filteredSnippets.length > 0 ? (
+        <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredSnippets.map(snippet => (
+                <CommunitySnippetCard 
+                    key={snippet.id} 
+                    snippet={snippet} 
+                    onSelect={setSelectedSnippet}
+                    onTagClick={handleTagClick} 
+                />
+            ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg">
+            <h2 className="text-xl font-semibold">No Snippets Found</h2>
+            <p className="text-muted-foreground mt-2">Try adjusting your search or filter.</p>
+        </div>
+      )}
     </div>
 
     {selectedSnippet && (
