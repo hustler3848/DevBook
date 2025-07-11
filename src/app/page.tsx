@@ -1,14 +1,16 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Copy, Star } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomDark as atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useTheme } from 'next-themes';
 
 
 const initialSnippets = [
@@ -85,39 +87,61 @@ print(scrape_title("http://example.com"))`.trim(),
 ];
 
 
-const CodeCard = ({ snippet }: { snippet: any; }) => (
-  <div
-    className={cn(
-      "glassmorphic rounded-xl p-4 shadow-lg w-full max-w-xl mx-auto cursor-pointer",
-    )}
-  >
-    <div className="flex justify-between items-center mb-2">
-      <p className="text-sm text-muted-foreground font-code">{snippet.filename}</p>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Copy className="h-4 w-4" />
-      </Button>
-    </div>
-    <div className="rounded-lg bg-black/70 overflow-hidden text-sm">
-      <SyntaxHighlighter language={snippet.language} style={atomOneDark} customStyle={{ margin: 0, padding: '1rem' }} codeTagProps={{className: "font-code"}}>
-        {snippet.code}
-      </SyntaxHighlighter>
-    </div>
-    <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-          <span>{snippet.stars}</span>
-        </div>
-        <span>•</span>
-        <span>{snippet.tags[0]}</span>
-        <span>•</span>
-        <span>{snippet.tags[1]}</span>
-      </div>
-      <span className='hidden sm:inline'>Updated 2 days ago</span>
-    </div>
-  </div>
-);
+const CodeCard = ({ snippet }: { snippet: any; }) => {
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const syntaxTheme = theme === 'dark' ? oneDark : oneLight;
+  const cardBg = theme === 'dark' ? 'bg-black/70' : 'bg-white/70';
+
+  if (!mounted) {
+    return (
+      <div className={cn("glassmorphic rounded-xl p-4 shadow-lg w-full max-w-xl mx-auto")}>
+        <div className="flex justify-between items-center mb-2">
+          <p className="text-sm text-muted-foreground font-code">{snippet.filename}</p>
+        </div>
+        <div className="rounded-lg bg-muted animate-pulse h-[200px]" />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "glassmorphic rounded-xl p-4 shadow-lg w-full max-w-xl mx-auto cursor-pointer",
+      )}
+    >
+      <div className="flex justify-between items-center mb-2">
+        <p className="text-sm text-muted-foreground font-code">{snippet.filename}</p>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Copy className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className={cn("rounded-lg overflow-hidden text-sm", cardBg)}>
+        <SyntaxHighlighter language={snippet.language} style={syntaxTheme} customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }} codeTagProps={{className: "font-code"}}>
+          {snippet.code}
+        </SyntaxHighlighter>
+      </div>
+      <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+            <span>{snippet.stars}</span>
+          </div>
+          <span>•</span>
+          <span>{snippet.tags[0]}</span>
+          <span>•</span>
+          <span>{snippet.tags[1]}</span>
+        </div>
+        <span className='hidden sm:inline'>Updated 2 days ago</span>
+      </div>
+    </div>
+  );
+};
 export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -125,24 +149,21 @@ export default function Home() {
     setActiveIndex(clickedIndex);
   };
   
-  const cardPositions = [
-    { transform: 'rotate(0deg) translateX(0px) translateY(-20px) scale(1)', opacity: 1, zIndex: 3 },
-    { transform: 'rotate(-5deg) translateX(-15px) translateY(-10px) scale(0.9)', opacity: 0.7, zIndex: 2 },
-    { transform: 'rotate(-10deg) translateX(-30px) translateY(0px) scale(0.8)', opacity: 0.4, zIndex: 1 },
-  ];
-  
   const getCardStyle = (index: number) => {
-    if (index === activeIndex) {
-      return cardPositions[0];
+    const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
+    
+    if (offset === 0) {
+      return { transform: 'rotate(0deg) translateX(0px) translateY(-20px) scale(1)', opacity: 1, zIndex: 3 };
+    }
+    if (offset === 1) {
+      return { transform: 'rotate(5deg) translateX(50px) translateY(-10px) scale(0.9)', opacity: 0.7, zIndex: 2 };
+    }
+    if (offset === 2) {
+      return { transform: 'rotate(10deg) translateX(100px) translateY(0px) scale(0.8)', opacity: 0.4, zIndex: 1 };
     }
     
-    const otherCards = cardPositions.slice(1);
-    let displayIndex = index - activeIndex - 1;
-    if (index < activeIndex) {
-      displayIndex = initialSnippets.length - activeIndex + index -1;
-    }
-
-    return otherCards[displayIndex] || { transform: 'scale(0.7)', opacity: 0, zIndex: 0 };
+    // Hide other cards
+    return { transform: 'scale(0.7)', opacity: 0, zIndex: 0 };
   };
 
   return (
