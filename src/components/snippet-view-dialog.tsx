@@ -15,7 +15,7 @@ import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/pris
 import { Heart, Bookmark, Copy, Star, Check, X } from 'lucide-react';
 import type { Snippet } from '@/app/dashboard/explore/page';
 import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface SnippetViewDialogProps {
   snippet: Snippet;
