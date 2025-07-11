@@ -48,7 +48,7 @@ export function DashboardHeader() {
                   </Link>
                 </div>
               <nav className="flex flex-col gap-2">
-                <NavLinks />
+                <NavLinks isCollapsed={false} />
               </nav>
             </SheetContent>
           </Sheet>
