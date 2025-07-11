@@ -86,7 +86,7 @@ const CodeCard = ({ snippet, isActive, onClick }: { snippet: any; isActive: bool
     onClick={onClick}
     className={cn(
       "glassmorphic rounded-xl p-4 shadow-lg w-full max-w-xl mx-auto cursor-pointer transition-all duration-300 ease-in-out",
-      isActive ? "scale-100 z-10" : "scale-90 opacity-70"
+      "absolute inset-0" // Make cards absolute within their container
     )}
   >
     <div className="flex justify-between items-center mb-2">
@@ -123,7 +123,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1 flex items-center justify-center">
-        <div className="relative isolate overflow-hidden">
+        <div className="relative isolate overflow-hidden w-full">
           <div
             className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
             aria-hidden="true"
@@ -158,21 +158,21 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms]">
+            <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms] w-full lg:w-1/2">
               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center">
                 {snippets.map((snippet, index) => {
                   const isActive = index === activeIndex;
-                  const offset = (index - activeIndex) * 10;
-                  const angle = (index - activeIndex) * 5;
 
                   return (
                     <div
                       key={snippet.id}
                       className="absolute w-full h-full transition-transform duration-500 ease-in-out"
                       style={{
-                        transform: `translateY(${isActive ? 0 : offset}px) rotate(${isActive ? 0 : angle}deg) scale(${1 - Math.abs(index - activeIndex) * 0.05})`,
+                        transform: `translateY(${(index - activeIndex) * -10}px) rotate(${(index - activeIndex) * -5}deg) scale(${1 - Math.abs(index - activeIndex) * 0.05})`,
                         zIndex: snippets.length - Math.abs(index - activeIndex),
+                        opacity: 1 - Math.abs(index - activeIndex) * 0.3,
                       }}
+                       onClick={() => setActiveIndex(index)}
                     >
                       <CodeCard
                         snippet={snippet}
