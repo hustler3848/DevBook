@@ -54,7 +54,7 @@ const Toast = React.forwardRef<
     >
       {props.children}
       <div 
-        className="absolute bottom-0 left-0 h-1 bg-white/30" 
+        className="absolute bottom-0 left-0 h-1 w-full bg-white/50" 
         style={{ animation: `toast-progress ${TOAST_REMOVE_DELAY / 1000}s linear forwards` }}
       />
     </ToastPrimitives.Root>
