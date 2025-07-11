@@ -163,15 +163,19 @@ export default function Home() {
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
     if (isSmallScreen) {
-       // Poker card stack for small screens
+       // Tilted poker card stack for small screens
+       const yOffset = -10 + offset * 5;
+       const scale = 1 - offset * 0.05;
+       const rotation = -5 + offset * 5;
+
       if (offset === 0) {
-        return { transform: 'translateY(-10%) scale(1)', opacity: 1, zIndex: 3 };
+        return { transform: 'translateY(-10%) scale(1) rotate(0deg)', opacity: 1, zIndex: 3 };
       }
       if (offset === 1) {
-        return { transform: 'translateY(-5%) scale(0.95)', opacity: 0.5, zIndex: 2 };
+        return { transform: `translateY(${yOffset}%) scale(${scale}) rotate(${rotation}deg)`, opacity: 0.7, zIndex: 2 };
       }
       if (offset === 2) {
-         return { transform: 'translateY(0%) scale(0.9)', opacity: 0.3, zIndex: 1 };
+         return { transform: `translateY(${yOffset}%) scale(${scale}) rotate(${rotation}deg)`, opacity: 0.5, zIndex: 1 };
       }
       return { transform: 'scale(0.8)', opacity: 0, zIndex: 0 };
     }
