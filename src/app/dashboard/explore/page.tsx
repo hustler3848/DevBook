@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Search, Star, Eye, Plus } from 'lucide-react';
+import { Search, Star, Eye, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
@@ -20,7 +20,7 @@ const communitySnippets = [
     id: 1, 
     title: 'Custom Framer Motion Animation', 
     description: 'A reusable animation variant for stunning enter effects. This is a very common pattern when working with Framer Motion and can be easily extended to include more complex animations and transitions.', 
-    tags: ['framer-motion', 'react', 'animation'], 
+    tags: ['framer-motion', 'react', 'animation', 'variants', 'ui'], 
     language: 'TypeScript',
     author: 'Elena Petrova',
     avatar: 'https://placehold.co/40x40.png',
@@ -139,6 +139,7 @@ export type Snippet = typeof communitySnippets[0];
 function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelect: (snippet: Snippet) => void }) {
     const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
+    const [showAllTags, setShowAllTags] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -157,6 +158,8 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
     if (!mounted) {
         return <Skeleton className="h-[450px] w-full" />
     }
+
+    const displayedTags = showAllTags ? snippet.tags : snippet.tags.slice(0, 2);
 
     return (
         <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:shadow-lg w-full max-w-md sm:max-w-none">
@@ -194,12 +197,18 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
                         <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                         <span className="text-muted-foreground">{formatStars(snippet.stars)} stars</span>
                     </div>
-                     <div className="flex flex-wrap gap-2">
-                        {snippet.tags.map(tag => (
+                     <div className="flex flex-wrap items-center gap-2">
+                        {displayedTags.map(tag => (
                             <Badge key={tag} variant="secondary">
                             {tag}
                             </Badge>
                         ))}
+                        {snippet.tags.length > 2 && (
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowAllTags(!showAllTags)}>
+                                {showAllTags ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                <span className="sr-only">{showAllTags ? 'Show less tags' : 'Show more tags'}</span>
+                            </Button>
+                        )}
                     </div>
                     <div className="flex items-center gap-2 pt-1">
                         <Avatar className="h-6 w-6">
