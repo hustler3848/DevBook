@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
-
+import { SplashScreen } from '@/components/splash-screen';
 
 const initialSnippets = [
   {
@@ -86,7 +86,7 @@ print(scrape_title("http://example.com"))`.trim(),
 ];
 
 
-const CodeCard = ({ snippet }: { snippet: any; }) => {
+const CodeCard = ({ snippet, isAnimating }: { snippet: any; isAnimating: boolean }) => {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -150,6 +150,8 @@ const CodeCard = ({ snippet }: { snippet: any; }) => {
 export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -157,7 +159,20 @@ export default function Home() {
     };
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500); // Splash screen duration
+
+    const animationTimer = setTimeout(() => {
+      setIsAnimating(true);
+    }, 1600); // Start animations after splash screen
+
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+      clearTimeout(timer);
+      clearTimeout(animationTimer);
+    };
   }, []);
 
   const cycleCard = (clickedIndex: number) => {
@@ -165,10 +180,12 @@ export default function Home() {
   };
   
   const getCardStyle = (index: number) => {
+    if (!isAnimating) {
+      return { transform: 'rotate(0deg) scale(0.95)', opacity: 0, zIndex: 0 };
+    }
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
     if (isSmallScreen) {
-      // Tilted poker card stack for small screens, fanning from bottom left
       const initialRotation = -5;
       const rotationStep = -8;
       const yOffsetStep = 10;
@@ -188,7 +205,6 @@ export default function Home() {
 
     }
 
-    // Fanned out symmetrically for larger screens
     if (offset === 0) {
       return { transform: 'rotate(0deg) translateX(0) translateY(-20px) scale(1)', opacity: 1, zIndex: 3 };
     }
@@ -199,9 +215,12 @@ export default function Home() {
        return { transform: 'rotate(-5deg) translateX(-150px) translateY(-10px) scale(0.95)', opacity: 0.7, zIndex: 1 };
     }
     
-    // Hide other cards
     return { transform: 'scale(0.8)', opacity: 0, zIndex: 0 };
   };
+
+  if (isLoading) {
+    return <SplashScreen />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -222,7 +241,10 @@ export default function Home() {
           </div>
 
           <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10">
-            <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto animate-fade-in-up text-center lg:text-left mb-24 lg:mb-0">
+            <div className={cn(
+                "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-32 lg:mb-0 transition-opacity duration-1000",
+                isAnimating ? 'opacity-100' : 'opacity-0'
+              )}>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
                 Share, Discover, and Innovate with CodeSnippr
               </h1>
@@ -242,18 +264,18 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="mt-24 sm:mt-32 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms] w-full lg:w-1/2">
+            <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow w-full lg:w-1/2">
               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:justify-start">
                 {initialSnippets.map((snippet, index) => {
                    const style = getCardStyle(index);
                    return (
                      <div
                        key={snippet.id}
-                       className="absolute w-full h-full transition-all duration-500 ease-in-out origin-bottom-left"
+                       className="absolute w-full h-full transition-all duration-700 ease-in-out origin-bottom-left"
                        style={style}
                        onClick={() => cycleCard(index)}
                      >
-                       <CodeCard snippet={snippet} />
+                       <CodeCard snippet={snippet} isAnimating={isAnimating} />
                      </div>
                    );
                 })}
