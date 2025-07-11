@@ -72,6 +72,9 @@
   .glassmorphic {
     @apply bg-card/60 backdrop-blur-lg border border-white/10;
   }
+  ::selection {
+    @apply bg-accent text-accent-foreground;
+  }
 }
 
 @layer utilities {
