@@ -75,6 +75,9 @@
   ::selection {
     @apply bg-black text-white;
   }
+  .dark ::selection {
+    @apply bg-white text-black;
+  }
 }
 
 @layer utilities {
