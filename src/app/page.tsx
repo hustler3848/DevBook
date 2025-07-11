@@ -8,7 +8,7 @@ import { ArrowRight, Copy, Star } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-const snippets = [
+const initialSnippets = [
   {
     id: 1,
     language: 'React',
@@ -81,6 +81,12 @@ print(scrape_title("http://example.com"))`.trim(),
   },
 ];
 
+const cardPositions = [
+  { transform: 'rotate(0deg) translateX(0px) translateY(0px) scale(1)', opacity: 1, zIndex: 3 },
+  { transform: 'rotate(-5deg) translateX(-15px) translateY(-10px) scale(0.9)', opacity: 0.7, zIndex: 2 },
+  { transform: 'rotate(-10deg) translateX(-30px) translateY(-20px) scale(0.8)', opacity: 0.4, zIndex: 1 },
+];
+
 const CodeCard = ({ snippet }: { snippet: any; }) => (
   <div
     className={cn(
@@ -115,7 +121,18 @@ const CodeCard = ({ snippet }: { snippet: any; }) => (
 );
 
 export default function Home() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [snippets, setSnippets] = useState(initialSnippets);
+
+  const cycleCard = (clickedIndex: number) => {
+    if (clickedIndex === 0) return; // Already at the front
+    
+    setSnippets(prevSnippets => {
+      const newSnippets = [...prevSnippets];
+      const clickedItem = newSnippets.splice(clickedIndex, 1)[0];
+      newSnippets.unshift(clickedItem);
+      return newSnippets;
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -159,24 +176,21 @@ export default function Home() {
             <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms] w-full lg:w-1/2">
               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center">
                 {snippets.map((snippet, index) => {
-                  const offset = activeIndex - index;
-
-                  return (
-                    <div
-                      key={snippet.id}
-                      className="absolute w-full h-full transition-transform duration-500 ease-in-out origin-top-left"
-                      style={{
-                        transform: `rotate(${offset * 5 + 2}deg) translateX(${offset * 15}px) translateY(${Math.abs(offset) * -10}px) scale(${1 - Math.abs(offset) * 0.1})`,
-                        zIndex: snippets.length - Math.abs(offset),
-                        opacity: 1 - Math.abs(offset) * 0.3,
-                      }}
-                       onClick={() => setActiveIndex(index)}
-                    >
-                      <CodeCard
-                        snippet={snippet}
-                      />
-                    </div>
-                  );
+                   const pos = cardPositions[index] || cardPositions[cardPositions.length - 1];
+                   return (
+                     <div
+                       key={snippet.id}
+                       className="absolute w-full h-full transition-all duration-500 ease-in-out origin-top-left"
+                       style={{
+                         transform: pos.transform,
+                         zIndex: pos.zIndex,
+                         opacity: pos.opacity,
+                       }}
+                       onClick={() => cycleCard(index)}
+                     >
+                       <CodeCard snippet={snippet} />
+                     </div>
+                   );
                 })}
               </div>
             </div>
