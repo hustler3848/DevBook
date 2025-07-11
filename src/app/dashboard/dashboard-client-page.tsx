@@ -83,7 +83,7 @@ export default function DashboardClientPage({ snippets }: DashboardClientPagePro
   const pageTitle = snippets.length > 3 ? "All Snippets" : "My Snippets";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl sm:text-3xl font-bold font-headline">{pageTitle}</h1>
       </div>

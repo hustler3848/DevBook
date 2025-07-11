@@ -2,7 +2,7 @@ import { Settings } from 'lucide-react';
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in-up">
         <div className="flex items-center justify-between">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">Settings</h1>
         </div>

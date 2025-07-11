@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function NewSnippetPage() {
     return (
-        <div className="container mx-auto max-w-4xl py-6 sm:py-8">
+        <div className="container mx-auto max-w-4xl py-6 sm:py-8 animate-fade-in-up">
             <Link href="/dashboard" className="flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Back to Dashboard
