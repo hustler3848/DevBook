@@ -32,7 +32,7 @@ export function DashboardHeader() {
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
         <div className="flex gap-6 md:gap-10">
           <Link href="/dashboard" className="flex items-center space-x-2">
-            <CodeXml className="h-6 w-6 text-accent" />
+            <CodeXml className="h-6 w-6 text-foreground" />
             <span className="inline-block font-bold font-headline">CodeSnippr</span>
           </Link>
         </div>
