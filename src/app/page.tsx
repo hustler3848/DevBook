@@ -81,16 +81,11 @@ print(scrape_title("http://example.com"))`.trim(),
   },
 ];
 
-const cardPositions = [
-  { transform: 'rotate(0deg) translateX(0px) translateY(0px) scale(1)', opacity: 1, zIndex: 3 },
-  { transform: 'rotate(-5deg) translateX(-15px) translateY(-10px) scale(0.9)', opacity: 0.7, zIndex: 2 },
-  { transform: 'rotate(-10deg) translateX(-30px) translateY(-20px) scale(0.8)', opacity: 0.4, zIndex: 1 },
-];
 
 const CodeCard = ({ snippet }: { snippet: any; }) => (
   <div
     className={cn(
-      "glassmorphic rounded-xl p-4 shadow-lg w-full max-w-xl mx-auto cursor-pointer transition-all duration-300 ease-in-out",
+      "glassmorphic rounded-xl p-4 shadow-lg w-full max-w-xl mx-auto cursor-pointer",
     )}
   >
     <div className="flex justify-between items-center mb-2">
@@ -124,7 +119,7 @@ export default function Home() {
   const [snippets, setSnippets] = useState(initialSnippets);
 
   const cycleCard = (clickedIndex: number) => {
-    if (clickedIndex === 0) return; // Already at the front
+    if (clickedIndex === 0) return;
     
     setSnippets(prevSnippets => {
       const newSnippets = [...prevSnippets];
@@ -133,6 +128,12 @@ export default function Home() {
       return newSnippets;
     });
   };
+  
+  const cardPositions = [
+    { transform: 'rotate(0deg) translateX(0px) translateY(-20px) scale(1)', opacity: 1, zIndex: 3 },
+    { transform: 'rotate(-5deg) translateX(-15px) translateY(-10px) scale(0.9)', opacity: 0.7, zIndex: 2 },
+    { transform: 'rotate(-10deg) translateX(-30px) translateY(0px) scale(0.8)', opacity: 0.4, zIndex: 1 },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen">
