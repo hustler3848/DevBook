@@ -186,7 +186,7 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
                  </div>
             </CardContent>
             <CardFooter className="flex-col items-start gap-4">
-                 <div className="flex w-full items-center gap-2">
+                <div className="flex w-full items-center gap-2">
                     <Button variant="outline" className="w-full" onClick={() => onSelect(snippet)}>
                         <Eye className="mr-2 h-4 w-4" /> View
                     </Button>
@@ -275,7 +275,7 @@ export default function ExplorePage() {
 
   return (
     <>
-    <div className="animate-fade-in-up flex flex-col h-full">
+    <div className="animate-fade-in-up">
       <div className="px-4 pt-2 pb-4 sm:px-0 sm:pt-0 sm:pb-6 space-y-6">
         <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
