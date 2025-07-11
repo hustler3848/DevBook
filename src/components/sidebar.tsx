@@ -23,7 +23,7 @@ export function NavLinks() {
                     key={href}
                     asChild
                     variant={pathname === href ? 'secondary' : 'ghost'}
-                    className="justify-start"
+                    className="w-full justify-start"
                 >
                     <Link href={href}>
                         <Icon className="mr-2 h-4 w-4" />
@@ -45,7 +45,7 @@ export function Sidebar() {
                     <span className="font-bold font-headline">CodeSnippr</span>
                 </Link>
             </div>
-            <nav className="flex-1 p-4 space-y-2">
+            <nav className="flex-1 px-4 py-4 space-y-1">
                <NavLinks />
             </nav>
         </aside>
