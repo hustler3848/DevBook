@@ -18,7 +18,7 @@ export function SplashScreen() {
   return (
     <div
       className={cn(
-        'fixed inset-0 z-[100] flex items-center justify-center bg-background transition-transform duration-[1500ms] ease-in-out',
+        'fixed inset-0 z-[100] flex items-center justify-center bg-background transition-transform duration-1s ease-in-out',
         isExiting ? '-translate-y-full' : 'translate-y-0'
       )}
     >

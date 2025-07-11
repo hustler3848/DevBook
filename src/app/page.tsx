@@ -202,7 +202,6 @@ export default function Home() {
         };
       }
       return { transform: `translateY(${3 * yOffsetStep}px) rotate(${initialRotation + 3 * rotationStep}deg)`, opacity: 0, zIndex: 0 };
-
     }
 
     if (offset === 0) {
@@ -223,10 +222,10 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-background">
       <Header />
-      <main className="flex-1 flex items-center justify-center">
-        <div className="relative isolate overflow-hidden w-full">
+      <main className="flex-1">
+        <div className="relative isolate overflow-hidden h-full">
           <div
             className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
             aria-hidden="true"
@@ -240,9 +239,9 @@ export default function Home() {
             />
           </div>
 
-          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10">
+          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 h-full">
             <div className={cn(
-                "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-32 lg:mb-0 transition-opacity duration-1000",
+                "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-16 sm:mb-24 lg:mb-0 transition-opacity duration-1000",
                 isAnimating ? 'opacity-100' : 'opacity-0'
               )}>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
@@ -264,8 +263,8 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="mt-32 sm:mt-48 lg:mt-0 lg:flex-shrink-0 lg:flex-grow w-full lg:w-1/2">
-              <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:justify-start lg:ml-8">
+            <div className="mt-24 sm:mt-32 lg:mt-0 lg:flex-shrink-0 lg:flex-grow w-full lg:w-1/2">
+               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:ml-12">
                 {initialSnippets.map((snippet, index) => {
                    const style = getCardStyle(index);
                    return (
@@ -287,3 +286,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
