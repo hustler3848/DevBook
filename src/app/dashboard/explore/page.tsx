@@ -14,6 +14,9 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SnippetViewDialog } from '@/components/snippet-view-dialog';
+import { DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 const communitySnippets = [
   { 
