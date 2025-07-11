@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -18,9 +19,27 @@ interface DashboardClientPageProps {
   snippets: Snippet[];
 }
 
+const getLanguageColors = (language: string) => {
+    switch (language.toLowerCase()) {
+        case 'javascript':
+            return { backgroundColor: '#f7df1e', color: '#000000' };
+        case 'typescript':
+            return { backgroundColor: '#3178c6', color: '#ffffff' };
+        case 'python':
+            return { backgroundColor: '#3776ab', color: '#ffffff' };
+        case 'css':
+            return { backgroundColor: '#1572b6', color: '#ffffff' };
+        case 'yaml':
+             return { backgroundColor: '#cb171e', color: '#ffffff' };
+        default:
+            return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
+    }
+};
+
 function SnippetCard({ snippet }: { snippet: Snippet }) {
+  const langColors = getLanguageColors(snippet.language);
   return (
-    <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-105 hover:border-accent">
+    <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:scale-105">
       <CardHeader>
         <CardTitle className="font-headline">{snippet.title}</CardTitle>
         <CardDescription>{snippet.description}</CardDescription>
@@ -35,7 +54,9 @@ function SnippetCard({ snippet }: { snippet: Snippet }) {
         </div>
       </CardContent>
       <CardFooter>
-        <Badge variant="default">{snippet.language}</Badge>
+        <Badge style={langColors}>
+            {snippet.language}
+        </Badge>
       </CardFooter>
     </Card>
   );
