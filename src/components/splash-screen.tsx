@@ -18,13 +18,13 @@ export function SplashScreen() {
   return (
     <div
       className={cn(
-        'fixed inset-0 z-[100] flex items-center justify-center bg-background transition-transform duration-2000 ease-in-out',
+        'fixed inset-0 z-[100] flex items-center justify-center bg-black dark:bg-white transition-transform duration-2000 ease-in-out',
         isExiting ? '-translate-y-full' : 'translate-y-0'
       )}
     >
       <div className="flex items-center space-x-4 animate-fade-in-up">
         <CodeXml className="h-12 w-12 text-primary" />
-        <span className="font-headline text-4xl font-bold">CodeSnippr</span>
+        <span className="font-headline text-4xl font-bold text-white dark:text-black">CodeSnippr</span>
       </div>
     </div>
   );
