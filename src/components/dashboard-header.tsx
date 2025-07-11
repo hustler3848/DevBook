@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { CodeXml, LogOut, Menu, User } from 'lucide-react';
+import { CodeXml, LogOut, Menu, User, Settings } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import { NavLinks } from './sidebar';
 
@@ -30,9 +30,12 @@ export function DashboardHeader() {
     router.push('/');
   };
   
+  // Create a mock username. In a real app, this would come from the user's profile data.
+  const username = user?.email ? 'currentuser' : 'guest';
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
+      <div className="h-16 flex items-center">
         <div className="flex items-center md:hidden">
           <Sheet>
             <SheetTrigger asChild>
@@ -79,9 +82,17 @@ export function DashboardHeader() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/profile/${username}`}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>

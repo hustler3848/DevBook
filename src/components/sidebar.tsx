@@ -11,13 +11,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 const links = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/dashboard/my-snippets', label: 'My Snippets', icon: FileCode },
+    { href: '/dashboard/my-snippets', label: 'My Collection', icon: FileCode },
     { href: '/dashboard/new-snippet', label: 'New Snippet', icon: PlusCircle },
     { href: '/dashboard/explore', label: 'Explore', icon: Compass },
 ];
 
 const bottomLinks = [
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+    { href: '/dashboard/profile/edit', label: 'Settings', icon: Settings },
 ]
 
 interface NavLinksProps {
