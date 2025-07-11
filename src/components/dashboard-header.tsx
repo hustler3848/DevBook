@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -43,7 +44,7 @@ export function DashboardHeader() {
             <SheetContent side="left" className="w-64 p-4">
                <div className="mb-6 flex items-center gap-2">
                   <Link href="/dashboard" className="flex items-center space-x-2">
-                    <CodeXml className="h-6 w-6 text-foreground" />
+                    <CodeXml className="h-6 w-6 text-primary" />
                     <span className="font-bold font-headline">CodeSnippr</span>
                   </Link>
                 </div>

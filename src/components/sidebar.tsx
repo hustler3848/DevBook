@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -69,7 +70,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
         )}>
             <div className="h-16 flex items-center border-b px-6 relative">
                 <Link href="/dashboard" className="flex items-center space-x-2 overflow-hidden">
-                    <CodeXml className="h-6 w-6 text-foreground flex-shrink-0" />
+                    <CodeXml className="h-6 w-6 text-primary flex-shrink-0" />
                     <span className={cn("font-bold font-headline whitespace-nowrap", isCollapsed && "opacity-0")}>CodeSnippr</span>
                 </Link>
             </div>
