@@ -47,9 +47,8 @@ const starredSnippets = [
 export default function MySnippetsPage() {
   return (
     <div className="pt-6 sm:pt-8 animate-fade-in-up">
-        <div className="space-y-2 mb-8">
+        <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">My Collection</h1>
-            <p className="text-muted-foreground">All your created, saved, and starred snippets in one place.</p>
         </div>
         <Tabs defaultValue="my-snippets">
             <TabsList className="grid w-full grid-cols-3 md:w-fit">
