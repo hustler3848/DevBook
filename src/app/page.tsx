@@ -186,19 +186,19 @@ export default function Home() {
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
     if (isSmallScreen) {
-       const initialRotation = -10;
+      const initialRotation = -5;
       const rotationStep = -8;
       const yOffsetStep = 10;
-
-      const yOffset = offset * yOffsetStep;
-      const rotation = initialRotation + offset * rotationStep;
       const zIndex = initialSnippets.length - offset;
+      const yOffset = offset * yOffsetStep;
+
+      const rotation = initialRotation + (offset * rotationStep);
 
       if (offset < 3) {
         return {
           transform: `translateY(${yOffset}px) rotate(${rotation}deg)`,
           opacity: 1,
-          zIndex: zIndex,
+          zIndex,
         };
       }
       return {
@@ -243,9 +243,9 @@ export default function Home() {
             />
           </div>
 
-          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:py-0 lg:flex lg:items-center lg:gap-x-10 h-full">
+          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:py-24 lg:flex lg:items-center lg:gap-x-10 h-full">
             <div className={cn(
-                "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-16 sm:mb-24 lg:mb-0 transition-opacity duration-1000",
+                "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-24 sm:mb-32 lg:mb-0 transition-opacity duration-1000",
                 isAnimating ? 'opacity-100' : 'opacity-0'
               )}>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
@@ -268,7 +268,7 @@ export default function Home() {
               </div>
             </div>
             <div className="mt-24 sm:mt-32 lg:mt-0 lg:flex-shrink-0 lg:flex-grow w-full lg:w-1/2">
-               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:ml-12">
+               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:ml-20">
                 {initialSnippets.map((snippet, index) => {
                    const style = getCardStyle(index);
                    return (
