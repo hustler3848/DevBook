@@ -186,14 +186,14 @@ export default function Home() {
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
     if (isSmallScreen) {
-      const initialRotation = -5;
+       const initialRotation = -10;
       const rotationStep = -8;
       const yOffsetStep = 10;
 
       const yOffset = offset * yOffsetStep;
-      const rotation = initialRotation + (offset * rotationStep);
+      const rotation = initialRotation + offset * rotationStep;
       const zIndex = initialSnippets.length - offset;
-      
+
       if (offset < 3) {
         return {
           transform: `translateY(${yOffset}px) rotate(${rotation}deg)`,
@@ -201,7 +201,11 @@ export default function Home() {
           zIndex: zIndex,
         };
       }
-      return { transform: `translateY(${3 * yOffsetStep}px) rotate(${initialRotation + 3 * rotationStep}deg)`, opacity: 0, zIndex: 0 };
+      return {
+        transform: `translateY(${3 * yOffsetStep}px) rotate(${initialRotation + 3 * rotationStep}deg)`,
+        opacity: 0,
+        zIndex: 0,
+      };
     }
 
     if (offset === 0) {
@@ -239,7 +243,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 h-full">
+          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:py-0 lg:flex lg:items-center lg:gap-x-10 h-full">
             <div className={cn(
                 "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-16 sm:mb-24 lg:mb-0 transition-opacity duration-1000",
                 isAnimating ? 'opacity-100' : 'opacity-0'
@@ -286,5 +290,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
