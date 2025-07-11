@@ -163,7 +163,7 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
             <CardHeader>
                 <CardTitle className="font-headline text-lg">{snippet.title}</CardTitle>
                 <div className="flex pt-2">
-                    <Badge variant="outline">{snippet.language}</Badge>
+                    <Badge variant="secondary">{snippet.language}</Badge>
                 </div>
             </CardHeader>
             <CardContent className="flex-grow space-y-4">
@@ -240,7 +240,7 @@ export default function ExplorePage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input 
                 placeholder="Search by title, tag, language, or author..." 
-                className="pl-10 w-full md:w-1/2"
+                className="pl-10 w-full md:w-2/3"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
             />
