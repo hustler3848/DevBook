@@ -162,36 +162,35 @@ export default function Home() {
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
     if (isSmallScreen) {
-       // Tilted poker card stack for small screens, fanning from bottom left
-      const yOffset = -5;
-      const initialRotation = -10;
-      const rotationStep = 5;
+      // Tilted poker card stack for small screens, fanning from bottom left
+      const initialRotation = -5;
+      const rotationStep = -8;
+      const yOffsetStep = 10;
 
-      const scale = 1 - (offset * 0.05);
+      const yOffset = offset * yOffsetStep;
       const rotation = initialRotation + (offset * rotationStep);
-      
       const zIndex = initialSnippets.length - offset;
-
-      if (offset < 3) { // Show 3 cards
-        return { 
-          transform: `translateY(${yOffset}%) scale(${scale}) rotate(${rotation}deg)`, 
-          opacity: 1, 
-          zIndex: zIndex 
+      
+      if (offset < 3) {
+        return {
+          transform: `translateY(${yOffset}px) rotate(${rotation}deg)`,
+          opacity: 1,
+          zIndex: zIndex,
         };
       }
+      return { transform: `translateY(${3 * yOffsetStep}px) rotate(${initialRotation + 3 * rotationStep}deg)`, opacity: 0, zIndex: 0 };
 
-      return { transform: 'scale(0.8)', opacity: 0, zIndex: 0 };
     }
 
     // Fanned out for larger screens
     if (offset === 0) {
       return { transform: 'rotate(0deg) translateX(0) translateY(-20px) scale(1)', opacity: 1, zIndex: 3 };
     }
-    if (offset === 1) {
-      return { transform: 'rotate(5deg) translateX(150px) translateY(0) scale(0.95)', opacity: 0.7, zIndex: 2 };
+    if (offset === 1) { // Card to the right
+      return { transform: 'rotate(5deg) translateX(150px) translateY(-10px) scale(0.95)', opacity: 0.7, zIndex: 2 };
     }
-    if (offset === 2) {
-       return { transform: 'rotate(-5deg) translateX(-150px) translateY(0) scale(0.95)', opacity: 0.7, zIndex: 1 };
+    if (offset === 2) { // Card to the left
+       return { transform: 'rotate(-5deg) translateX(-150px) translateY(-10px) scale(0.95)', opacity: 0.7, zIndex: 1 };
     }
     
     // Hide other cards
