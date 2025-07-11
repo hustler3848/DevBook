@@ -15,7 +15,7 @@ const snippets = [
 
 function SnippetCard({ snippet }: { snippet: typeof snippets[0] }) {
   return (
-    <Card className="glassmorphic flex flex-col h-full hover:border-accent transition-colors duration-300">
+    <Card className="glassmorphic flex flex-col h-full transition-colors duration-300">
       <CardHeader>
         <CardTitle className="font-headline">{snippet.title}</CardTitle>
         <CardDescription>{snippet.description}</CardDescription>
@@ -23,12 +23,12 @@ function SnippetCard({ snippet }: { snippet: typeof snippets[0] }) {
       <CardContent className="flex-grow">
         <div className="flex flex-wrap gap-2">
           {snippet.tags.map(tag => (
-            <Badge key={tag} variant="secondary">{tag}</Badge>
+            <Badge key={tag} variant="outline">{tag}</Badge>
           ))}
         </div>
       </CardContent>
       <CardFooter>
-        <p className="text-sm text-muted-foreground">{snippet.language}</p>
+        <p className="text-sm font-semibold text-muted-foreground">{snippet.language}</p>
       </CardFooter>
     </Card>
   );
@@ -45,7 +45,7 @@ export default function DashboardPage() {
         {snippets.map(snippet => (
           <SnippetCard key={snippet.id} snippet={snippet} />
         ))}
-        <Link href="/new-snippet" className="hidden sm:flex">
+        <Link href="/new-snippet" className="hidden sm:flex w-full">
             <Card className="glassmorphic flex flex-col h-full w-full items-center justify-center border-dashed border-2 hover:border-accent hover:text-accent transition-colors duration-300 min-h-[150px]">
                 <div className="text-center">
                     <Plus className="mx-auto h-12 w-12" />
