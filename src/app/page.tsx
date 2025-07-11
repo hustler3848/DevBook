@@ -59,21 +59,21 @@ export default function Home() {
                     <br />
                     {'  '}<span className="text-purple-400">const</span> [size, setSize] = <span className="text-blue-400">useState</span>([0, 0]);
                     <br />
-                    {'  '}<span className="text-blue-400">useEffect</span>(() =&gt; {'{'}
+                    {'  '}<span className="text-blue-400">useEffect</span>{'(() => {'}
                     <br />
                     {'    '}<span className="text-purple-400">function</span> <span className="text-yellow-300">updateSize</span>() {'{'}
                     <br />
-                    {'      '}setSize([<span className="text-blue-400">window</span>.<span className="text-yellow-300">innerWidth</span>, <span className="text-blue-400">window</span>.<span className="text-yellow-300">innerHeight</span>]);
+                    {'      '}setSize([<span className="text-blue-400">window</span>.innerWidth, <span className="text-blue-400">window</span>.innerHeight]);
                     <br />
                     {'    '}{'}'}
                     <br />
-                    {'    '}<span className="text-blue-400">window</span>.addEventListener(<span className="text-green-400">'resize'</span>, updateSize);
+                    {'    '}window.addEventListener(<span className="text-green-400">'resize'</span>, updateSize);
                     <br />
                     {'    '}updateSize();
                     <br />
-                    {'    '}<span className="text-purple-400">return</span> () =&gt; <span className="text-blue-400">window</span>.removeEventListener(<span className="text-green-400">'resize'</span>, updateSize);
+                    {'    '}<span className="text-purple-400">return</span> {'() =>'} window.removeEventListener(<span className="text-green-400">'resize'</span>, updateSize);
                     <br />
-                    {'  '}{'}, []);
+                    {'  '}, []);
                     <br />
                     {'  '}<span className="text-purple-400">return</span> size;
                     <br />
