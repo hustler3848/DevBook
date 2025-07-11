@@ -53,31 +53,71 @@ export default function Home() {
                 </div>
                 <pre className="rounded-lg bg-black/70 p-4 overflow-x-auto">
                   <code className="font-code text-sm text-white">
-                    <span className="text-purple-400">import</span> {'{'} <span className="text-blue-400">useState</span>, <span className="text-blue-400">useEffect</span> {'}'} <span className="text-purple-400">from</span> <span className="text-green-400">{` 'react'`}</span>;
-                    <br /><br />
-                    <span className="text-purple-400">function</span> <span className="text-yellow-300">useWindowSize</span>() {'{'}
+                    <span className="text-purple-400">import</span>
+                    <span>{` { `}</span>
+                    <span className="text-blue-400">useState</span>
+                    <span>{`, `}</span>
+                    <span className="text-blue-400">useEffect</span>
+                    <span>{` } `}</span>
+                    <span className="text-purple-400">from</span>
+                    <span className="text-green-400">{` 'react'`}</span>
+                    <span>{`;`}</span>
                     <br />
-                    {'  '}<span className="text-purple-400">const</span> [size, setSize] = <span className="text-blue-400">useState</span>([0, 0]);
                     <br />
-                    {'  '}<span className="text-blue-400">useEffect</span>{'(() => {'}
+                    <span className="text-purple-400">function</span>
+                    <span className="text-yellow-300">{` useWindowSize`}</span>
+                    <span>{`() {`}</span>
                     <br />
-                    {'    '}<span className="text-purple-400">function</span> <span className="text-yellow-300">updateSize</span>() {'{'}
+                    <span>{`  `}</span>
+                    <span className="text-purple-400">const</span>
+                    <span>{` [size, setSize] = `}</span>
+                    <span className="text-blue-400">useState</span>
+                    <span>{`([0, 0]);`}</span>
                     <br />
-                    {'      '}setSize([<span className="text-blue-400">window</span>.innerWidth, <span className="text-blue-400">window</span>.innerHeight]);
+                    <span>{`  `}</span>
+                    <span className="text-blue-400">useEffect</span>
+                    <span>{`(() => {`}</span>
                     <br />
-                    {'    '}{'}'}
+                    <span>{`    `}</span>
+                    <span className="text-purple-400">function</span>
+                    <span className="text-yellow-300">{` updateSize`}</span>
+                    <span>{`() {`}</span>
                     <br />
-                    {'    '}window.addEventListener(<span className="text-green-400">{`'resize'`}</span>, updateSize);
+                    <span>{`      `}</span>
+                    <span>{`setSize([`}</span>
+                    <span className="text-blue-400">window</span>
+                    <span>{`.innerWidth, `}</span>
+                    <span className="text-blue-400">window</span>
+                    <span>{`.innerHeight]);`}</span>
                     <br />
-                    {'    '}updateSize();
+                    <span>{`    `}</span>
+                    <span>{`}`}</span>
                     <br />
-                    {'    '}<span className="text-purple-400">return</span> {'() =>'} window.removeEventListener(<span className="text-green-400">{`'resize'`}</span>, updateSize);
+                    <span>{`    `}</span>
+                    <span className="text-blue-400">window</span>
+                    <span>{`.addEventListener(`}</span>
+                    <span className="text-green-400">{`'resize'`}</span>
+                    <span>{`, updateSize);`}</span>
                     <br />
-                    {'  '}{'}, []);
+                    <span>{`    `}</span>
+                    <span>{`updateSize();`}</span>
                     <br />
-                    {'  '}<span className="text-purple-400">return</span> size;
+                    <span>{`    `}</span>
+                    <span className="text-purple-400">return</span>
+                    <span>{` () => `}</span>
+                    <span className="text-blue-400">window</span>
+                    <span>{`.removeEventListener(`}</span>
+                    <span className="text-green-400">{`'resize'`}</span>
+                    <span>{`, updateSize);`}</span>
                     <br />
-                    {'}'}
+                    <span>{`  `}</span>
+                    <span>{`}, []);`}</span>
+                    <br />
+                    <span>{`  `}</span>
+                    <span className="text-purple-400">return</span>
+                    <span>{` size;`}</span>
+                    <br />
+                    <span>{`}`}</span>
                   </code>
                 </pre>
                 <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
