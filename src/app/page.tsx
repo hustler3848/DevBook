@@ -247,7 +247,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 h-full">
+          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-48 lg:flex lg:items-center lg:gap-x-10 h-full">
             <div className={cn(
                 "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-24 lg:mb-0 transition-opacity duration-1000",
                 isAnimating ? 'opacity-100' : 'opacity-0'
