@@ -121,7 +121,13 @@ const CodeCard = ({ snippet }: { snippet: any; }) => {
         </Button>
       </div>
       <div className={cn("rounded-lg overflow-hidden text-sm", cardBg)}>
-        <SyntaxHighlighter language={snippet.language} style={syntaxTheme} customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }} codeTagProps={{className: "font-code"}}>
+        <SyntaxHighlighter
+          language={snippet.language}
+          style={syntaxTheme}
+          customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }}
+          className="custom-scrollbar"
+          codeTagProps={{className: "font-code"}}
+        >
           {snippet.code}
         </SyntaxHighlighter>
       </div>
@@ -182,7 +188,7 @@ export default function Home() {
 
     }
 
-    // Fanned out for larger screens
+    // Fanned out symmetrically for larger screens
     if (offset === 0) {
       return { transform: 'rotate(0deg) translateX(0) translateY(-20px) scale(1)', opacity: 1, zIndex: 3 };
     }
@@ -259,4 +265,3 @@ export default function Home() {
     </div>
   );
 }
-
