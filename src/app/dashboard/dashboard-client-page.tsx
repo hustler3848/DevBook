@@ -39,7 +39,7 @@ const getLanguageColors = (language: string) => {
 function SnippetCard({ snippet }: { snippet: Snippet }) {
   const langColors = getLanguageColors(snippet.language);
   return (
-    <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:scale-105">
+    <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent">
       <CardHeader>
         <CardTitle className="font-headline">{snippet.title}</CardTitle>
         <CardDescription>{snippet.description}</CardDescription>
