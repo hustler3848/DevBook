@@ -31,7 +31,7 @@ export function DashboardHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="container flex h-16 items-center">
         <div className="mr-4 flex">
-          <Link href="/dashboard" className="flex items-center space-x-2 p-2 -ml-2">
+          <Link href="/dashboard" className="flex items-center space-x-2">
             <CodeXml className="h-6 w-6 text-foreground" />
             <span className="font-bold font-headline hidden sm:inline-block">CodeSnippr</span>
           </Link>
