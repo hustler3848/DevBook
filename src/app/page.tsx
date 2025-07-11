@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 flex items-center justify-center">
         <div className="relative isolate overflow-hidden">
           <div
             className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
@@ -22,7 +22,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 lg:py-40">
+          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10">
             <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto animate-fade-in-up text-center lg:text-left">
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
                 Share, Discover, and Innovate with CodeSnippr
@@ -137,7 +137,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
       </main>
     </div>
   );
