@@ -264,14 +264,14 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow w-full lg:w-1/2">
-              <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:justify-start">
+            <div className="mt-32 sm:mt-48 lg:mt-0 lg:flex-shrink-0 lg:flex-grow w-full lg:w-1/2">
+              <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:justify-start lg:ml-8">
                 {initialSnippets.map((snippet, index) => {
                    const style = getCardStyle(index);
                    return (
                      <div
                        key={snippet.id}
-                       className="absolute w-full h-full transition-all duration-700 ease-in-out origin-bottom-left"
+                       className="absolute w-full h-full transition-all duration-500 ease-in-out origin-bottom-left"
                        style={style}
                        onClick={() => cycleCard(index)}
                      >
