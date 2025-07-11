@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Heart, Bookmark, Copy, Star } from 'lucide-react';
+import { Heart, Bookmark, Copy, Star, Check } from 'lucide-react';
 import type { Snippet } from '@/app/dashboard/explore/page';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,6 +23,7 @@ interface SnippetViewDialogProps {
 export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetViewDialogProps) {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -31,10 +32,8 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetView
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(snippet.code);
-    toast({
-      title: 'Copied to clipboard!',
-      description: 'The code snippet has been copied.',
-    });
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000); // Revert back to copy icon after 2 seconds
   };
 
   const syntaxTheme = theme === 'dark' ? oneDark : oneLight;
@@ -73,9 +72,9 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetView
                 <Button variant="outline" size="icon">
                   <Bookmark className="h-5 w-5" />
                 </Button>
-                <Button onClick={handleCopyCode} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
-                  <Copy className="mr-2 h-4 w-4"/>
-                  Copy Code
+                <Button onClick={handleCopyCode} size="icon" className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity w-10 h-10">
+                  {isCopied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5"/>}
+                  <span className="sr-only">Copy Code</span>
                 </Button>
               </div>
             </header>
