@@ -23,7 +23,7 @@ export default function Home() {
           </div>
 
           <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 lg:py-40">
-            <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto">
+            <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto animate-fade-in-up">
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
                 Share, Discover, and Innovate with CodeSnippr
               </h1>
@@ -43,7 +43,7 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow">
+            <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms]">
               <div className="glassmorphic rounded-xl p-4 shadow-lg">
                 <div className="flex justify-between items-center mb-2">
                     <p className="text-sm text-muted-foreground font-code">/components/react-hook.tsx</p>
@@ -53,7 +53,7 @@ export default function Home() {
                 </div>
                 <pre className="rounded-lg bg-black/70 p-4 overflow-x-auto">
                   <code className="font-code text-sm text-white">
-                    <span className="text-purple-400">import</span> {'{'} <span className="text-blue-400">useState</span>, <span className="text-blue-400">useEffect</span> {'}'} <span className="text-purple-400">from</span> <span className="text-green-400">{`'react'`}</span>;
+                    <span className="text-purple-400">import</span> {'{'} <span className="text-blue-400">useState</span>, <span className="text-blue-400">useEffect</span> {'}'} <span className="text-purple-400">from</span> <span className="text-green-400">{` 'react'`}</span>;
                     <br /><br />
                     <span className="text-purple-400">function</span> <span className="text-yellow-300">useWindowSize</span>() {'{'}
                     <br />
@@ -73,7 +73,7 @@ export default function Home() {
                     <br />
                     {'    '}<span className="text-purple-400">return</span> {'() =>'} window.removeEventListener(<span className="text-green-400">{`'resize'`}</span>, updateSize);
                     <br />
-                    {'  '}, []);
+                    {'  '}{'}, []);
                     <br />
                     {'  '}<span className="text-purple-400">return</span> size;
                     <br />
