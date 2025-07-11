@@ -27,7 +27,7 @@ export default function Home() {
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
                 Share, Discover, and Innovate with CodeSnippr
               </h1>
-              <p className="mt-6 text-lg leading-8 text-gray-300">
+              <p className="mt-6 text-lg leading-8 text-muted-foreground">
                 The ultimate platform for developers to manage and share reusable code snippets. Boost your productivity and collaborate with a global community of coders.
               </p>
               <div className="mt-10 flex items-center gap-x-6">
@@ -36,7 +36,7 @@ export default function Home() {
                     Get Started for Free <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button asChild variant="link" size="lg" className="text-white">
+                <Button asChild variant="link" size="lg">
                     <Link href="/dashboard">
                         Explore Snippets <span aria-hidden="true">→</span>
                     </Link>
@@ -44,16 +44,16 @@ export default function Home() {
               </div>
             </div>
             <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow">
-              <div className="glassmorphic rounded-xl p-4">
+              <div className="glassmorphic rounded-xl p-4 shadow-lg">
                 <div className="flex justify-between items-center mb-2">
-                    <p className="text-sm text-gray-400 font-code">/components/react-hook.tsx</p>
+                    <p className="text-sm text-muted-foreground font-code">/components/react-hook.tsx</p>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                         <Copy className="h-4 w-4" />
                     </Button>
                 </div>
                 <pre className="rounded-lg bg-black/70 p-4 overflow-x-auto">
                   <code className="font-code text-sm text-white">
-                    <span className="text-purple-400">import</span> {'{'} <span className="text-blue-400">useState</span>, <span className="text-blue-400">useEffect</span> {'}'} <span className="text-purple-400">from</span> <span className="text-green-400">'react'</span>;
+                    <span className="text-purple-400">import</span> {'{'} <span className="text-blue-400">useState</span>, <span className="text-blue-400">useEffect</span> {'}'} <span className="text-purple-400">from</span> <span className="text-green-400">{`'react'`}</span>;
                     <br /><br />
                     <span className="text-purple-400">function</span> <span className="text-yellow-300">useWindowSize</span>() {'{'}
                     <br />
@@ -67,11 +67,11 @@ export default function Home() {
                     <br />
                     {'    '}{'}'}
                     <br />
-                    {'    '}window.addEventListener(<span className="text-green-400">'resize'</span>, updateSize);
+                    {'    '}window.addEventListener(<span className="text-green-400">{`'resize'`}</span>, updateSize);
                     <br />
                     {'    '}updateSize();
                     <br />
-                    {'    '}<span className="text-purple-400">return</span> {'() =>'} window.removeEventListener(<span className="text-green-400">'resize'</span>, updateSize);
+                    {'    '}<span className="text-purple-400">return</span> {'() =>'} window.removeEventListener(<span className="text-green-400">{`'resize'`}</span>, updateSize);
                     <br />
                     {'  '}, []);
                     <br />
@@ -80,7 +80,7 @@ export default function Home() {
                     {'}'}
                   </code>
                 </pre>
-                <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+                <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1">
                             <Star className="h-3 w-3 text-yellow-400 fill-yellow-400"/>
