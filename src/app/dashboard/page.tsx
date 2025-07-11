@@ -13,26 +13,34 @@ const snippets = [
   { id: 6, title: 'Docker Compose for MERN', description: 'A docker-compose file for MERN stack.', tags: ['docker', 'mern', 'devops'], language: 'YAML' },
 ];
 
+const tagColorMap: { [key: string]: { background: string; text: string } } = {
+  javascript: { background: 'hsl(53, 98%, 50%)', text: 'hsl(53, 98%, 10%)' },
+  typescript: { background: 'hsl(211, 100%, 50%)', text: 'hsl(0, 0%, 100%)' },
+  react: { background: 'hsl(193, 95%, 68%)', text: 'hsl(193, 95%, 10%)' },
+  hooks: { background: 'hsl(193, 95%, 68%)', text: 'hsl(193, 95%, 10%)' },
+  python: { background: 'hsl(210, 55%, 45%)', text: 'hsl(0, 0%, 100%)' },
+  css: { background: 'hsl(21, 89%, 52%)', text: 'hsl(0, 0%, 100%)' },
+  nodejs: { background: 'hsl(120, 39%, 49%)', text: 'hsl(0, 0%, 100%)' },
+  docker: { background: 'hsl(207, 82%, 53%)', text: 'hsl(0, 0%, 100%)' },
+};
+
 function SnippetCard({ snippet }: { snippet: typeof snippets[0] }) {
-  const getTagColor = (tag: string) => {
+  const getTagColors = (tag: string) => {
+    const normalizedTag = tag.toLowerCase();
+    if (tagColorMap[normalizedTag]) {
+      return tagColorMap[normalizedTag];
+    }
+
     let hash = 0;
     for (let i = 0; i < tag.length; i++) {
       hash = tag.charCodeAt(i) + ((hash << 5) - hash);
     }
     const h = hash % 360;
-    // Using fixed saturation and lightness for pastel-like colors
-    return `hsl(${h}, 50%, 30%)`;
+    const background = `hsl(${h}, 50%, 30%)`;
+    const text = `hsl(${h}, 100%, 85%)`;
+    return { background, text };
   };
 
-  const getTagTextColor = (tag: string) => {
-    let hash = 0;
-    for (let i = 0; i < tag.length; i++) {
-      hash = tag.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const h = hash % 360;
-     // Using fixed saturation and lightness for pastel-like colors
-    return `hsl(${h}, 100%, 85%)`;
-  }
 
   return (
     <Card className="glassmorphic flex flex-col h-full transition-colors duration-300">
@@ -42,18 +50,21 @@ function SnippetCard({ snippet }: { snippet: typeof snippets[0] }) {
       </CardHeader>
       <CardContent className="flex-grow">
         <div className="flex flex-wrap gap-2">
-          {snippet.tags.map(tag => (
-            <Badge 
-              key={tag} 
-              style={{ 
-                backgroundColor: getTagColor(tag), 
-                color: getTagTextColor(tag),
-                borderColor: getTagColor(tag) 
-              }}
-            >
-              {tag}
-            </Badge>
-          ))}
+          {snippet.tags.map(tag => {
+            const { background, text } = getTagColors(tag);
+            return (
+              <Badge 
+                key={tag} 
+                style={{ 
+                  backgroundColor: background, 
+                  color: text,
+                  borderColor: background 
+                }}
+              >
+                {tag}
+              </Badge>
+            )
+          })}
         </div>
       </CardContent>
       <CardFooter>
