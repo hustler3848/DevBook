@@ -159,7 +159,7 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
     }
 
     return (
-        <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:shadow-lg">
+        <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:shadow-lg w-full max-w-md sm:max-w-none">
             <CardHeader>
                 <CardTitle className="font-headline text-lg">{snippet.title}</CardTitle>
                 <div className="flex pt-2">
@@ -231,7 +231,8 @@ export default function ExplorePage() {
 
   return (
     <>
-    <div className="animate-fade-in-up space-y-6">
+    <div className="animate-fade-in-up flex flex-col h-full">
+      <div className="px-4 pt-2 pb-4 sm:px-0 sm:pt-0 sm:pb-6 space-y-6">
         <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
             <p className="text-muted-foreground">Discover snippets shared by developers from around the world.</p>
@@ -245,11 +246,14 @@ export default function ExplorePage() {
                 onChange={e => setSearchTerm(e.target.value)}
             />
         </div>
+      </div>
         
         {filteredSnippets.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex-1 snap-y snap-mandatory overflow-y-scroll sm:snap-none sm:overflow-auto sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
                 {filteredSnippets.map(snippet => (
-                    <CommunitySnippetCard key={snippet.id} snippet={snippet} onSelect={setSelectedSnippet} />
+                    <div key={snippet.id} className="snap-start h-screen sm:h-auto flex items-center justify-center p-4 sm:p-0">
+                      <CommunitySnippetCard snippet={snippet} onSelect={setSelectedSnippet} />
+                    </div>
                 ))}
             </div>
         ) : (

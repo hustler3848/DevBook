@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -20,11 +21,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="min-h-screen w-full flex">
             <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
             <div className={cn(
-                "flex flex-col w-full transition-all duration-300 ease-in-out",
+                "flex flex-col w-full transition-all duration-300 ease-in-out h-screen",
                 isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
             )}>
                 <DashboardHeader />
-                <main className="flex-1 px-4 py-6 sm:py-8">{children}</main>
+                <main className="flex-1 px-4 py-6 sm:py-8 overflow-y-auto">{children}</main>
             </div>
         </div>
     );
