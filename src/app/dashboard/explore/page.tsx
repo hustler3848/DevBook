@@ -198,11 +198,6 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
                  <div className="w-full space-y-3 pt-2 text-sm">
                     <p className="text-muted-foreground line-clamp-2">{snippet.description}</p>
                     
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                        <span>{formatStars(snippet.stars)} stars</span>
-                    </div>
-
                     <div className="flex flex-wrap items-center gap-2">
                         {displayedTags.map(tag => (
                              <button key={tag} onClick={() => onTagClick(tag)} className="rounded-full">
@@ -218,12 +213,19 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
                             </Button>
                         )}
                     </div>
-                    <div className="flex items-center gap-2 pt-1">
-                        <Avatar className="h-6 w-6">
-                            <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint} />
-                            <AvatarFallback>{snippet.author.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs font-medium text-muted-foreground">{snippet.author}</span>
+
+                    <div className="flex justify-between items-center w-full pt-1">
+                        <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                                <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint} />
+                                <AvatarFallback>{snippet.author.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs font-medium text-muted-foreground">{snippet.author}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                            <span className="text-xs">{formatStars(snippet.stars)} stars</span>
+                        </div>
                     </div>
                  </div>
             </CardFooter>
@@ -276,7 +278,7 @@ export default function ExplorePage() {
   return (
     <>
     <div className="animate-fade-in-up">
-      <div className="px-4 pt-2 pb-4 sm:px-0 sm:pt-0 sm:pb-6 space-y-6">
+      <div className="space-y-6">
         <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
             <p className="text-muted-foreground">Discover snippets shared by developers from around the world.</p>
@@ -292,8 +294,8 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3 -mx-4 px-4 sm:mx-0 sm:px-0 mb-6 border-b">
-         <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2">
+      <div className="sticky top-[-1px] z-30 bg-background/80 backdrop-blur-sm pt-3 -mx-4 px-4 sm:mx-0 sm:px-0 mt-6 mb-6 border-b">
+         <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3">
             {allTags.map(tag => (
                 <Button 
                     key={tag} 
@@ -341,3 +343,4 @@ export default function ExplorePage() {
     </>
   );
 }
+
