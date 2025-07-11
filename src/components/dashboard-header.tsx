@@ -13,9 +13,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { CodeXml, LogOut, PlusCircle, User } from 'lucide-react';
+import { CodeXml, LogOut, Menu, User } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
+import { NavLinks } from './sidebar';
 
 
 export function DashboardHeader() {
@@ -28,22 +30,31 @@ export function DashboardHeader() {
   };
   
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background">
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <div className="mr-4 flex">
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <CodeXml className="h-6 w-6 text-foreground" />
-            <span className="font-bold font-headline hidden sm:inline-block">CodeSnippr</span>
-          </Link>
+        <div className="flex items-center md:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Open Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-4">
+               <div className="mb-6 flex items-center gap-2">
+                  <Link href="/dashboard" className="flex items-center space-x-2">
+                    <CodeXml className="h-6 w-6 text-foreground" />
+                    <span className="font-bold font-headline">CodeSnippr</span>
+                  </Link>
+                </div>
+              <nav className="flex flex-col gap-2">
+                <NavLinks />
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
         
         <div className="flex-1 flex items-center justify-end space-x-2">
-            <Button asChild size="sm" className="hidden sm:inline-flex">
-                <Link href="/new-snippet"><PlusCircle className="mr-2 h-4 w-4" /> New Snippet</Link>
-            </Button>
-            <Button asChild size="icon" variant="outline" className="sm:hidden">
-                <Link href="/new-snippet"><PlusCircle className="h-4 w-4" /><span className="sr-only">New Snippet</span></Link>
-            </Button>
             <ThemeToggle />
             {loading ? (
               <Skeleton className="h-8 w-8 rounded-full" />
