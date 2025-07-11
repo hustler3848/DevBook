@@ -66,7 +66,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
     return (
         <aside className={cn(
             "hidden md:flex flex-col border-r bg-background transition-all duration-300 ease-in-out fixed h-full z-50",
-            isCollapsed ? "w-20" : "w-64"
+            isCollapsed ? "w-20" : "w-60"
         )}>
             <div className="h-16 flex items-center border-b px-6 relative">
                 <Link href="/dashboard" className="flex items-center space-x-2 overflow-hidden">
