@@ -15,11 +15,10 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SnippetViewDialog } from '@/components/snippet-view-dialog';
-import { DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
-const communitySnippets = [
+const initialCommunitySnippets = [
   { 
     id: 1, 
     title: 'Custom Framer Motion Animation', 
@@ -30,6 +29,8 @@ const communitySnippets = [
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'woman developer',
     stars: 1200,
+    isStarred: false,
+    isSaved: false,
     code: `export const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -46,6 +47,8 @@ const communitySnippets = [
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'man developer',
     stars: 876,
+    isStarred: false,
+    isSaved: false,
     code: `import { pgTable, serial, text, varchar } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
@@ -63,6 +66,8 @@ export const users = pgTable('users', {
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'woman coder',
     stars: 2300,
+    isStarred: true,
+    isSaved: false,
     code: `const plugin = require('tailwindcss/plugin')
 
 module.exports = plugin(function({ addUtilities }) {
@@ -84,6 +89,8 @@ module.exports = plugin(function({ addUtilities }) {
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'asian developer',
     stars: 950,
+    isStarred: false,
+    isSaved: true,
     code: `from dataclasses import dataclass, field
 from typing import List
 
@@ -102,6 +109,8 @@ class User:
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'male programmer',
     stars: 1500,
+    isStarred: true,
+    isSaved: true,
     code: `use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
@@ -122,6 +131,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'latina developer',
     stars: 720,
+    isStarred: false,
+    isSaved: false,
     code: `func LoggerMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         start := time.Now()
@@ -138,14 +149,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   }
 ];
 
-export type Snippet = typeof communitySnippets[0];
+export type Snippet = typeof initialCommunitySnippets[0];
 
-function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snippet, onSelect: (snippet: Snippet) => void, onTagClick: (tag: string) => void }) {
+function CommunitySnippetCard({ 
+    snippet, 
+    onSelect, 
+    onTagClick,
+    onToggleStar,
+    onToggleSave,
+}: { 
+    snippet: Snippet, 
+    onSelect: (snippet: Snippet) => void, 
+    onTagClick: (tag: string) => void,
+    onToggleStar: (id: number) => void,
+    onToggleSave: (id: number) => void,
+}) {
     const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [showAllTags, setShowAllTags] = useState(false);
-    const [isStarred, setIsStarred] = useState(false);
-    const [isSaved, setIsSaved] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -231,23 +252,23 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <button className="flex items-center gap-1" onClick={() => setIsStarred(!isStarred)}>
-                                            <Star className={cn("h-4 w-4 transition-colors", isStarred ? "text-yellow-400 fill-yellow-400" : "hover:text-yellow-400")} />
-                                            <span className="text-xs">{formatStars(snippet.stars + (isStarred ? 1 : 0))}</span>
+                                        <button className="flex items-center gap-1" onClick={() => onToggleStar(snippet.id)}>
+                                            <Star className={cn("h-4 w-4 transition-colors", snippet.isStarred ? "text-yellow-400 fill-yellow-400" : "hover:text-yellow-400")} />
+                                            <span className="text-xs">{formatStars(snippet.stars + (snippet.isStarred ? 1 : 0))}</span>
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>{isStarred ? 'Unstar' : 'Star'} Snippet</p>
+                                        <p>{snippet.isStarred ? 'Unstar' : 'Star'} Snippet</p>
                                     </TooltipContent>
                                 </Tooltip>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <button className="flex items-center gap-1" onClick={() => setIsSaved(!isSaved)}>
-                                            <Bookmark className={cn("h-4 w-4 transition-colors", isSaved ? "text-primary fill-primary" : "hover:text-primary")} />
+                                        <button className="flex items-center gap-1" onClick={() => onToggleSave(snippet.id)}>
+                                            <Bookmark className={cn("h-4 w-4 transition-colors", snippet.isSaved ? "text-primary fill-primary" : "hover:text-primary")} />
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>{isSaved ? 'Unsave' : 'Save'} Snippet</p>
+                                        <p>{snippet.isSaved ? 'Unsave' : 'Save'} Snippet</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -261,6 +282,7 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
 
 
 export default function ExplorePage() {
+  const [communitySnippets, setCommunitySnippets] = useState(initialCommunitySnippets);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -271,13 +293,36 @@ export default function ExplorePage() {
       snippet.tags.forEach(tag => tags.add(tag));
     });
     return ['All', ...Array.from(tags)];
-  }, []);
+  }, [communitySnippets]);
 
   const handleTagClick = (tag: string) => {
     if (tag === 'All') {
         setActiveTag(null);
     } else {
         setActiveTag(tag);
+        setSearchTerm('');
+    }
+  };
+
+  const handleToggleStar = (id: number) => {
+    setCommunitySnippets(prevSnippets =>
+        prevSnippets.map(s =>
+            s.id === id ? { ...s, isStarred: !s.isStarred } : s
+        )
+    );
+    if (selectedSnippet && selectedSnippet.id === id) {
+        setSelectedSnippet(prev => prev ? {...prev, isStarred: !prev.isStarred} : null);
+    }
+  };
+
+  const handleToggleSave = (id: number) => {
+      setCommunitySnippets(prevSnippets =>
+          prevSnippets.map(s =>
+              s.id === id ? { ...s, isSaved: !s.isSaved } : s
+          )
+      );
+      if (selectedSnippet && selectedSnippet.id === id) {
+        setSelectedSnippet(prev => prev ? {...prev, isSaved: !prev.isSaved} : null);
     }
   };
 
@@ -299,41 +344,40 @@ export default function ExplorePage() {
     }
 
     return snippets;
-  }, [searchTerm, activeTag]);
+  }, [searchTerm, activeTag, communitySnippets]);
 
   return (
     <>
-    <div className="animate-fade-in-up">
-      <div className="space-y-6 pt-6 sm:pt-8">
-        <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
-        </div>
-        <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input 
-                placeholder="Search by title, tag, language, or author..." 
-                className="pl-10 w-full md:w-2/3"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-            />
-        </div>
+    <div className="space-y-6">
+      <div className="space-y-2 pt-6">
+          <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
       </div>
+      <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input 
+              placeholder="Search by title, tag, language, or author..." 
+              className="pl-10 w-full md:w-2/3"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+          />
+      </div>
+    </div>
 
-      <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 my-6 border-b">
-         <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3">
-            {allTags.map(tag => (
-                <Button 
-                    key={tag} 
-                    variant={activeTag === tag || (tag === 'All' && !activeTag) ? "secondary" : "ghost"}
-                    size="sm"
-                    onClick={() => handleTagClick(tag)}
-                    className="shrink-0"
-                >
-                    {tag}
-                </Button>
-            ))}
-         </div>
-      </div>
+    <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 my-6 border-b">
+        <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3">
+        {allTags.map(tag => (
+            <Button 
+                key={tag} 
+                variant={activeTag === tag || (tag === 'All' && !activeTag) ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => handleTagClick(tag)}
+                className="shrink-0"
+            >
+                {tag}
+            </Button>
+        ))}
+        </div>
+    </div>
         
       {filteredSnippets.length > 0 ? (
         <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -342,7 +386,9 @@ export default function ExplorePage() {
                     key={snippet.id} 
                     snippet={snippet} 
                     onSelect={setSelectedSnippet}
-                    onTagClick={handleTagClick} 
+                    onTagClick={handleTagClick}
+                    onToggleStar={handleToggleStar}
+                    onToggleSave={handleToggleSave} 
                 />
             ))}
         </div>
@@ -352,7 +398,6 @@ export default function ExplorePage() {
             <p className="text-muted-foreground mt-2">Try adjusting your search or filter.</p>
         </div>
       )}
-    </div>
 
     {selectedSnippet && (
       <SnippetViewDialog
@@ -363,6 +408,8 @@ export default function ExplorePage() {
             setSelectedSnippet(null);
           }
         }}
+        onToggleStar={handleToggleStar}
+        onToggleSave={handleToggleSave}
       />
     )}
     </>

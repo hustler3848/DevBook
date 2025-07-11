@@ -1,8 +1,10 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogClose, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -13,14 +15,17 @@ import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/pris
 import { Heart, Bookmark, Copy, Star, Check, X } from 'lucide-react';
 import type { Snippet } from '@/app/dashboard/explore/page';
 import { useToast } from '@/hooks/use-toast';
+import { Tooltip, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface SnippetViewDialogProps {
   snippet: Snippet;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  onToggleStar: (id: number) => void;
+  onToggleSave: (id: number) => void;
 }
 
-export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetViewDialogProps) {
+export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar, onToggleSave }: SnippetViewDialogProps) {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -62,30 +67,38 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetView
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
-        <DialogHeader className="sr-only">
-          <DialogTitle>{`Snippet: ${snippet.title}`}</DialogTitle>
-          <DialogDescription>{snippet.description}</DialogDescription>
-        </DialogHeader>
-        <ScrollArea className="h-full w-full">
-          <div className="p-8">
-            <header className="flex items-start justify-between gap-4 mb-6">
+        <DialogHeader className="p-8 pb-0">
+            <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-4">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint}/>
                   <AvatarFallback>{snippet.author.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="font-headline text-2xl font-bold">{snippet.title}</h2>
-                  <p className="text-muted-foreground">by {snippet.author}</p>
+                  <DialogTitle className="font-headline text-2xl font-bold">{snippet.title}</DialogTitle>
+                  <DialogDescription className="text-muted-foreground">by {snippet.author}</DialogDescription>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon">
-                  <Heart className="h-5 w-5" />
-                </Button>
-                <Button variant="outline" size="icon">
-                  <Bookmark className="h-5 w-5" />
-                </Button>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => onToggleStar(snippet.id)}>
+                                <Star className={cn("h-5 w-5", snippet.isStarred && "text-yellow-400 fill-yellow-400")} />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>{snippet.isStarred ? 'Unstar' : 'Star'}</p></TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={() => onToggleSave(snippet.id)}>
+                                <Bookmark className={cn("h-5 w-5", snippet.isSaved && "text-primary fill-primary")} />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>{snippet.isSaved ? 'Unsave' : 'Save'}</p></TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+
                 <Button onClick={handleCopyCode} size="icon" className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity w-10 h-10">
                   {isCopied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5"/>}
                   <span className="sr-only">Copy Code</span>
@@ -95,8 +108,11 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetView
                     <span className="sr-only">Close</span>
                 </DialogClose>
               </div>
-            </header>
-            
+            </div>
+        </DialogHeader>
+
+        <ScrollArea className="h-full w-full">
+          <div className="p-8 pt-6">
             <main>
               <div className="rounded-lg border bg-background overflow-hidden">
                 <SyntaxHighlighter
@@ -127,7 +143,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetView
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2 text-muted-foreground">
                             <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                            <span className="font-medium">{formatStars(snippet.stars)} stars</span>
+                            <span className="font-medium">{formatStars(snippet.stars + (snippet.isStarred ? 1 : 0))} stars</span>
                         </div>
                         <Badge variant="secondary">{snippet.language}</Badge>
                     </div>
