@@ -2,14 +2,11 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
-import { Search } from 'lucide-react';
+import { Search, Star } from 'lucide-react';
 
 const communitySnippets = [
   { 
@@ -21,21 +18,7 @@ const communitySnippets = [
     author: 'Elena Petrova',
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'woman developer',
-    code: `
-export const fadeInUp = {
-  initial: {
-    y: 30,
-    opacity: 0,
-  },
-  animate: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      duration: 0.5,
-      ease: 'easeInOut',
-    },
-  },
-};` 
+    stars: 1200,
   },
   { 
     id: 2, 
@@ -46,161 +29,122 @@ export const fadeInUp = {
     author: 'John Smith',
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'man developer',
-    code: `
-import { pgTable, serial, text, varchar } from 'drizzle-orm/pg-core';
-
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  fullName: text('full_name'),
-  phone: varchar('phone', { length: 256 }),
-});
-
-export const posts = pgTable('posts', {
-  id: serial('id').primaryKey(),
-  title: varchar('title', { length: 256 }),
-  content: text('content'),
-});` 
+    stars: 876,
   },
   { 
     id: 3, 
     title: 'Tailwind CSS Plugin', 
-    description: 'A simple plugin to add custom utilities.', 
+    description: 'A simple plugin to add custom utilities for text shadows.', 
     tags: ['tailwindcss', 'css', 'plugin'], 
     language: 'JavaScript',
     author: 'Emily White',
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'woman coder',
-    code: `
-const plugin = require('tailwindcss/plugin')
-
-module.exports = plugin(function({ addUtilities }) {
-  const newUtilities = {
-    '.text-shadow': {
-      textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-    },
-  }
-  addUtilities(newUtilities, ['responsive', 'hover'])
-})`
+    stars: 2300,
   },
   { 
     id: 4, 
     title: 'Python Data Class', 
-    description: 'A simple dataclass for representing a user.', 
+    description: 'A simple dataclass for representing a user with roles.', 
     tags: ['python', 'dataclass'], 
     language: 'Python',
     author: 'Chen Wei',
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'asian developer',
-    code: `
-from dataclasses import dataclass, field
-from typing import List
-
-@dataclass
-class User:
-    id: int
-    name: str
-    email: str
-    roles: List[str] = field(default_factory=list)
-
-    def is_admin(self) -> bool:
-        return 'admin' in self.roles
-` 
+    stars: 950,
   },
+  {
+    id: 5,
+    title: 'Async Rust with Tokio',
+    description: 'A basic TCP echo server implemented using Tokio.',
+    tags: ['rust', 'async', 'tokio', 'networking'],
+    language: 'Rust',
+    author: 'Alex Johnson',
+    avatar: 'https://placehold.co/40x40.png',
+    dataAiHint: 'male programmer',
+    stars: 1500,
+  },
+  {
+    id: 6,
+    title: 'Go Gin Middleware',
+    description: 'A custom logging middleware for the Gin web framework.',
+    tags: ['golang', 'gin', 'middleware', 'api'],
+    language: 'Go',
+    author: 'Maria Garcia',
+    avatar: 'https://placehold.co/40x40.png',
+    dataAiHint: 'latina developer',
+    stars: 720,
+  }
 ];
 
 type Snippet = typeof communitySnippets[0];
 
-function SnippetListItem({ snippet, isActive, onClick }: { snippet: Snippet; isActive: boolean; onClick: () => void }) {
-  return (
-    <Card 
-      className={cn(
-        "cursor-pointer transition-all duration-200",
-        isActive ? "border-primary shadow-lg" : "hover:bg-muted/50"
-      )}
-      onClick={onClick}
-    >
-      <CardContent className="p-4">
-        <h3 className="font-semibold font-headline truncate">{snippet.title}</h3>
-        <p className="text-sm text-muted-foreground truncate">{snippet.description}</p>
-        <div className="flex items-center gap-2 mt-2">
-          <Avatar className="h-5 w-5">
-            <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint} />
-            <AvatarFallback>{snippet.author.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <span className="text-xs text-muted-foreground">{snippet.author}</span>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+const getLanguageColors = (language: string) => {
+    switch (language.toLowerCase()) {
+        case 'javascript':
+            return { backgroundColor: '#f7df1e', color: '#000000' };
+        case 'typescript':
+            return { backgroundColor: '#3178c6', color: '#ffffff' };
+        case 'python':
+            return { backgroundColor: '#3776ab', color: '#ffffff' };
+        case 'css':
+            return { backgroundColor: '#1572b6', color: '#ffffff' };
+        case 'rust':
+            return { backgroundColor: '#dea584', color: '#000000' };
+        case 'go':
+            return { backgroundColor: '#00add8', color: '#ffffff' };
+        default:
+            return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
+    }
+};
 
-function SnippetDetail({ snippet }: { snippet: Snippet | null }) {
-  const { theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+function CommunitySnippetCard({ snippet }: { snippet: Snippet }) {
+    const langColors = getLanguageColors(snippet.language);
+    
+    const formatStars = (num: number) => {
+        if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'k';
+        }
+        return num.toString();
+    };
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  const syntaxTheme = theme === 'dark' ? oneDark : oneLight;
-
-  if (!snippet) {
     return (
-      <Card className="glassmorphic h-full flex items-center justify-center min-h-[400px]">
-        <div className="text-center text-muted-foreground">
-          <p>Select a snippet to view</p>
-        </div>
-      </Card>
-    );
-  }
-
-  if (!mounted) {
-    return (
-        <Card className="glassmorphic h-full p-6">
-            <div className="space-y-4">
-                <div className="h-8 w-3/4 bg-muted rounded-md animate-pulse" />
-                <div className="h-5 w-1/2 bg-muted rounded-md animate-pulse" />
-                <div className="h-64 w-full bg-muted rounded-md animate-pulse" />
-            </div>
+        <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:scale-105">
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <CardTitle className="font-headline text-lg mb-2">{snippet.title}</CardTitle>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground -mt-1">
+                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                        <span>{formatStars(snippet.stars)}</span>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                        <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint} />
+                        <AvatarFallback>{snippet.author.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium text-muted-foreground">{snippet.author}</span>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow">
+                <CardDescription className="text-sm">{snippet.description}</CardDescription>
+            </CardContent>
+            <CardFooter className="flex justify-between items-center">
+                 <div className="flex flex-wrap gap-1">
+                    {snippet.tags.slice(0, 3).map(tag => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                        {tag}
+                        </Badge>
+                    ))}
+                </div>
+                <Badge style={langColors} className="text-xs">{snippet.language}</Badge>
+            </CardFooter>
         </Card>
     );
-  }
-
-  return (
-    <Card className="glassmorphic h-full">
-      <CardContent className="p-6">
-        <h2 className="text-2xl font-bold font-headline">{snippet.title}</h2>
-        <p className="text-muted-foreground mt-1">{snippet.description}</p>
-        <div className="flex items-center gap-2 mt-4">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint} />
-              <AvatarFallback>{snippet.author.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <span className="font-semibold">{snippet.author}</span>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {snippet.tags.map(tag => (
-            <Badge key={tag} variant="secondary">{tag}</Badge>
-          ))}
-        </div>
-        <div className="mt-4 rounded-lg overflow-hidden bg-background/50">
-            <SyntaxHighlighter
-                language={snippet.language.toLowerCase()}
-                style={syntaxTheme}
-                customStyle={{ margin: 0, background: 'transparent' }}
-                className="custom-scrollbar"
-                codeTagProps={{className: "font-code text-sm"}}
-            >
-                {snippet.code.trim()}
-            </SyntaxHighlighter>
-        </div>
-      </CardContent>
-    </Card>
-  )
 }
 
+
 export default function ExplorePage() {
-  const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(communitySnippets[0]);
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredSnippets = useMemo(() => {
@@ -214,34 +158,33 @@ export default function ExplorePage() {
   }, [searchTerm]);
 
   return (
-    <div className="flex flex-col h-full animate-fade-in-up space-y-6">
+    <div className="animate-fade-in-up space-y-6">
+        <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
+            <p className="text-muted-foreground">Discover snippets shared by developers from around the world.</p>
+        </div>
         <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input 
-                placeholder="Search snippets by title, tag, language..." 
+                placeholder="Search by title, tag, language, or author..." 
                 className="pl-10 w-full md:w-1/2"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
             />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1">
-            <div className="md:col-span-1">
-                <div className="space-y-4 h-full max-h-[75vh] overflow-y-auto custom-scrollbar pr-2">
-                    {filteredSnippets.map(snippet => (
-                        <SnippetListItem 
-                            key={snippet.id}
-                            snippet={snippet}
-                            isActive={selectedSnippet?.id === snippet.id}
-                            onClick={() => setSelectedSnippet(snippet)}
-                        />
-                    ))}
-                </div>
+        {filteredSnippets.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredSnippets.map(snippet => (
+                    <CommunitySnippetCard key={snippet.id} snippet={snippet} />
+                ))}
             </div>
-            <div className="md:col-span-2">
-                <SnippetDetail snippet={selectedSnippet} />
+        ) : (
+            <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg">
+                <h2 className="text-xl font-semibold">No Snippets Found</h2>
+                <p className="text-muted-foreground mt-2">Try adjusting your search term.</p>
             </div>
-        </div>
+        )}
     </div>
   );
 }
