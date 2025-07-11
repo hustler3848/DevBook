@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 isSidebarCollapsed ? "md:ml-20" : "md:ml-60"
             )}>
                 <DashboardHeader />
-                <main className="flex-1 px-4 py-6 sm:py-8 overflow-y-auto">{children}</main>
+                <main className="flex-1 px-4 overflow-y-auto">{children}</main>
             </div>
         </div>
     );

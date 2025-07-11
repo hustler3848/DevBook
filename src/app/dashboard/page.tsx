@@ -10,5 +10,9 @@ const snippets = [
 ];
 
 export default function DashboardPage() {
-  return <DashboardClientPage snippets={snippets} />;
+  return (
+    <div className="pt-6 sm:pt-8">
+      <DashboardClientPage snippets={snippets} />
+    </div>
+  );
 }

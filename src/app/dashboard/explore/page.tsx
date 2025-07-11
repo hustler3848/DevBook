@@ -149,7 +149,7 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
     }, []);
 
     const syntaxTheme = theme === 'dark' ? oneDark : oneLight;
-    const cardBg = theme === 'dark' ? 'bg-black/20' : 'bg-gray-50/50';
+    const cardBg = theme === 'dark' ? 'bg-black/10' : 'bg-gray-50/50';
 
     const formatStars = (num: number) => {
         if (num >= 1000) {
@@ -278,10 +278,9 @@ export default function ExplorePage() {
   return (
     <>
     <div className="animate-fade-in-up">
-      <div className="space-y-6">
+      <div className="space-y-6 pt-6 sm:pt-8">
         <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
-            <p className="text-muted-foreground">Discover snippets shared by developers from around the world.</p>
         </div>
         <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -294,7 +293,7 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      <div className="sticky top-[-1px] z-30 bg-background/80 backdrop-blur-sm pt-3 -mx-4 px-4 sm:mx-0 sm:px-0 mt-6 mb-6 border-b">
+      <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 -mx-4 px-4 sm:mx-0 sm:px-0 my-6 border-b">
          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3">
             {allTags.map(tag => (
                 <Button 
@@ -343,4 +342,3 @@ export default function ExplorePage() {
     </>
   );
 }
-
