@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Search, Star, Eye, Plus, Copy } from 'lucide-react';
+import { Search, Star, Eye, Plus } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
@@ -162,6 +162,9 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
         <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:shadow-lg">
             <CardHeader>
                 <CardTitle className="font-headline text-lg">{snippet.title}</CardTitle>
+                <div className="flex pt-2">
+                    <Badge variant="outline">{snippet.language}</Badge>
+                </div>
             </CardHeader>
             <CardContent className="flex-grow space-y-4">
                 <div className={cn("rounded-lg overflow-hidden text-sm", cardBg)}>

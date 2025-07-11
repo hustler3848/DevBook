@@ -111,10 +111,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetView
                             <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                             <span className="font-medium">{formatStars(snippet.stars)} stars</span>
                         </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <div className="h-2 w-2 rounded-full bg-primary" />
-                            <span>{snippet.language}</span>
-                        </div>
+                        <Badge variant="outline">{snippet.language}</Badge>
                     </div>
                 </div>
                 <div>
