@@ -11,14 +11,14 @@ export function SplashScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsExiting(true);
-    }, 1200); // Start exit animation
+    }, 1500); // Starting exit animation
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <div
       className={cn(
-        'fixed inset-0 z-[100] flex items-center justify-center bg-background transition-transform duration-1s ease-in-out',
+        'fixed inset-0 z-[100] flex items-center justify-center bg-background transition-transform duration-[2000ms] ease-in-out',
         isExiting ? '-translate-y-full' : 'translate-y-0'
       )}
     >

@@ -162,11 +162,11 @@ export default function Home() {
 
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1500); // Splash screen duration
+    }, 2000); // Splash screen duration
 
     const animationTimer = setTimeout(() => {
       setIsAnimating(true);
-    }, 1600); // Start animations after splash screen
+    }, 2100); // Start animations after splash screen
 
     return () => {
       window.removeEventListener('resize', checkScreenSize);
@@ -186,26 +186,30 @@ export default function Home() {
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
     if (isSmallScreen) {
-      const initialRotation = -5;
-      const rotationStep = -8;
-      const yOffsetStep = 10;
-      const zIndex = initialSnippets.length - offset;
-      const yOffset = offset * yOffsetStep;
+        const zIndex = initialSnippets.length - offset;
+        if (offset === 0) {
+            return {
+                transform: `rotate(-5deg) scale(1)`,
+                opacity: 1,
+                zIndex,
+            };
+        }
+        
+        const yOffset = offset * 10;
+        const rotation = -5 - (offset * 8);
 
-      const rotation = initialRotation + (offset * rotationStep);
-
-      if (offset < 3) {
+        if (offset < 3) {
+            return {
+                transform: `translateY(${yOffset}px) rotate(${rotation}deg)`,
+                opacity: 1,
+                zIndex,
+            };
+        }
         return {
-          transform: `translateY(${yOffset}px) rotate(${rotation}deg)`,
-          opacity: 1,
-          zIndex,
+            transform: `translateY(${3 * 10}px) rotate(${-5 - (3 * 8)}deg)`,
+            opacity: 0,
+            zIndex: 0,
         };
-      }
-      return {
-        transform: `translateY(${3 * yOffsetStep}px) rotate(${initialRotation + 3 * rotationStep}deg)`,
-        opacity: 0,
-        zIndex: 0,
-      };
     }
 
     if (offset === 0) {
@@ -243,9 +247,9 @@ export default function Home() {
             />
           </div>
 
-          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:py-24 lg:flex lg:items-center lg:gap-x-10 h-full">
+          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 h-full">
             <div className={cn(
-                "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-24 sm:mb-32 lg:mb-0 transition-opacity duration-1000",
+                "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-24 lg:mb-0 transition-opacity duration-1000",
                 isAnimating ? 'opacity-100' : 'opacity-0'
               )}>
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
@@ -267,8 +271,8 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="mt-24 sm:mt-32 lg:mt-0 lg:flex-shrink-0 lg:flex-grow w-full lg:w-1/2">
-               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:ml-20">
+            <div className="mt-24 sm:mt-48 lg:mt-0 lg:flex-shrink-0 lg:flex-grow w-full lg:w-1/2">
+               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:ml-20 ml-10">
                 {initialSnippets.map((snippet, index) => {
                    const style = getCardStyle(index);
                    return (
