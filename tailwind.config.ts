@@ -11,7 +11,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['"DM Sans"', 'sans-serif'],
-        headline: ['Poppins', 'sans-serif'],
+        headline: ['"Space Grotesk"', 'sans-serif'],
         code: ['"Fira Code"', 'monospace'],
       },
       colors: {
