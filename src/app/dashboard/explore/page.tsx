@@ -186,22 +186,23 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
                  </div>
             </CardContent>
             <CardFooter className="flex-col items-start gap-4">
-                <div className="flex w-full items-center gap-2">
-                    <div className="flex items-center gap-2 flex-grow">
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                        <span className="text-muted-foreground text-sm">{formatStars(snippet.stars)}</span>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => onSelect(snippet)}>
-                            <Eye className="mr-2 h-4 w-4" /> View
-                        </Button>
-                        <Button size="sm" className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
-                            <Plus className="mr-2 h-4 w-4" /> Save
-                        </Button>
-                    </div>
+                 <div className="flex w-full items-center gap-2">
+                    <Button variant="outline" className="w-full" onClick={() => onSelect(snippet)}>
+                        <Eye className="mr-2 h-4 w-4" /> View
+                    </Button>
+                    <Button className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
+                        <Plus className="mr-2 h-4 w-4" /> Save
+                    </Button>
                 </div>
+
                  <div className="w-full space-y-3 pt-2 text-sm">
                     <p className="text-muted-foreground line-clamp-2">{snippet.description}</p>
+                    
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                        <span>{formatStars(snippet.stars)} stars</span>
+                    </div>
+
                     <div className="flex flex-wrap items-center gap-2">
                         {displayedTags.map(tag => (
                             <Badge key={tag} variant="secondary">
@@ -292,5 +293,3 @@ export default function ExplorePage() {
     </>
   );
 }
-
-    
