@@ -1,11 +1,12 @@
 
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Search, Star, Eye, Plus, ChevronDown, ChevronUp, Bookmark } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -143,6 +144,8 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
     const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const [showAllTags, setShowAllTags] = useState(false);
+    const [isStarred, setIsStarred] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -169,7 +172,9 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
             <CardHeader>
                 <CardTitle className="font-headline text-lg">{snippet.title}</CardTitle>
                 <div className="flex pt-2">
-                    <Badge variant="secondary">{snippet.language}</Badge>
+                     <div className={cn(badgeVariants({ variant: "secondary" }))}>
+                        {snippet.language}
+                    </div>
                 </div>
             </CardHeader>
             <CardContent className="flex-grow space-y-4">
@@ -226,23 +231,23 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <button className="flex items-center gap-1">
-                                            <Star className="h-4 w-4 hover:text-yellow-400 hover:fill-yellow-400" />
-                                            <span className="text-xs">{formatStars(snippet.stars)}</span>
+                                        <button className="flex items-center gap-1" onClick={() => setIsStarred(!isStarred)}>
+                                            <Star className={cn("h-4 w-4 transition-colors", isStarred ? "text-yellow-400 fill-yellow-400" : "hover:text-yellow-400")} />
+                                            <span className="text-xs">{formatStars(snippet.stars + (isStarred ? 1 : 0))}</span>
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>Star Snippet</p>
+                                        <p>{isStarred ? 'Unstar' : 'Star'} Snippet</p>
                                     </TooltipContent>
                                 </Tooltip>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <button className="flex items-center gap-1">
-                                            <Bookmark className="h-4 w-4 hover:text-primary" />
+                                        <button className="flex items-center gap-1" onClick={() => setIsSaved(!isSaved)}>
+                                            <Bookmark className={cn("h-4 w-4 transition-colors", isSaved ? "text-primary fill-primary" : "hover:text-primary")} />
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>Save Snippet</p>
+                                        <p>{isSaved ? 'Unsave' : 'Save'} Snippet</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -299,7 +304,7 @@ export default function ExplorePage() {
   return (
     <>
     <div className="animate-fade-in-up">
-      <div className="space-y-6">
+      <div className="space-y-6 pt-6 sm:pt-8">
         <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
         </div>
@@ -314,7 +319,7 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 -mx-4 sm:mx-0 sm:px-0 my-6 border-b">
+      <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 my-6 border-b">
          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3">
             {allTags.map(tag => (
                 <Button 
