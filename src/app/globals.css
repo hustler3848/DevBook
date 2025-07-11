@@ -98,4 +98,13 @@
       background-position: 0% 50%;
     }
   }
+
+  @keyframes toast-progress {
+    0% {
+      width: 100%;
+    }
+    100% {
+      width: 0%;
+    }
+  }
 }

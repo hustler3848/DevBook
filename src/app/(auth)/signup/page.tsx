@@ -13,6 +13,19 @@ import { Label } from "@/components/ui/label";
 import { Github, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const getFriendlyErrorMessage = (errorCode: string) => {
+  switch (errorCode) {
+    case 'auth/email-already-in-use':
+      return 'This email is already in use. Please log in.';
+    case 'auth/weak-password':
+      return 'The password is too weak. Please choose a stronger password.';
+    case 'auth/invalid-email':
+      return 'The email address is not valid.';
+    default:
+      return 'An unexpected error occurred. Please try again.';
+  }
+}
+
 export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,13 +44,14 @@ export default function SignupPage() {
       toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
-        description: error.message,
+        description: getFriendlyErrorMessage(error.code),
       });
       setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
+    setIsLoading(true);
     try {
       await googleSignIn();
       router.push('/dashboard');
@@ -45,8 +59,9 @@ export default function SignupPage() {
       toast({
         variant: 'destructive',
         title: 'Google Sign-In Failed',
-        description: error.message,
+        description: getFriendlyErrorMessage(error.code),
       });
+      setIsLoading(false);
     }
   };
 
@@ -93,8 +108,9 @@ export default function SignupPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Button variant="outline"><Github className="mr-2 h-4 w-4" /> GitHub</Button>
-                  <Button variant="outline" onClick={handleGoogleSignIn}>
-                    <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 381.5 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.2 177.2 56.4l-63.1 61.9C338.4 99.8 294.8 84 248 84c-80.9 0-146.4 65.5-146.4 146.4s65.5 146.4 146.4 146.4c95.4 0 131.3-74.1 134.8-111.8H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>
+                  <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {!isLoading && <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 381.5 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.2 177.2 56.4l-63.1 61.9C338.4 99.8 294.8 84 248 84c-80.9 0-146.4 65.5-146.4 146.4s65.5 146.4 146.4 146.4c95.4 0 131.3-74.1 134.8-111.8H248v-85.3h236.1c2.3 12.7 3.9 26.9 3.9 41.4z"></path></svg>}
                     Google
                   </Button>
               </div>

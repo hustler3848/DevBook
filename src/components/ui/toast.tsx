@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { TOAST_REMOVE_DELAY } from "@/hooks/use-toast"
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -16,7 +17,7 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
+      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:right-0 sm:flex-col md:max-w-[420px]",
       className
     )}
     {...props}
@@ -50,7 +51,13 @@ const Toast = React.forwardRef<
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
       {...props}
-    />
+    >
+      {props.children}
+      <div 
+        className="absolute bottom-0 left-0 h-1 bg-white/30" 
+        style={{ animation: `toast-progress ${TOAST_REMOVE_DELAY / 1000}s linear forwards` }}
+      />
+    </ToastPrimitives.Root>
   )
 })
 Toast.displayName = ToastPrimitives.Root.displayName
