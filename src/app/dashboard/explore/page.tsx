@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -109,35 +110,35 @@ function CommunitySnippetCard({ snippet }: { snippet: Snippet }) {
     };
 
     return (
-        <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:scale-105">
+        <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:shadow-lg hover:scale-[1.02]">
             <CardHeader>
-                <div className="flex justify-between items-start">
-                    <CardTitle className="font-headline text-lg mb-2">{snippet.title}</CardTitle>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground -mt-1">
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                        <span>{formatStars(snippet.stars)}</span>
+                <CardTitle className="font-headline text-lg mb-2">{snippet.title}</CardTitle>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                            <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint} />
+                            <AvatarFallback>{snippet.author.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs font-medium text-muted-foreground">{snippet.author}</span>
                     </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                        <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint} />
-                        <AvatarFallback>{snippet.author.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs font-medium text-muted-foreground">{snippet.author}</span>
+                    <Badge style={langColors} className="text-xs">{snippet.language}</Badge>
                 </div>
             </CardHeader>
-            <CardContent className="flex-grow">
-                <CardDescription className="text-sm">{snippet.description}</CardDescription>
-            </CardContent>
-            <CardFooter className="flex justify-between items-center">
-                 <div className="flex flex-wrap gap-1">
+            <CardContent className="flex-grow space-y-4">
+                <CardDescription className="text-sm line-clamp-2">{snippet.description}</CardDescription>
+                <div className="flex flex-wrap gap-1">
                     {snippet.tags.slice(0, 3).map(tag => (
                         <Badge key={tag} variant="secondary" className="text-xs">
                         {tag}
                         </Badge>
                     ))}
                 </div>
-                <Badge style={langColors} className="text-xs">{snippet.language}</Badge>
+            </CardContent>
+            <CardFooter>
+                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                    <span>{formatStars(snippet.stars)}</span>
+                </div>
             </CardFooter>
         </Card>
     );
