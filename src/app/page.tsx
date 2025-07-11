@@ -242,7 +242,7 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms] w-full lg:w-1/2">
+            <div className="mt-24 sm:mt-32 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms] w-full lg:w-1/2">
               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:justify-start">
                 {initialSnippets.map((snippet, index) => {
                    const style = getCardStyle(index);
