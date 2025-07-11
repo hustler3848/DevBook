@@ -55,7 +55,7 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-       <Link href="/new-snippet" className="sm:hidden fixed bottom-8 right-8">
+       <Link href="/new-snippet" className="sm:hidden fixed bottom-6 right-6">
          <Button size="icon" className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
             <Plus className="h-8 w-8" />
             <span className="sr-only">New Snippet</span>

@@ -23,20 +23,20 @@ export default function Home() {
           </div>
 
           <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 lg:py-40">
-            <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto animate-fade-in-up">
+            <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto animate-fade-in-up text-center lg:text-left">
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
                 Share, Discover, and Innovate with CodeSnippr
               </h1>
               <p className="mt-6 text-lg leading-8 text-muted-foreground">
                 The ultimate platform for developers to manage and share reusable code snippets. Boost your productivity and collaborate with a global community of coders.
               </p>
-              <div className="mt-10 flex items-center gap-x-6">
+              <div className="mt-10 flex items-center justify-center lg:justify-start gap-x-6">
                 <Button asChild size="lg" className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity shadow-lg">
                   <Link href="/signup">
                     Get Started for Free <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button asChild variant="link" size="lg">
+                <Button asChild variant="link" size="lg" className="hidden sm:flex">
                     <Link href="/dashboard">
                         Explore Snippets <span aria-hidden="true">→</span>
                     </Link>
@@ -44,7 +44,7 @@ export default function Home() {
               </div>
             </div>
             <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms]">
-              <div className="glassmorphic rounded-xl p-4 shadow-lg">
+              <div className="glassmorphic rounded-xl p-4 shadow-lg max-w-xl mx-auto">
                 <div className="flex justify-between items-center mb-2">
                     <p className="text-sm text-muted-foreground font-code">/components/react-hook.tsx</p>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -131,7 +131,7 @@ export default function Home() {
                         <span>•</span>
                         <span>Hooks</span>
                     </div>
-                    <span>Updated 2 days ago</span>
+                    <span className='hidden sm:inline'>Updated 2 days ago</span>
                 </div>
               </div>
             </div>

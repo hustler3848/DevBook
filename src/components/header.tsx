@@ -24,14 +24,14 @@ export function Header() {
             </span>
           </Link>
         </div>
-        <div className="flex flex-1 items-center justify-end space-x-2">
-          <nav className="flex items-center space-x-2">
+        <div className="flex flex-1 items-center justify-end space-x-1 sm:space-x-2">
+          <nav className="flex items-center space-x-1 sm:space-x-2">
             { !loading && !user && !isAuthPage && (
               <>
                 <Button variant="ghost" asChild>
                     <Link href="/login">Login</Link>
                 </Button>
-                <Button asChild className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
+                <Button asChild size="sm" className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
                     <Link href="/signup">Get Started</Link>
                 </Button>
               </>
