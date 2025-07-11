@@ -152,18 +152,21 @@ export default function Home() {
   const getCardStyle = (index: number) => {
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
+    // Center card
     if (offset === 0) {
-      return { transform: 'rotate(-5deg) translateX(-20px) translateY(0px) scale(1)', opacity: 1, zIndex: 3 };
+      return { transform: 'rotate(0deg) translateX(0) translateY(-20px) scale(1)', opacity: 1, zIndex: 3 };
     }
+    // Right card
     if (offset === 1) {
-      return { transform: 'rotate(0deg) translateX(80px) translateY(20px) scale(0.9)', opacity: 0.7, zIndex: 2 };
+      return { transform: 'rotate(3deg) translateX(120px) translateY(0) scale(0.9)', opacity: 0.7, zIndex: 2 };
     }
+    // Left card
     if (offset === 2) {
-      return { transform: 'rotate(5deg) translateX(180px) translateY(40px) scale(0.8)', opacity: 0.4, zIndex: 1 };
+       return { transform: 'rotate(-3deg) translateX(-120px) translateY(0) scale(0.9)', opacity: 0.7, zIndex: 1 };
     }
     
     // Hide other cards
-    return { transform: 'scale(0.7)', opacity: 0, zIndex: 0 };
+    return { transform: 'scale(0.8)', opacity: 0, zIndex: 0 };
   };
 
   return (
