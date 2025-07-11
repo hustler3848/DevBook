@@ -153,13 +153,13 @@ export default function Home() {
     const offset = (index - activeIndex + initialSnippets.length) % initialSnippets.length;
     
     if (offset === 0) {
-      return { transform: 'rotate(0deg) translateX(0px) translateY(-20px) scale(1)', opacity: 1, zIndex: 3 };
+      return { transform: 'rotate(-5deg) translateX(-20px) translateY(0px) scale(1)', opacity: 1, zIndex: 3 };
     }
     if (offset === 1) {
-      return { transform: 'rotate(5deg) translateX(50px) translateY(-10px) scale(0.9)', opacity: 0.7, zIndex: 2 };
+      return { transform: 'rotate(0deg) translateX(80px) translateY(20px) scale(0.9)', opacity: 0.7, zIndex: 2 };
     }
     if (offset === 2) {
-      return { transform: 'rotate(10deg) translateX(100px) translateY(0px) scale(0.8)', opacity: 0.4, zIndex: 1 };
+      return { transform: 'rotate(5deg) translateX(180px) translateY(40px) scale(0.8)', opacity: 0.4, zIndex: 1 };
     }
     
     // Hide other cards
@@ -212,7 +212,7 @@ export default function Home() {
                    return (
                      <div
                        key={snippet.id}
-                       className="absolute w-full h-full transition-all duration-500 ease-in-out origin-top-left"
+                       className="absolute w-full h-full transition-all duration-500 ease-in-out"
                        style={style}
                        onClick={() => cycleCard(index)}
                      >
