@@ -7,11 +7,14 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Copy, Star } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
 
 const initialSnippets = [
   {
     id: 1,
-    language: 'React',
+    language: 'jsx',
     filename: 'use-debounce-hook.tsx',
     stars: '2.1k',
     tags: ['React', 'Hooks'],
@@ -34,7 +37,7 @@ function useDebounce<T>(value: T, delay: number): T {
   },
   {
     id: 2,
-    language: 'Python',
+    language: 'python',
     filename: 'simple_web_scraper.py',
     stars: '1.8k',
     tags: ['Python', 'Scraping'],
@@ -58,7 +61,7 @@ print(scrape_title("http://example.com"))`.trim(),
   },
   {
     id: 3,
-    language: 'CSS',
+    language: 'css',
     filename: 'glassmorphism.css',
     stars: '3.2k',
     tags: ['CSS', 'UI'],
@@ -94,11 +97,11 @@ const CodeCard = ({ snippet }: { snippet: any; }) => (
         <Copy className="h-4 w-4" />
       </Button>
     </div>
-    <pre className="rounded-lg bg-black/70 p-4 overflow-x-auto">
-      <code className="font-code text-sm text-white">
+    <div className="rounded-lg bg-black/70 overflow-hidden text-sm">
+      <SyntaxHighlighter language={snippet.language} style={atomOneDark} customStyle={{ margin: 0, padding: '1rem' }} codeTagProps={{className: "font-code"}}>
         {snippet.code}
-      </code>
-    </pre>
+      </SyntaxHighlighter>
+    </div>
     <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
