@@ -166,7 +166,7 @@ export default function Home() {
 
     const animationTimer = setTimeout(() => {
       setIsAnimating(true);
-    }, 2100); // Start animations after splash screen
+    }, 2100); // Starting animations after splash screen
 
     return () => {
       window.removeEventListener('resize', checkScreenSize);

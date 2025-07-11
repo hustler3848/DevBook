@@ -18,62 +18,24 @@ interface DashboardClientPageProps {
   snippets: Snippet[];
 }
 
-const tagColorMap: { [key: string]: { background: string; text: string } } = {
-  javascript: { background: 'hsl(53, 98%, 50%)', text: 'hsl(53, 98%, 10%)' },
-  typescript: { background: 'hsl(211, 100%, 50%)', text: 'hsl(0, 0%, 100%)' },
-  react: { background: 'hsl(193, 95%, 68%)', text: 'hsl(193, 95%, 10%)' },
-  hooks: { background: 'hsl(193, 95%, 68%)', text: 'hsl(193, 95%, 10%)' },
-  python: { background: 'hsl(210, 55%, 45%)', text: 'hsl(0, 0%, 100%)' },
-  css: { background: 'hsl(21, 89%, 52%)', text: 'hsl(0, 0%, 100%)' },
-  nodejs: { background: 'hsl(120, 39%, 49%)', text: 'hsl(0, 0%, 100%)' },
-  docker: { background: 'hsl(207, 82%, 53%)', text: 'hsl(0, 0%, 100%)' },
-};
-
 function SnippetCard({ snippet }: { snippet: Snippet }) {
-  const getTagColors = (tag: string) => {
-    const normalizedTag = tag.toLowerCase();
-    if (tagColorMap[normalizedTag]) {
-      return tagColorMap[normalizedTag];
-    }
-
-    let hash = 0;
-    for (let i = 0; i < tag.length; i++) {
-      hash = tag.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const h = hash % 360;
-    const background = `hsl(${h}, 50%, 30%)`;
-    const text = `hsl(${h}, 100%, 85%)`;
-    return { background, text };
-  };
-
-
   return (
-    <Card className="glassmorphic flex flex-col h-full transition-colors duration-300">
+    <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-105 hover:border-accent">
       <CardHeader>
         <CardTitle className="font-headline">{snippet.title}</CardTitle>
         <CardDescription>{snippet.description}</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
         <div className="flex flex-wrap gap-2">
-          {snippet.tags.map(tag => {
-            const { background, text } = getTagColors(tag);
-            return (
-              <Badge 
-                key={tag} 
-                style={{ 
-                  backgroundColor: background, 
-                  color: text,
-                  borderColor: background 
-                }}
-              >
-                {tag}
-              </Badge>
-            )
-          })}
+          {snippet.tags.map(tag => (
+            <Badge key={tag} variant="secondary">
+              {tag}
+            </Badge>
+          ))}
         </div>
       </CardContent>
       <CardFooter>
-        <p className="text-sm font-semibold text-muted-foreground">{snippet.language}</p>
+        <Badge variant="default">{snippet.language}</Badge>
       </CardFooter>
     </Card>
   );
