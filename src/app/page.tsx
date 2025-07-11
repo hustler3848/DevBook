@@ -81,12 +81,10 @@ print(scrape_title("http://example.com"))`.trim(),
   },
 ];
 
-const CodeCard = ({ snippet, isActive, onClick }: { snippet: any; isActive: boolean; onClick: () => void; }) => (
+const CodeCard = ({ snippet }: { snippet: any; }) => (
   <div
-    onClick={onClick}
     className={cn(
       "glassmorphic rounded-xl p-4 shadow-lg w-full max-w-xl mx-auto cursor-pointer transition-all duration-300 ease-in-out",
-      "absolute inset-0" // Make cards absolute within their container
     )}
   >
     <div className="flex justify-between items-center mb-2">
@@ -161,23 +159,21 @@ export default function Home() {
             <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms] w-full lg:w-1/2">
               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center">
                 {snippets.map((snippet, index) => {
-                  const isActive = index === activeIndex;
+                  const offset = activeIndex - index;
 
                   return (
                     <div
                       key={snippet.id}
-                      className="absolute w-full h-full transition-transform duration-500 ease-in-out"
+                      className="absolute w-full h-full transition-transform duration-500 ease-in-out origin-top-left"
                       style={{
-                        transform: `translateY(${(index - activeIndex) * -10}px) rotate(${(index - activeIndex) * -5}deg) scale(${1 - Math.abs(index - activeIndex) * 0.05})`,
-                        zIndex: snippets.length - Math.abs(index - activeIndex),
-                        opacity: 1 - Math.abs(index - activeIndex) * 0.3,
+                        transform: `rotate(${offset * -5 - 2}deg) translateX(${offset * -15}px) scale(${1 - Math.abs(offset) * 0.1})`,
+                        zIndex: snippets.length - Math.abs(offset),
+                        opacity: 1 - Math.abs(offset) * 0.3,
                       }}
                        onClick={() => setActiveIndex(index)}
                     >
                       <CodeCard
                         snippet={snippet}
-                        isActive={isActive}
-                        onClick={() => setActiveIndex(index)}
                       />
                     </div>
                   );
