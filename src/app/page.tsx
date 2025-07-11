@@ -52,22 +52,33 @@ export default function Home() {
                     </Button>
                 </div>
                 <pre className="rounded-lg bg-black/70 p-4 overflow-x-auto">
-                    <code className="font-code text-sm text-white">
-{`import { useState, useEffect } from 'react';
-
-function useWindowSize() {
-  const [size, setSize] = useState([0, 0]);
-  useEffect(() => {
-    function updateSize() {
-      setSize([window.innerWidth, window.innerHeight]);
-    }
-    window.addEventListener('resize', updateSize);
-    updateSize();
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
-  return size;
-}`}
-                    </code>
+                  <code className="font-code text-sm text-white">
+                    <span className="text-purple-400">import</span> {'{'} <span className="text-blue-400">useState</span>, <span className="text-blue-400">useEffect</span> {'}'} <span className="text-purple-400">from</span> <span className="text-green-400">'react'</span>;
+                    <br /><br />
+                    <span className="text-purple-400">function</span> <span className="text-yellow-300">useWindowSize</span>() {'{'}
+                    <br />
+                    {'  '}<span className="text-purple-400">const</span> [size, setSize] = <span className="text-blue-400">useState</span>([0, 0]);
+                    <br />
+                    {'  '}<span className="text-blue-400">useEffect</span>(() =&gt; {'{'}
+                    <br />
+                    {'    '}<span className="text-purple-400">function</span> <span className="text-yellow-300">updateSize</span>() {'{'}
+                    <br />
+                    {'      '}setSize([<span className="text-blue-400">window</span>.<span className="text-yellow-300">innerWidth</span>, <span className="text-blue-400">window</span>.<span className="text-yellow-300">innerHeight</span>]);
+                    <br />
+                    {'    '}{'}'}
+                    <br />
+                    {'    '}<span className="text-blue-400">window</span>.addEventListener(<span className="text-green-400">'resize'</span>, updateSize);
+                    <br />
+                    {'    '}updateSize();
+                    <br />
+                    {'    '}<span className="text-purple-400">return</span> () =&gt; <span className="text-blue-400">window</span>.removeEventListener(<span className="text-green-400">'resize'</span>, updateSize);
+                    <br />
+                    {'  '}{'}, []);
+                    <br />
+                    {'  '}<span className="text-purple-400">return</span> size;
+                    <br />
+                    {'}'}
+                  </code>
                 </pre>
                 <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
                     <div className="flex items-center gap-2">
