@@ -8,7 +8,7 @@ import { ArrowRight, Copy, Star } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { atomDark as atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 
 const initialSnippets = [
@@ -119,17 +119,10 @@ const CodeCard = ({ snippet }: { snippet: any; }) => (
 );
 
 export default function Home() {
-  const [snippets, setSnippets] = useState(initialSnippets);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const cycleCard = (clickedIndex: number) => {
-    if (clickedIndex === 0) return;
-    
-    setSnippets(prevSnippets => {
-      const newSnippets = [...prevSnippets];
-      const clickedItem = newSnippets.splice(clickedIndex, 1)[0];
-      newSnippets.unshift(clickedItem);
-      return newSnippets;
-    });
+    setActiveIndex(clickedIndex);
   };
   
   const cardPositions = [
@@ -137,6 +130,20 @@ export default function Home() {
     { transform: 'rotate(-5deg) translateX(-15px) translateY(-10px) scale(0.9)', opacity: 0.7, zIndex: 2 },
     { transform: 'rotate(-10deg) translateX(-30px) translateY(0px) scale(0.8)', opacity: 0.4, zIndex: 1 },
   ];
+  
+  const getCardStyle = (index: number) => {
+    if (index === activeIndex) {
+      return cardPositions[0];
+    }
+    
+    const otherCards = cardPositions.slice(1);
+    let displayIndex = index - activeIndex - 1;
+    if (index < activeIndex) {
+      displayIndex = initialSnippets.length - activeIndex + index -1;
+    }
+
+    return otherCards[displayIndex] || { transform: 'scale(0.7)', opacity: 0, zIndex: 0 };
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -179,17 +186,13 @@ export default function Home() {
             </div>
             <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms] w-full lg:w-1/2">
               <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center">
-                {snippets.map((snippet, index) => {
-                   const pos = cardPositions[index] || cardPositions[cardPositions.length - 1];
+                {initialSnippets.map((snippet, index) => {
+                   const style = getCardStyle(index);
                    return (
                      <div
                        key={snippet.id}
                        className="absolute w-full h-full transition-all duration-500 ease-in-out origin-top-left"
-                       style={{
-                         transform: pos.transform,
-                         zIndex: pos.zIndex,
-                         opacity: pos.opacity,
-                       }}
+                       style={style}
                        onClick={() => cycleCard(index)}
                      >
                        <CodeCard snippet={snippet} />
