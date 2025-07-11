@@ -46,7 +46,7 @@ export default function DashboardPage() {
           <SnippetCard key={snippet.id} snippet={snippet} />
         ))}
         <Link href="/new-snippet" className="hidden sm:flex">
-            <Card className="glassmorphic flex flex-col h-full w-full items-center justify-center border-dashed border-2 hover:border-accent hover:text-accent transition-colors duration-300">
+            <Card className="glassmorphic flex flex-col h-full w-full items-center justify-center border-dashed border-2 hover:border-accent hover:text-accent transition-colors duration-300 min-h-[150px]">
                 <div className="text-center">
                     <Plus className="mx-auto h-12 w-12" />
                     <p className="mt-2 font-semibold">Add New Snippet</p>
