@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 const links = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dashboard/my-snippets', label: 'My Snippets', icon: FileCode },
-    { href: '/new-snippet', label: 'New Snippet', icon: PlusCircle },
+    { href: '/dashboard/new-snippet', label: 'New Snippet', icon: PlusCircle },
     { href: '/dashboard/explore', label: 'Explore', icon: Compass },
 ];
 

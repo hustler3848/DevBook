@@ -93,7 +93,7 @@ export default function DashboardClientPage({ snippets }: DashboardClientPagePro
           {snippets.map(snippet => (
             <SnippetCard key={snippet.id} snippet={snippet} />
           ))}
-          <Link href="/new-snippet" className="hidden sm:flex w-full">
+          <Link href="/dashboard/new-snippet" className="hidden sm:flex w-full">
               <Card className="glassmorphic flex flex-col h-full w-full items-center justify-center border-dashed border-2 hover:border-accent hover:text-accent transition-colors duration-300 min-h-[150px]">
                   <div className="text-center">
                       <Plus className="mx-auto h-12 w-12" />
@@ -107,7 +107,7 @@ export default function DashboardClientPage({ snippets }: DashboardClientPagePro
             <h2 className="text-xl font-semibold">No Snippets Yet</h2>
             <p className="text-muted-foreground mt-2 mb-4">You haven't created any snippets. Get started by adding one!</p>
             <Button asChild>
-                <Link href="/new-snippet">
+                <Link href="/dashboard/new-snippet">
                     <Plus className="mr-2 h-4 w-4" />
                     Create Your First Snippet
                 </Link>
@@ -115,7 +115,7 @@ export default function DashboardClientPage({ snippets }: DashboardClientPagePro
          </div>
       )}
 
-       <Link href="/new-snippet" className="sm:hidden fixed bottom-6 right-6">
+       <Link href="/dashboard/new-snippet" className="sm:hidden fixed bottom-6 right-6">
          <Button size="icon" className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
             <Plus className="h-8 w-8" />
             <span className="sr-only">New Snippet</span>
