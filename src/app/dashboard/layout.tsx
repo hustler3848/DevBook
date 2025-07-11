@@ -18,14 +18,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     };
 
     return (
-        <div className="min-h-screen w-full flex">
+        <div className="min-h-screen w-full flex bg-background">
             <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
             <div className={cn(
-                "flex flex-col w-full transition-all duration-300 ease-in-out h-screen",
-                isSidebarCollapsed ? "md:ml-20" : "md:ml-60"
+                "flex flex-col w-full transition-all duration-300 ease-in-out",
+                isSidebarCollapsed ? "md:pl-20" : "md:pl-60"
             )}>
                 <DashboardHeader />
-                <main className="flex-1 px-4 overflow-y-auto">{children}</main>
+                <main className="flex-1 overflow-y-auto">
+                    <div className="container mx-auto">
+                        {children}
+                    </div>
+                </main>
             </div>
         </div>
     );

@@ -165,7 +165,7 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
     const displayedTags = showAllTags ? snippet.tags : snippet.tags.slice(0, 2);
 
     return (
-        <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:shadow-lg w-full max-w-md sm:max-w-none hover:-translate-y-1">
+        <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:shadow-lg sm:max-w-none hover:-translate-y-1">
             <CardHeader>
                 <CardTitle className="font-headline text-lg">{snippet.title}</CardTitle>
                 <div className="flex pt-2">
@@ -293,7 +293,7 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 -mx-4 px-4 sm:mx-0 sm:px-0 my-6 border-b">
+      <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 -mx-4 sm:mx-0 sm:px-0 my-6 border-b">
          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3">
             {allTags.map(tag => (
                 <Button 
