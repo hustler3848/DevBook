@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CodeXml, Compass, LayoutDashboard, PlusCircle, FileCode, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { CodeXml, Compass, LayoutDashboard, PlusCircle, FileCode, ChevronLeft, ChevronRight, Settings, Star, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -11,6 +11,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 const links = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dashboard/my-snippets', label: 'My Snippets', icon: FileCode },
+    { href: '/dashboard/saved', label: 'Saved', icon: Bookmark },
+    { href: '/dashboard/starred', label: 'Starred', icon: Star },
     { href: '/dashboard/new-snippet', label: 'New Snippet', icon: PlusCircle },
     { href: '/dashboard/explore', label: 'Explore', icon: Compass },
 ];

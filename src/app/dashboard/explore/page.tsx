@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Search, Star, Eye, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Star, Eye, Plus, ChevronDown, ChevronUp, Bookmark } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
@@ -191,7 +191,7 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
                         <Eye className="mr-2 h-4 w-4" /> View
                     </Button>
                     <Button className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
-                        <Plus className="mr-2 h-4 w-4" /> Save
+                        <Plus className="mr-2 h-4 w-4" /> Add
                     </Button>
                 </div>
 
@@ -223,8 +223,29 @@ function CommunitySnippetCard({ snippet, onSelect, onTagClick }: { snippet: Snip
                             <span className="text-xs font-medium text-muted-foreground">{snippet.author}</span>
                         </div>
                         <div className="flex items-center gap-2 text-muted-foreground">
-                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                            <span className="text-xs">{formatStars(snippet.stars)} stars</span>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button className="flex items-center gap-1">
+                                            <Star className="h-4 w-4 hover:text-yellow-400 hover:fill-yellow-400" />
+                                            <span className="text-xs">{formatStars(snippet.stars)}</span>
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Star Snippet</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button className="flex items-center gap-1">
+                                            <Bookmark className="h-4 w-4 hover:text-primary" />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Save Snippet</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         </div>
                     </div>
                  </div>
@@ -278,7 +299,7 @@ export default function ExplorePage() {
   return (
     <>
     <div className="animate-fade-in-up">
-      <div className="space-y-6 pt-6 sm:pt-8">
+      <div className="space-y-6">
         <div className="space-y-2">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
         </div>
