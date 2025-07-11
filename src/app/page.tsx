@@ -24,7 +24,7 @@ export default function Home() {
 
           <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 lg:py-40">
             <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto">
-              <h1 className="font-headline text-4xl font-bold tracking-tight text-primary-foreground sm:text-6xl">
+              <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
                 Share, Discover, and Innovate with CodeSnippr
               </h1>
               <p className="mt-6 text-lg leading-8 text-gray-300">
