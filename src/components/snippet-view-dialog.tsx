@@ -3,14 +3,14 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Heart, Bookmark, Copy, Star, Check } from 'lucide-react';
+import { Heart, Bookmark, Copy, Star, Check, X } from 'lucide-react';
 import type { Snippet } from '@/app/dashboard/explore/page';
 import { useToast } from '@/hooks/use-toast';
 
@@ -30,9 +30,19 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetView
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (isOpen) {
+        setIsCopied(false);
+    }
+  },[isOpen]);
+
   const handleCopyCode = () => {
     navigator.clipboard.writeText(snippet.code);
     setIsCopied(true);
+    toast({
+        title: "Copied to clipboard!",
+        description: "You can now paste the code in your editor.",
+    });
     setTimeout(() => setIsCopied(false), 2000); // Revert back to copy icon after 2 seconds
   };
 
@@ -76,6 +86,10 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetView
                   {isCopied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5"/>}
                   <span className="sr-only">Copy Code</span>
                 </Button>
+                 <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                </DialogClose>
               </div>
             </header>
             
@@ -111,7 +125,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange }: SnippetView
                             <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                             <span className="font-medium">{formatStars(snippet.stars)} stars</span>
                         </div>
-                        <Badge variant="outline">{snippet.language}</Badge>
+                        <Badge variant="secondary">{snippet.language}</Badge>
                     </div>
                 </div>
                 <div>
