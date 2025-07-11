@@ -83,7 +83,7 @@ export default function SignupPage() {
                   </div>
                   <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
-                      <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                      <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.targe.value)} required />
                   </div>
                   <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -92,7 +92,7 @@ export default function SignupPage() {
               </form>
               <div className="mt-4 text-center text-sm">
                 Already have an account?{" "}
-                <Link href="/login" className="underline text-accent">
+                <Link href="/login" className="underline text-primary">
                   Login
                 </Link>
               </div>
