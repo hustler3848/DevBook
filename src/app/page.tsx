@@ -216,7 +216,7 @@ export default function Home() {
           </div>
 
           <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10">
-            <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto animate-fade-in-up text-center lg:text-left">
+            <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto animate-fade-in-up text-center lg:text-left mb-24 lg:mb-0">
               <h1 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
                 Share, Discover, and Innovate with CodeSnippr
               </h1>
@@ -237,7 +237,7 @@ export default function Home() {
               </div>
             </div>
             <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-shrink-0 lg:flex-grow animate-fade-in-up [animation-delay:200ms] w-full lg:w-1/2">
-              <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center">
+              <div className="relative h-[400px] w-full max-w-xl mx-auto flex items-center justify-center lg:justify-start">
                 {initialSnippets.map((snippet, index) => {
                    const style = getCardStyle(index);
                    return (
@@ -259,3 +259,4 @@ export default function Home() {
     </div>
   );
 }
+
