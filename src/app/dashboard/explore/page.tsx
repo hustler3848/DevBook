@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Search, Star, Eye, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Star, Eye, Plus, ChevronDown, ChevronUp, Save, View } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
@@ -264,11 +264,9 @@ export default function ExplorePage() {
       </div>
         
         {filteredSnippets.length > 0 ? (
-            <div className="flex-1 snap-y snap-mandatory overflow-y-scroll sm:snap-none sm:overflow-auto sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
+            <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredSnippets.map(snippet => (
-                    <div key={snippet.id} className="snap-start h-screen sm:h-auto flex items-center justify-center p-4 sm:p-0">
-                      <CommunitySnippetCard snippet={snippet} onSelect={setSelectedSnippet} />
-                    </div>
+                    <CommunitySnippetCard key={snippet.id} snippet={snippet} onSelect={setSelectedSnippet} />
                 ))}
             </div>
         ) : (
