@@ -1,7 +1,8 @@
+
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -9,7 +10,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, pass: string) => Promise<any>;
-  signup: (email: string, pass: string) => Promise<any>;
+  signup: (email: string, pass: string, fullName: string) => Promise<any>;
   logout: () => Promise<any>;
   googleSignIn: () => Promise<any>;
 }
@@ -32,8 +33,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return signInWithEmailAndPassword(auth, email, pass);
   };
   
-  const signup = (email: string, pass: string) => {
-    return createUserWithEmailAndPassword(auth, email, pass);
+  const signup = async (email: string, pass: string, fullName: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+    if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+            displayName: fullName,
+        });
+    }
+    // Manually trigger a state update to reflect the new displayName
+    setUser({ ...userCredential.user, displayName: fullName });
+    return userCredential;
   };
 
   const logout = () => {
