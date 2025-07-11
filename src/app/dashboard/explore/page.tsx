@@ -14,7 +14,6 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SnippetViewDialog } from '@/components/snippet-view-dialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const communitySnippets = [
   { 
@@ -189,27 +188,13 @@ function CommunitySnippetCard({ snippet, onSelect }: { snippet: Snippet, onSelec
                         <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                         <span className="text-muted-foreground text-sm">{formatStars(snippet.stars)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => onSelect(snippet)}>
-                                    <Eye className="h-5 w-5" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>View Snippet</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <Plus className="h-5 w-5" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Save to My Snippets</p>
-                            </TooltipContent>
-                        </Tooltip>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => onSelect(snippet)}>
+                            <Eye className="mr-2 h-4 w-4" /> View
+                        </Button>
+                        <Button size="sm" className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
+                            <Plus className="mr-2 h-4 w-4" /> Save
+                        </Button>
                     </div>
                 </div>
                  <div className="w-full space-y-3 pt-2 text-sm">
@@ -304,4 +289,3 @@ export default function ExplorePage() {
     </>
   );
 }
-
