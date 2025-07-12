@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SnippetViewDialog } from '@/components/snippet-view-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import ExploreLoading from './loading';
 
 
 const initialCommunitySnippets = [
@@ -286,14 +287,24 @@ export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate fetching data
+    const timer = setTimeout(() => {
+        setIsLoading(false);
+    }, 1000); 
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    communitySnippets.forEach(snippet => {
+    initialCommunitySnippets.forEach(snippet => {
       snippet.tags.forEach(tag => tags.add(tag));
     });
     return ['All', ...Array.from(tags)];
-  }, [communitySnippets]);
+  }, []);
 
   const handleTagClick = (tag: string) => {
     if (tag === 'All') {
@@ -345,10 +356,14 @@ export default function ExplorePage() {
 
     return snippets;
   }, [searchTerm, activeTag, communitySnippets]);
+  
+  if (isLoading) {
+      return <ExploreLoading />;
+  }
 
   return (
     <>
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
       <div className="space-y-2 pt-6">
           <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
       </div>
@@ -363,7 +378,7 @@ export default function ExplorePage() {
       </div>
     </div>
 
-    <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 my-6 border-b">
+    <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 my-6 border-b animate-fade-in-up">
         <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3">
         {allTags.map(tag => (
             <Button 
@@ -380,7 +395,7 @@ export default function ExplorePage() {
     </div>
         
       {filteredSnippets.length > 0 ? (
-        <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
             {filteredSnippets.map(snippet => (
                 <CommunitySnippetCard 
                     key={snippet.id} 
@@ -393,7 +408,7 @@ export default function ExplorePage() {
             ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg">
+        <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg animate-fade-in-up">
             <h2 className="text-xl font-semibold">No Snippets Found</h2>
             <p className="text-muted-foreground mt-2">Try adjusting your search or filter.</p>
         </div>
