@@ -1,44 +1,104 @@
 
+"use client";
+
+import { useEffect, useState } from "react";
+import { useAuth } from "@/context/auth-context";
+import { getUserSnippets, getSavedSnippets, getStarredSnippets } from "@/lib/firebase/firestore";
+import type { Snippet } from "@/types/snippet";
+
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { StatCard } from "@/components/dashboard/stat-card";
 import DashboardClientPage from "./dashboard-client-page";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Code, Eye, Star, Bookmark, FileText } from "lucide-react";
 
-const snippets = [
-  { id: 1, title: 'React Debounce Hook', description: 'A custom hook to debounce input.', tags: ['react', 'hooks', 'debounce', 'typescript'], language: 'TypeScript' },
-  { id: 2, title: 'Python Web Scraper', description: 'Simple web scraper using BeautifulSoup.', tags: ['python', 'scraping', 'beautifulsoup'], language: 'Python' },
-  { id: 3, title: 'Glassmorphism CSS', description: 'A CSS utility class for glassmorphism effect.', tags: ['css', 'ui', 'design'], language: 'CSS' },
-  { id: 4, title: 'Node.js JWT Auth', description: 'Middleware for JWT authentication in Express.', tags: ['nodejs', 'jwt', 'express', 'auth'], language: 'JavaScript' },
-];
-
-// Mock data, in a real app this would be fetched
-const userStats = {
-    totalSnippets: 45,
-    publicSnippets: 12,
-    savedSnippets: 20,
-    totalStars: 124,
-};
+function DashboardLoading() {
+  return (
+    <div className="space-y-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-[98px] w-full" />
+            ))}
+        </div>
+        <Skeleton className="h-[74px] w-full" />
+        <div className="space-y-4">
+            <Skeleton className="h-8 w-1/4" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex flex-col space-y-3">
+                        <Skeleton className="h-[125px] w-full rounded-xl" />
+                        <div className="space-y-2">
+                        <Skeleton className="h-4 w-4/5" />
+                        <Skeleton className="h-4 w-3/5" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+  )
+}
 
 
 export default function DashboardPage() {
+  const { user, loading: authLoading } = useAuth();
+  const [mySnippets, setMySnippets] = useState<Snippet[]>([]);
+  const [savedSnippets, setSavedSnippets] = useState<Snippet[]>([]);
+  const [starredSnippets, setStarredSnippets] = useState<Snippet[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setIsLoading(false);
+      return;
+    };
+
+    async function fetchUserActivity() {
+      try {
+        const [my, saved, starred] = await Promise.all([
+          getUserSnippets(user!.uid),
+          getSavedSnippets(user!.uid),
+          getStarredSnippets(user!.uid)
+        ]);
+        setMySnippets(my);
+        setSavedSnippets(saved);
+        setStarredSnippets(starred);
+      } catch (error) {
+        console.error("Failed to fetch user activity", error);
+        // Optionally show a toast message here
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchUserActivity();
+
+  }, [user, authLoading]);
+
+  const totalStars = mySnippets.reduce((sum, snippet) => sum + (snippet.starCount || 0), 0);
+  const publicSnippets = mySnippets.filter(s => s.isPublic).length;
+
+  if (isLoading) {
+    return <DashboardLoading />;
+  }
+  
   return (
     <div className="animate-fade-in-up">
         <div className="space-y-8">
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard icon={Code} title="Total Snippets" value={userStats.totalSnippets} />
-                <StatCard icon={Eye} title="Public Snippets" value={userStats.publicSnippets} />
-                <StatCard icon={Bookmark} title="Saved Snippets" value={userStats.savedSnippets} />
-                <StatCard icon={Star} title="Total Stars" value={userStats.totalStars} />
+                <StatCard icon={Code} title="Total Snippets" value={mySnippets.length} />
+                <StatCard icon={Eye} title="Public Snippets" value={publicSnippets} />
+                <StatCard icon={Bookmark} title="Saved Snippets" value={savedSnippets.length} />
+                <StatCard icon={Star} title="Total Stars" value={totalStars} />
             </div>
 
             {/* Quick Actions */}
             <QuickActions />
 
             {/* Recent Snippets */}
-            <div className="space-y-4">
-                <DashboardClientPage snippets={snippets} title="Your Snippets" />
-            </div>
+            <DashboardClientPage snippets={mySnippets.slice(0, 4)} title="Your Snippets" />
 
              {/* Activity Feed Placeholder */}
             <div className="space-y-4">
@@ -55,3 +115,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
