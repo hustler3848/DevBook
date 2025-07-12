@@ -3,10 +3,8 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Search } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { SnippetViewDialog } from '@/components/snippet-view-dialog';
 import ExploreLoading from './loading';
@@ -188,6 +186,10 @@ export default function ExplorePage() {
     if (!authLoading && user) {
         fetchUserInteractions();
     }
+     else if (!authLoading && !user) {
+      // If auth is resolved and there's no user, reset to default state
+      setCommunitySnippets(initialCommunitySnippets);
+    }
   }, [user, authLoading, fetchUserInteractions]);
 
 
@@ -318,7 +320,7 @@ export default function ExplorePage() {
       </div>
           
         {filteredSnippets.length > 0 ? (
-          <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredSnippets.map(snippet => (
                   <SnippetCard 
                       key={snippet.id} 
