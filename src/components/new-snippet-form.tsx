@@ -1,19 +1,22 @@
 
 "use client";
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { analyzeSnippet } from '@/ai/flows/analyze-snippet';
 import { useDebounce } from '@/lib/hooks/use-debounce';
+import { addSnippet } from '@/lib/firebase/firestore';
+import { useAuth } from '@/context/auth-context';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const snippetSchema = z.object({
@@ -21,7 +24,7 @@ const snippetSchema = z.object({
   description: z.string().optional(),
   codeSnippet: z.string().min(10, 'Code snippet must be at least 10 characters long.'),
   tags: z.array(z.string()).min(1, 'Please add at least one tag.'),
-  language: z.string().optional(),
+  language: z.string().min(1, 'Please specify the language.'),
 });
 
 type SnippetFormValues = z.infer<typeof snippetSchema>;
@@ -31,6 +34,8 @@ export function NewSnippetForm() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiGeneratedTags, setAiGeneratedTags] = useState<string[]>([]);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const router = useRouter();
 
   const form = useForm<SnippetFormValues>({
     resolver: zodResolver(snippetSchema),
@@ -47,14 +52,8 @@ export function NewSnippetForm() {
   const debouncedCodeSnippet = useDebounce(codeSnippetValue, 1000);
   const currentTags = form.watch('tags');
   
-  useEffect(() => {
-    if (debouncedCodeSnippet && debouncedCodeSnippet.length > 50) {
-      handleAnalyzeSnippet(debouncedCodeSnippet);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedCodeSnippet]);
-
   const handleAnalyzeSnippet = async (code: string) => {
+    if (!code || code.length < 50) return;
     setIsAnalyzing(true);
     try {
       const result = await analyzeSnippet({ codeSnippet: code });
@@ -62,11 +61,10 @@ export function NewSnippetForm() {
       form.setValue('title', result.title, { shouldValidate: true });
       form.setValue('description', result.description, { shouldValidate: true });
 
-      // Filter out old AI-generated tags and combine with new ones
       const manualTags = currentTags.filter(tag => !aiGeneratedTags.includes(tag));
       const newTags = Array.from(new Set([...manualTags, ...result.tags]));
       form.setValue('tags', newTags, { shouldValidate: true });
-      setAiGeneratedTags(result.tags); // Store the new set of AI tags
+      setAiGeneratedTags(result.tags);
 
       form.setValue('language', result.language, { shouldValidate: true });
 
@@ -74,34 +72,54 @@ export function NewSnippetForm() {
       console.error('Error analyzing snippet:', error);
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'Could not analyze snippet. Please try again later.',
+        title: 'AI Analysis Failed',
+        description: 'Could not analyze snippet. Please check your connection or try again later.',
       });
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  const addTag = (tag: string) => {
-    if (tag && !currentTags.includes(tag)) {
-      form.setValue('tags', [...currentTags, tag]);
+  // Trigger analysis when debounced value changes
+  useState(() => {
+    if (debouncedCodeSnippet) {
+      handleAnalyzeSnippet(debouncedCodeSnippet);
     }
-  };
-  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedCodeSnippet]);
+
   const removeTag = (tagToRemove: string) => {
     form.setValue('tags', currentTags.filter(tag => tag !== tagToRemove));
   };
 
   const onSubmit = (data: SnippetFormValues) => {
-    startTransition(() => {
-      console.log(data);
-      toast({
-        title: "Snippet Created!",
-        description: "Your new snippet has been saved.",
-      });
-      // Here you would typically send the data to your backend/Firebase
-      form.reset();
-      setAiGeneratedTags([]);
+    if (!user) {
+        toast({
+            variant: 'destructive',
+            title: 'Not Authenticated',
+            description: 'You must be logged in to create a snippet.',
+        });
+        return;
+    }
+
+    startTransition(async () => {
+      try {
+        await addSnippet(user.uid, data);
+        toast({
+          title: "Snippet Created!",
+          description: "Your new snippet has been successfully saved.",
+        });
+        form.reset();
+        setAiGeneratedTags([]);
+        router.push('/dashboard/my-snippets');
+      } catch (error) {
+        console.error("Error creating snippet:", error);
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to create snippet. Please try again.',
+        });
+      }
     });
   };
 
@@ -200,7 +218,7 @@ export function NewSnippetForm() {
         </div>
 
         <Button type="submit" disabled={isPending || isAnalyzing} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {(isPending || isAnalyzing) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Snippet
         </Button>
       </form>

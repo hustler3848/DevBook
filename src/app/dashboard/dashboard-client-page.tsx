@@ -6,14 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus } from 'lucide-react';
-
-type Snippet = {
-  id: number;
-  title: string;
-  description: string;
-  tags: string[];
-  language: string;
-};
+import type { Snippet } from '@/types/snippet';
 
 interface DashboardClientPageProps {
   snippets: Snippet[];
@@ -33,7 +26,7 @@ const getLanguageColors = (language: string) => {
         case 'yaml':
              return { backgroundColor: '#cb171e', color: '#ffffff' };
         default:
-            return { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' };
+            return { backgroundColor: 'hsl(var(--secondary))', color: 'hsl(var(--secondary-foreground))' };
     }
 };
 
@@ -69,7 +62,7 @@ export default function DashboardClientPage({ snippets, title }: DashboardClient
     <div className="space-y-8 animate-fade-in-up">
       {snippets.length > 0 ? (
         <>
-            {title && <h1 className="text-2xl sm:text-3xl font-bold font-headline">{title}</h1>}
+            {title && <h1 className="text-2xl sm:text-3xl font-bold font-headline mb-4">{title}</h1>}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {snippets.map(snippet => (
                 <SnippetCard key={snippet.id} snippet={snippet} />
@@ -96,13 +89,19 @@ export default function DashboardClientPage({ snippets, title }: DashboardClient
             </Button>
          </div>
       )}
-
-       <Link href="/dashboard/new-snippet" className="sm:hidden fixed bottom-4 right-4 z-50">
-         <Button size="icon" className="h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
+      <Link
+        href="/dashboard/new-snippet"
+        className="sm:hidden fixed bottom-4 right-4 z-50"
+      >
+        <Button
+            size="icon"
+            className="h-14 w-14 rounded-full shadow-xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity"
+        >
             <Plus className="h-8 w-8" />
             <span className="sr-only">New Snippet</span>
-         </Button>
-       </Link>
+        </Button>
+      </Link>
     </div>
+    
   );
 }
