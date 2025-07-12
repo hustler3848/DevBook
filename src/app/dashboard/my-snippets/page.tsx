@@ -29,7 +29,7 @@ function MySnippetsLoading() {
 }
 
 export default function MySnippetsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [mySnippets, setMySnippets] = useState<Snippet[]>([]);
   const [savedSnippets, setSavedSnippets] = useState<Snippet[]>([]);
@@ -66,12 +66,16 @@ export default function MySnippetsPage() {
   }, [user, toast]);
   
   useEffect(() => {
-    if (user) {
-      fetchSnippets(activeTab);
-    } else {
+    // Wait for auth to resolve before fetching data
+    if (!authLoading) {
+      if (user) {
+        fetchSnippets(activeTab);
+      } else {
+        // If no user and auth is resolved, stop loading
         setIsLoading(false);
+      }
     }
-  }, [user, activeTab, fetchSnippets]);
+  }, [user, authLoading, activeTab, fetchSnippets]);
 
   const handleUnsave = (snippetId: string) => {
     if(!user) return;

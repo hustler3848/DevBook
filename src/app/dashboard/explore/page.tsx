@@ -304,30 +304,42 @@ export default function ExplorePage() {
   const [selectedSnippet, setSelectedSnippet] = useState<CommunitySnippet | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
   const fetchUserInteractions = useCallback(async () => {
     if (!user) return;
-    const snippetIds = initialCommunitySnippets.map(s => s.id);
-    const { starred, saved } = await getUserInteractionStatus(user.uid, snippetIds);
-    setCommunitySnippets(prev => 
-        prev.map(snippet => ({
-            ...snippet,
-            isStarred: starred.has(snippet.id),
-            isSaved: saved.has(snippet.id)
-        }))
-    );
-  }, [user]);
+    try {
+      const snippetIds = initialCommunitySnippets.map(s => s.id);
+      const { starred, saved } = await getUserInteractionStatus(user.uid, snippetIds);
+      setCommunitySnippets(prev => 
+          prev.map(snippet => ({
+              ...snippet,
+              isStarred: starred.has(snippet.id),
+              isSaved: saved.has(snippet.id)
+          }))
+      );
+    } catch (error) {
+        console.error("Failed to fetch user interactions", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not load your starred/saved snippets.' });
+    }
+  }, [user, toast]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
         setIsLoading(false);
-        fetchUserInteractions();
-    }, 1000); 
+    }, 1000);
 
     return () => clearTimeout(timer);
-  }, [fetchUserInteractions]);
+  }, []);
+
+  useEffect(() => {
+    // Only fetch interactions after auth state is resolved and we have a user
+    if (!authLoading && user) {
+        fetchUserInteractions();
+    }
+  }, [user, authLoading, fetchUserInteractions]);
+
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
