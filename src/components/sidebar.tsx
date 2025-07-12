@@ -3,17 +3,11 @@
 "use client";
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import { CodeXml, Compass, LayoutDashboard, PlusCircle, FileCode, ChevronLeft, ChevronRight, Settings, Star, Bookmark, User, LogOut } from 'lucide-react';
+import { CodeXml, Compass, LayoutDashboard, PlusCircle, FileCode, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { ThemeToggle } from './theme-toggle';
-import { useAuth } from '@/context/auth-context';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { Skeleton } from './ui/skeleton';
 
 const links = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -65,14 +59,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
-    const { user, loading, logout } = useAuth();
-    const router = useRouter();
-    const username = user?.email ? 'currentuser' : 'guest';
-    const handleLogout = async () => {
-        await logout();
-        router.push('/');
-    };
-
     return (
         <aside className={cn(
             "hidden md:flex flex-col border-r bg-background transition-all duration-300 ease-in-out fixed h-full z-50",
@@ -103,76 +89,6 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                            <TooltipContent side="right" className="ml-2">Settings</TooltipContent>
                         )}
                     </Tooltip>
-                    
-                    {isCollapsed ? (
-                         <div className="flex flex-col items-center gap-2">
-                             <ThemeToggle />
-                              {loading ? (
-                                <Skeleton className="h-10 w-10 rounded-full" />
-                              ) : user ? (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button>
-                                            <Avatar className="h-10 w-10">
-                                                <AvatarImage src={user.photoURL || `https://placehold.co/40x40.png`} alt={user.displayName || "user avatar"} data-ai-hint="user avatar" />
-                                                <AvatarFallback>{user.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
-                                            </Avatar>
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="ml-2 mb-2" side="right" align="end">
-                                        <DropdownMenuLabel className="font-normal">
-                                            <div className="flex flex-col space-y-1">
-                                                <p className="text-sm font-medium leading-none">{user.displayName || 'Username'}</p>
-                                                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                                            </div>
-                                        </DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem asChild>
-                                            <Link href={`/dashboard/profile/${username}`}><User className="mr-2 h-4 w-4" /><span>Profile</span></Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/dashboard/settings"><Settings className="mr-2 h-4 w-4" /><span>Settings</span></Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" /><span>Logout</span></DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                              ) : null}
-                         </div>
-                    ) : (
-                        <>
-                             <ThemeToggle />
-                            {loading ? (
-                                <Skeleton className="h-10 w-full rounded-md" />
-                            ) : user ? (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="w-full justify-start h-12 px-3">
-                                            <Avatar className="h-9 w-9 mr-2">
-                                                <AvatarImage src={user.photoURL || `https://placehold.co/40x40.png`} alt={user.displayName || "user avatar"} data-ai-hint="user avatar" />
-                                                <AvatarFallback>{user.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex flex-col items-start truncate">
-                                                <span className="text-sm font-medium leading-none truncate">{user.displayName || 'Username'}</span>
-                                                <span className="text-xs leading-none text-muted-foreground truncate">{user.email}</span>
-                                            </div>
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                     <DropdownMenuContent className="w-56 mb-2" align="end" side="top">
-                                        <DropdownMenuItem asChild>
-                                            <Link href={`/dashboard/profile/${username}`}><User className="mr-2 h-4 w-4" /><span>Profile</span></Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/dashboard/settings"><Settings className="mr-2 h-4 w-4" /><span>Settings</span></Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" /><span>Logout</span></DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            ) : null}
-                        </>
-                    )}
-                   
                 </nav>
             </div>
 
