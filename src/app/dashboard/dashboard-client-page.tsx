@@ -17,6 +17,7 @@ type Snippet = {
 
 interface DashboardClientPageProps {
   snippets: Snippet[];
+  title?: string;
 }
 
 const getLanguageColors = (language: string) => {
@@ -62,29 +63,27 @@ function SnippetCard({ snippet }: { snippet: Snippet }) {
   );
 }
 
-export default function DashboardClientPage({ snippets }: DashboardClientPageProps) {
-  const pageTitle = snippets.length > 3 ? "All Snippets" : "My Snippets";
+export default function DashboardClientPage({ snippets, title }: DashboardClientPageProps) {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold font-headline">{pageTitle}</h1>
-      </div>
-      
       {snippets.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {snippets.map(snippet => (
-            <SnippetCard key={snippet.id} snippet={snippet} />
-          ))}
-          <Link href="/dashboard/new-snippet" className="hidden sm:flex w-full">
-              <Card className="glassmorphic flex flex-col h-full w-full items-center justify-center border-dashed border-2 hover:border-accent transition-colors duration-300 min-h-[150px]">
-                  <div className="text-center">
-                      <Plus className="mx-auto h-12 w-12" />
-                      <p className="mt-2 font-semibold">Add New Snippet</p>
-                  </div>
-              </Card>
-          </Link>
-        </div>
+        <>
+            {title && <h1 className="text-2xl sm:text-3xl font-bold font-headline">{title}</h1>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {snippets.map(snippet => (
+                <SnippetCard key={snippet.id} snippet={snippet} />
+            ))}
+            <Link href="/dashboard/new-snippet" className="hidden sm:flex w-full">
+                <Card className="glassmorphic flex flex-col h-full w-full items-center justify-center border-dashed border-2 hover:border-accent transition-colors duration-300 min-h-[150px]">
+                    <div className="text-center">
+                        <Plus className="mx-auto h-12 w-12" />
+                        <p className="mt-2 font-semibold">Add New Snippet</p>
+                    </div>
+                </Card>
+            </Link>
+            </div>
+        </>
       ) : (
          <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg">
             <h2 className="text-xl font-semibold">No Snippets Yet</h2>

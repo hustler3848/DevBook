@@ -38,8 +38,7 @@ export default function DashboardPage() {
 
             {/* Recent Snippets */}
             <div className="space-y-4">
-                {snippets.length > 0 && <h2 className="text-2xl font-bold font-headline">Your Snippets</h2>}
-                <DashboardClientPage snippets={snippets} />
+                <DashboardClientPage snippets={snippets} title="Your Snippets" />
             </div>
 
              {/* Activity Feed Placeholder */}

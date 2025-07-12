@@ -144,8 +144,7 @@ export default function ProfilePage() {
 
                 {/* Right Column - Public Snippets */}
                 <div className="lg:col-span-2">
-                   <h2 className="text-2xl font-bold font-headline mb-6">Public Snippets</h2>
-                   <DashboardClientPage snippets={profileUser.publicSnippets} />
+                   <DashboardClientPage snippets={profileUser.publicSnippets} title="Public Snippets" />
                 </div>
             </div>
         </div>
