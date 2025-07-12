@@ -14,8 +14,6 @@ import { useAuth } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Skeleton } from './ui/skeleton';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
-import { Menu } from 'lucide-react';
 
 const links = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -23,10 +21,6 @@ const links = [
     { href: '/dashboard/new-snippet', label: 'New Snippet', icon: PlusCircle },
     { href: '/dashboard/explore', label: 'Explore', icon: Compass },
 ];
-
-const bottomLinks = [
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-]
 
 interface NavLinksProps {
     isCollapsed: boolean;
@@ -65,89 +59,12 @@ export function NavLinks({ isCollapsed }: NavLinksProps) {
     )
 }
 
-function MobileSidebar() {
-    const { user, loading, logout } = useAuth();
-    const router = useRouter();
-    const username = user?.email ? 'currentuser' : 'guest';
-    const handleLogout = async () => {
-        await logout();
-        router.push('/');
-    };
-
-    return (
-        <Sheet>
-            <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                    <Menu className="h-5 w-5" />
-                    <span className="sr-only">Open Menu</span>
-                </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-60 p-0 flex flex-col">
-                <div className="h-16 flex items-center border-b px-6">
-                    <Link href="/dashboard" className="flex items-center space-x-2 overflow-hidden">
-                        <CodeXml className="h-6 w-6 text-primary flex-shrink-0" />
-                        <span className="font-bold font-headline whitespace-nowrap">CodeSnippr</span>
-                    </Link>
-                </div>
-                <div className="flex-1 flex flex-col justify-between">
-                     <nav className="px-4 py-4 space-y-1">
-                        <NavLinks isCollapsed={false} />
-                    </nav>
-                     <nav className="px-4 py-4 space-y-1 border-t">
-                        <ThemeToggle />
-                         {loading ? (
-                            <div className="flex justify-center py-2">
-                                <Skeleton className="h-10 w-10 rounded-full" />
-                            </div>
-                        ) : user ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="w-full justify-start h-10 px-3">
-                                    <Avatar className="h-8 w-8 mr-2">
-                                        <AvatarImage src={user.photoURL || `https://placehold.co/40x40.png`} alt={user.displayName || "user avatar"} data-ai-hint="user avatar" />
-                                        <AvatarFallback>{user.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex flex-col items-start truncate">
-                                        <span className="text-sm font-medium leading-none truncate">{user.displayName || 'Username'}</span>
-                                        <span className="text-xs leading-none text-muted-foreground truncate">{user.email}</span>
-                                    </div>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56 mb-2" align="start" side="top">
-                                <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/profile/${username}`}>
-                                    <User className="mr-2 h-4 w-4" />
-                                    <span>Profile</span>
-                                </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                <Link href="/dashboard/settings">
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    <span>Settings</span>
-                                </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={handleLogout}>
-                                <LogOut className="mr-2 h-4 w-4" />
-                                <span>Logout</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        ) : null}
-                     </nav>
-                </div>
-            </SheetContent>
-        </Sheet>
-    )
-}
-
 interface SidebarProps {
     isCollapsed: boolean;
     toggleSidebar: () => void;
 }
 
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
-    const pathname = usePathname();
     const { user, loading, logout } = useAuth();
     const router = useRouter();
     const username = user?.email ? 'currentuser' : 'guest';
@@ -157,10 +74,6 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
     };
 
     return (
-        <>
-        <div className="p-4 md:hidden">
-             <MobileSidebar />
-        </div>
         <aside className={cn(
             "hidden md:flex flex-col border-r bg-background transition-all duration-300 ease-in-out fixed h-full z-50",
             isCollapsed ? "w-20" : "w-60"
@@ -172,11 +85,25 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                 </Link>
             </div>
             
-            <div className="flex-1 flex flex-col justify-between overflow-y-auto">
+            <div className="flex-1 flex flex-col justify-between overflow-y-auto custom-scrollbar">
                 <nav className="px-4 py-4 space-y-1">
                    <NavLinks isCollapsed={isCollapsed} />
                 </nav>
                 <nav className="px-4 py-4 space-y-1 border-t mt-auto">
+                    <Tooltip delayDuration={0}>
+                        <TooltipTrigger asChild>
+                             <Button asChild variant="ghost" className={cn("w-full justify-start h-10", isCollapsed ? "justify-center px-0" : "px-3")}>
+                                <Link href="/dashboard/settings">
+                                    <Settings className={cn("h-5 w-5", !isCollapsed && "mr-2")} />
+                                    <span className={cn(isCollapsed && "sr-only")}>Settings</span>
+                                </Link>
+                            </Button>
+                        </TooltipTrigger>
+                        {isCollapsed && (
+                           <TooltipContent side="right" className="ml-2">Settings</TooltipContent>
+                        )}
+                    </Tooltip>
+                    
                     {isCollapsed ? (
                          <div className="flex flex-col items-center gap-2">
                              <ThemeToggle />
@@ -267,6 +194,5 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                  </Tooltip>
             </div>
         </aside>
-        </>
     );
 }

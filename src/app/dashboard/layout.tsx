@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { cn } from '@/lib/utils';
+import { DashboardHeader } from '@/components/dashboard-header';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -23,7 +24,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 "flex flex-col w-full transition-all duration-300 ease-in-out",
                 isSidebarCollapsed ? "md:pl-20" : "md:pl-60"
             )}>
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pt-6 sm:pt-8 md:pt-10">
+                <DashboardHeader />
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
                     <div className="mx-auto max-w-screen-2xl">
                         {children}
                     </div>
