@@ -55,8 +55,8 @@ export function DashboardHeader() {
           </SheetContent>
         </Sheet>
         
-        <div className="hidden md:flex">
-             <h1 className="text-xl font-semibold font-headline">Dashboard</h1>
+        <div className="flex-1">
+          {/* This div is to push the user menu to the right */}
         </div>
 
         <div className="flex items-center gap-4">
