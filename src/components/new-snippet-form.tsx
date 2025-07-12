@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { suggestTags } from '@/ai/flows/suggest-tags';
+import { analyzeSnippet } from '@/ai/flows/analyze-snippet';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 
 import { Button } from '@/components/ui/button';
@@ -20,14 +20,14 @@ const snippetSchema = z.object({
   description: z.string().optional(),
   codeSnippet: z.string().min(10, 'Code snippet must be at least 10 characters long.'),
   tags: z.array(z.string()).min(1, 'Please add at least one tag.'),
+  language: z.string().optional(),
 });
 
 type SnippetFormValues = z.infer<typeof snippetSchema>;
 
 export function NewSnippetForm() {
   const [isPending, startTransition] = useTransition();
-  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
-  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<SnippetFormValues>({
@@ -37,36 +37,42 @@ export function NewSnippetForm() {
       description: '',
       codeSnippet: '',
       tags: [],
+      language: '',
     },
   });
 
   const codeSnippetValue = form.watch('codeSnippet');
   const debouncedCodeSnippet = useDebounce(codeSnippetValue, 1000);
   const currentTags = form.watch('tags');
-
+  
   useEffect(() => {
     if (debouncedCodeSnippet && debouncedCodeSnippet.length > 50) {
-      handleSuggestTags(debouncedCodeSnippet);
-    } else {
-      setSuggestedTags([]);
+      handleAnalyzeSnippet(debouncedCodeSnippet);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedCodeSnippet]);
 
-  const handleSuggestTags = async (code: string) => {
-    setIsSuggesting(true);
+  const handleAnalyzeSnippet = async (code: string) => {
+    setIsAnalyzing(true);
     try {
-      const result = await suggestTags({ codeSnippet: code });
-      setSuggestedTags(result.tags.filter(tag => !currentTags.includes(tag)));
+      const result = await analyzeSnippet({ codeSnippet: code });
+      
+      const newTitle = result.description.split('.').slice(0,1).join('');
+      
+      form.setValue('title', newTitle, { shouldValidate: true });
+      form.setValue('description', result.description, { shouldValidate: true });
+      form.setValue('tags', Array.from(new Set([...currentTags, ...result.tags])), { shouldValidate: true });
+      form.setValue('language', result.language, { shouldValidate: true });
+
     } catch (error) {
-      console.error('Error suggesting tags:', error);
+      console.error('Error analyzing snippet:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Could not suggest tags. Please try again later.',
+        description: 'Could not analyze snippet. Please try again later.',
       });
     } finally {
-      setIsSuggesting(false);
+      setIsAnalyzing(false);
     }
   };
 
@@ -74,11 +80,6 @@ export function NewSnippetForm() {
     if (tag && !currentTags.includes(tag)) {
       form.setValue('tags', [...currentTags, tag]);
     }
-  };
-  
-  const addSuggestedTag = (tag: string) => {
-    addTag(tag);
-    setSuggestedTags(suggestedTags.filter(t => t !== tag));
   };
   
   const removeTag = (tagToRemove: string) => {
@@ -93,6 +94,7 @@ export function NewSnippetForm() {
         description: "Your new snippet has been saved.",
       });
       // Here you would typically send the data to your backend/Firebase
+      form.reset();
     });
   };
 
@@ -117,7 +119,7 @@ export function NewSnippetForm() {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description (Optional)</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea placeholder="A short description of what this snippet does." {...field} />
               </FormControl>
@@ -130,7 +132,15 @@ export function NewSnippetForm() {
           name="codeSnippet"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Code Snippet</FormLabel>
+              <div className="flex justify-between items-center">
+                <FormLabel>Code Snippet</FormLabel>
+                {isAnalyzing && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Analyzing...</span>
+                    </div>
+                )}
+              </div>
               <FormControl>
                 <Textarea
                   placeholder={`// Paste your code here\nfunction hello() {\n  console.log("Hello, world!");\n}`}
@@ -143,47 +153,46 @@ export function NewSnippetForm() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="tags"
-          render={() => (
-            <FormItem>
-              <FormLabel>Tags</FormLabel>
-              <FormControl>
-                 <div className="flex flex-wrap gap-2 p-2 rounded-md border min-h-[40px] border-input">
-                    {currentTags.map((tag) => (
-                      <Badge key={tag} variant="secondary">
-                        {tag}
-                        <button type="button" onClick={() => removeTag(tag)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                            <X className="h-3 w-3" />
-                            <span className="sr-only">Remove {tag}</span>
-                        </button>
-                      </Badge>
-                    ))}
-                 </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        { (isSuggesting || suggestedTags.length > 0) && (
-            <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    { isSuggesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-accent" /> }
-                    <span>{isSuggesting ? 'Analyzing your code...' : 'Suggested Tags'}</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    {suggestedTags.map(tag => (
-                        <Button key={tag} type="button" size="sm" variant="outline" onClick={() => addSuggestedTag(tag)}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <FormField
+            control={form.control}
+            name="tags"
+            render={() => (
+                <FormItem>
+                <FormLabel>Tags</FormLabel>
+                <FormControl>
+                    <div className="flex flex-wrap gap-2 p-2 rounded-md border min-h-[40px] border-input">
+                        {currentTags.map((tag) => (
+                        <Badge key={tag} variant="secondary">
                             {tag}
-                        </Button>
-                    ))}
-                </div>
-            </div>
-        )}
+                            <button type="button" onClick={() => removeTag(tag)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                <X className="h-3 w-3" />
+                                <span className="sr-only">Remove {tag}</span>
+                            </button>
+                        </Badge>
+                        ))}
+                    </div>
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <FormField
+            control={form.control}
+            name="language"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Language</FormLabel>
+                <FormControl>
+                    <Input placeholder="e.g. TypeScript" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+        </div>
 
-        <Button type="submit" disabled={isPending} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
+        <Button type="submit" disabled={isPending || isAnalyzing} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Snippet
         </Button>
