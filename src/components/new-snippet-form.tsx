@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,6 +18,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from './ui/switch';
+import { Label } from './ui/label';
 
 const snippetSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters long.'),
@@ -25,6 +27,7 @@ const snippetSchema = z.object({
   codeSnippet: z.string().min(10, 'Code snippet must be at least 10 characters long.'),
   tags: z.array(z.string()).min(1, 'Please add at least one tag.'),
   language: z.string().min(1, 'Please specify the language.'),
+  isPublic: z.boolean().default(false),
 });
 
 type SnippetFormValues = z.infer<typeof snippetSchema>;
@@ -45,6 +48,7 @@ export function NewSnippetForm() {
       codeSnippet: '',
       tags: [],
       language: '',
+      isPublic: false,
     },
   });
 
@@ -81,7 +85,7 @@ export function NewSnippetForm() {
   };
 
   // Trigger analysis when debounced value changes
-  useState(() => {
+  useEffect(() => {
     if (debouncedCodeSnippet) {
       handleAnalyzeSnippet(debouncedCodeSnippet);
     }
@@ -104,7 +108,7 @@ export function NewSnippetForm() {
 
     startTransition(async () => {
       try {
-        await addSnippet(user.uid, data);
+        await addSnippet(user, data);
         toast({
           title: "Snippet Created!",
           description: "Your new snippet has been successfully saved.",
@@ -216,6 +220,29 @@ export function NewSnippetForm() {
             )}
             />
         </div>
+        
+        <FormField
+          control={form.control}
+          name="isPublic"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  Public Snippet
+                </FormLabel>
+                <p className="text-sm text-muted-foreground">
+                    Allow other users to discover and view this snippet.
+                </p>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
 
         <Button type="submit" disabled={isPending || isAnalyzing} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
           {(isPending || isAnalyzing) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
