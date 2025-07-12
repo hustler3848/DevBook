@@ -1,6 +1,7 @@
 
 "use client"
 
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
@@ -10,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Github, Linkedin, Twitter, Edit, Code, Star, Bookmark } from 'lucide-react';
 import DashboardClientPage from '../../dashboard-client-page';
 import { notFound } from 'next/navigation';
+import { EditProfileDialog } from '@/components/edit-profile-dialog';
 
 // Mock data - in a real app, this would be fetched from a database
 const users = {
@@ -64,6 +66,7 @@ export default function ProfilePage() {
     const params = useParams();
     const { user: currentUser } = useAuth();
     const username = params.username as keyof typeof users;
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     
     // In a real app, you would fetch user data here based on the username param
     // For now, we use mock data
@@ -79,6 +82,7 @@ export default function ProfilePage() {
 
 
     return (
+        <>
         <div className="container mx-auto py-6 sm:py-8 animate-fade-in-up">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Profile Info & Stats */}
@@ -97,10 +101,8 @@ export default function ProfilePage() {
                                 <p className="text-center text-sm text-muted-foreground">{profileUser.bio}</p>
 
                                  {isOwnProfile && (
-                                    <Button asChild className="w-full">
-                                        <Link href="/dashboard/profile/edit">
-                                            <Edit className="mr-2 h-4 w-4" /> Edit Profile
-                                        </Link>
+                                    <Button onClick={() => setIsEditDialogOpen(true)} className="w-full">
+                                        <Edit className="mr-2 h-4 w-4" /> Edit Profile
                                     </Button>
                                 )}
 
@@ -147,5 +149,12 @@ export default function ProfilePage() {
                 </div>
             </div>
         </div>
+        {isOwnProfile && (
+            <EditProfileDialog 
+                isOpen={isEditDialogOpen} 
+                onOpenChange={setIsEditDialogOpen} 
+            />
+        )}
+        </>
     )
 }

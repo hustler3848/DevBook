@@ -4,7 +4,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CodeXml, Compass, LayoutDashboard, PlusCircle, FileCode, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { CodeXml, Compass, LayoutDashboard, PlusCircle, FileCode, ChevronLeft, ChevronRight, Settings, Star, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -17,7 +17,7 @@ const links = [
 ];
 
 const bottomLinks = [
-    { href: '/dashboard/profile/edit', label: 'Settings', icon: Settings },
+    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
 interface NavLinksProps {
