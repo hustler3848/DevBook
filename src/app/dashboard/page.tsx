@@ -38,7 +38,7 @@ export default function DashboardPage() {
 
             {/* Recent Snippets */}
             <div className="space-y-4">
-                <h2 className="text-2xl font-bold font-headline">Your Snippets</h2>
+                {snippets.length > 0 && <h2 className="text-2xl font-bold font-headline">Your Snippets</h2>}
                 <DashboardClientPage snippets={snippets} />
             </div>
 
