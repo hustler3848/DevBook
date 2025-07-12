@@ -12,16 +12,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Heart, Bookmark, Copy, Star, Check, X } from 'lucide-react';
-import type { CommunitySnippet } from '@/app/dashboard/explore/page';
+import type { Snippet } from '@/types/snippet';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface SnippetViewDialogProps {
-  snippet: CommunitySnippet;
+  snippet: Snippet;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onToggleStar: (snippet: CommunitySnippet) => void;
-  onToggleSave: (snippet: CommunitySnippet) => void;
+  onToggleStar: (snippet: Snippet) => void;
+  onToggleSave: (snippet: Snippet) => void;
 }
 
 export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar, onToggleSave }: SnippetViewDialogProps) {
@@ -41,7 +41,8 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
   },[isOpen]);
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(snippet.code);
+    if(!snippet.codeSnippet) return;
+    navigator.clipboard.writeText(snippet.codeSnippet);
     setIsCopied(true);
     toast({
         title: "Copied to clipboard!",
@@ -71,7 +72,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
               <div className="flex items-center gap-4">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint}/>
-                  <AvatarFallback>{snippet.author.charAt(0)}</AvatarFallback>
+                  <AvatarFallback>{snippet.author?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
                   <DialogTitle className="font-headline text-2xl font-bold">{snippet.title}</DialogTitle>
@@ -130,7 +131,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                   className="custom-scrollbar"
                   codeTagProps={{ className: "font-code" }}
                 >
-                  {snippet.code}
+                  {snippet.codeSnippet || ''}
                 </SyntaxHighlighter>
               </div>
 
@@ -144,7 +145,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2 text-muted-foreground">
                             <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                            <span className="font-medium">{formatStars(snippet.stars)} stars</span>
+                            <span className="font-medium">{formatStars(snippet.starCount || 0)} stars</span>
                         </div>
                         <Badge variant="secondary">{snippet.language}</Badge>
                     </div>

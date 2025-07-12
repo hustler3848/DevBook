@@ -3,11 +3,9 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { Plus, MoreVertical, Trash2, Star } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { Snippet } from '@/types/snippet';
+import { SnippetCard } from '@/components/snippet-card';
 
 interface DashboardClientPageProps {
   snippets: Snippet[];
@@ -16,107 +14,36 @@ interface DashboardClientPageProps {
   onUnsave?: (snippetId: string) => void;
   onUnstar?: (snippetId: string) => void;
   onDelete?: (snippetId: string) => void;
+  onToggleStar?: (snippet: Snippet) => void;
+  onToggleSave?: (snippet: Snippet) => void;
 }
 
-const getLanguageColors = (language: string) => {
-    switch (language.toLowerCase()) {
-        case 'javascript':
-            return { backgroundColor: '#f7df1e', color: '#000000' };
-        case 'typescript':
-            return { backgroundColor: '#3178c6', color: '#ffffff' };
-        case 'python':
-            return { backgroundColor: '#3776ab', color: '#ffffff' };
-        case 'css':
-            return { backgroundColor: '#1572b6', color: '#ffffff' };
-        case 'yaml':
-             return { backgroundColor: '#cb171e', color: '#ffffff' };
-        default:
-            return { backgroundColor: 'hsl(var(--secondary))', color: 'hsl(var(--secondary-foreground))' };
-    }
-};
 
-function SnippetCard({ snippet, collectionType, onUnsave, onUnstar, onDelete }: { 
-    snippet: Snippet, 
-    collectionType?: 'my-snippets' | 'saved' | 'starred',
-    onUnsave?: (snippetId: string) => void;
-    onUnstar?: (snippetId: string) => void;
-    onDelete?: (snippetId: string) => void;
-}) {
-  const langColors = getLanguageColors(snippet.language);
-  
-  const handleAction = (action?: (id: string) => void) => {
-      if (action) {
-          action(snippet.id);
-      }
+export default function DashboardClientPage({ snippets, title, collectionType, onUnsave, onUnstar, onDelete, onToggleSave, onToggleStar }: DashboardClientPageProps) {
+
+  const handleToggle = (snippet: Snippet) => {
+    if (collectionType === 'saved' && onToggleSave) {
+      onToggleSave(snippet);
+    } else if (collectionType === 'starred' && onToggleStar) {
+      onToggleStar(snippet);
+    }
   }
 
   return (
-    <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-            <div className="flex-1">
-                <CardTitle className="font-headline">{snippet.title}</CardTitle>
-                <CardDescription>{snippet.description}</CardDescription>
-            </div>
-            {collectionType !== 'my-snippets' && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {collectionType === 'saved' && (
-                            <DropdownMenuItem onClick={() => handleAction(onUnsave)}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Unsave</span>
-                            </DropdownMenuItem>
-                        )}
-                        {collectionType === 'starred' && (
-                             <DropdownMenuItem onClick={() => handleAction(onUnstar)}>
-                                <Star className="mr-2 h-4 w-4" />
-                                <span>Unstar</span>
-                            </DropdownMenuItem>
-                        )}
-                         {collectionType === 'my-snippets' && (
-                             <DropdownMenuItem onClick={() => handleAction(onDelete)}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Delete</span>
-                            </DropdownMenuItem>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
-        </div>
-      </CardHeader>
-      <CardContent className="flex-grow">
-        <div className="flex flex-wrap gap-2">
-          {snippet.tags.map(tag => (
-            <Badge key={tag} variant="secondary">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Badge style={langColors}>
-            {snippet.language}
-        </Badge>
-      </CardFooter>
-    </Card>
-  );
-}
-
-export default function DashboardClientPage({ snippets, title, collectionType, onUnsave, onUnstar, onDelete }: DashboardClientPageProps) {
-
-  return (
     <div className="space-y-8 animate-fade-in-up">
+      {title && snippets.length > 0 && <h1 className="text-2xl sm:text-3xl font-bold font-headline mb-4">{title}</h1>}
       {snippets.length > 0 ? (
         <>
-            {title && <h1 className="text-2xl sm:text-3xl font-bold font-headline mb-4">{title}</h1>}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {snippets.map(snippet => (
-                <SnippetCard key={snippet.id} snippet={snippet} collectionType={collectionType} onUnsave={onUnsave} onUnstar={onUnstar} onDelete={onDelete} />
+                <SnippetCard 
+                    key={snippet.id} 
+                    snippet={snippet} 
+                    collectionType={collectionType} 
+                    onDelete={onDelete} 
+                    onToggleSave={onToggleSave}
+                    onToggleStar={onToggleStar}
+                />
             ))}
             {collectionType === 'my-snippets' && (
                 <Link href="/dashboard/new-snippet" className="hidden sm:flex w-full">
@@ -157,4 +84,9 @@ export default function DashboardClientPage({ snippets, title, collectionType, o
     </div>
     
   );
+}
+
+// Need a placeholder Card for the "Add New" button to avoid layout shifts.
+function Card({ className, children }: { className: string, children: React.ReactNode }) {
+    return <div className={className}>{children}</div>
 }

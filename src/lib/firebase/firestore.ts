@@ -26,6 +26,19 @@ export const addSnippet = async (userId: string, data: SnippetData) => {
 };
 
 /**
+ * Deletes a snippet from Firestore.
+ * @param snippetId - The ID of the snippet to delete.
+ */
+export const deleteSnippet = async (snippetId: string) => {
+    if (!snippetId) {
+        throw new Error('Snippet ID is required to delete a snippet.');
+    }
+    const snippetRef = doc(db, 'snippets', snippetId);
+    await deleteDoc(snippetRef);
+};
+
+
+/**
  * Fetches all snippets created by a specific user.
  * @param userId - The ID of the user whose snippets to fetch.
  * @returns A promise that resolves to an array of snippets.

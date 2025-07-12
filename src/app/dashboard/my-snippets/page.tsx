@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useTransition, useCallback } from "react";
 import { useAuth } from "@/context/auth-context";
-import { getUserSnippets, getSavedSnippets, getStarredSnippets, unsaveSnippet, unstarSnippet } from "@/lib/firebase/firestore";
+import { getUserSnippets, getSavedSnippets, getStarredSnippets, unsaveSnippet, unstarSnippet, deleteSnippet } from "@/lib/firebase/firestore";
 import type { Snippet } from "@/types/snippet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardClientPage from "../dashboard-client-page";
@@ -77,12 +77,12 @@ export default function MySnippetsPage() {
     }
   }, [user, authLoading, activeTab, fetchSnippets]);
 
-  const handleUnsave = (snippetId: string) => {
+  const handleUnsave = (snippet: Snippet) => {
     if(!user) return;
     startTransition(async () => {
         try {
-            await unsaveSnippet(user.uid, snippetId);
-            setSavedSnippets(prev => prev.filter(s => s.id !== snippetId));
+            await unsaveSnippet(user.uid, snippet.id);
+            setSavedSnippets(prev => prev.filter(s => s.id !== snippet.id));
             toast({ title: "Unsaved", description: "Snippet removed from your saved list." });
         } catch (error) {
             toast({ variant: 'destructive', title: "Error", description: "Failed to unsave snippet." });
@@ -90,18 +90,31 @@ export default function MySnippetsPage() {
     });
   };
 
-  const handleUnstar = (snippetId: string) => {
+  const handleUnstar = (snippet: Snippet) => {
     if(!user) return;
      startTransition(async () => {
         try {
-            await unstarSnippet(user.uid, snippetId);
-            setStarredSnippets(prev => prev.filter(s => s.id !== snippetId));
+            await unstarSnippet(user.uid, snippet.id);
+            setStarredSnippets(prev => prev.filter(s => s.id !== snippet.id));
             toast({ title: "Unstarred", description: "Snippet removed from your starred list." });
         } catch (error) {
             toast({ variant: 'destructive', title: "Error", description: "Failed to unstar snippet." });
         }
     });
   };
+  
+  const handleDelete = (snippetId: string) => {
+    if(!user) return;
+    startTransition(async () => {
+        try {
+            await deleteSnippet(snippetId);
+            setMySnippets(prev => prev.filter(s => s.id !== snippetId));
+            toast({ title: "Deleted", description: "Snippet has been deleted." });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to delete snippet." });
+        }
+    });
+  }
 
   const snippetsMap: Record<string, Snippet[]> = {
     "my-snippets": mySnippets,
@@ -121,13 +134,13 @@ export default function MySnippetsPage() {
                 <TabsTrigger value="starred">Starred</TabsTrigger>
             </TabsList>
             <TabsContent value="my-snippets" className="pt-6">
-                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={mySnippets} collectionType="my-snippets" />}
+                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={mySnippets} collectionType="my-snippets" onDelete={handleDelete} />}
             </TabsContent>
             <TabsContent value="saved" className="pt-6">
-                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={savedSnippets} collectionType="saved" onUnsave={handleUnsave} />}
+                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={savedSnippets} collectionType="saved" onToggleSave={handleUnsave} />}
             </TabsContent>
             <TabsContent value="starred" className="pt-6">
-                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={starredSnippets} collectionType="starred" onUnstar={handleUnstar} />}
+                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={starredSnippets} collectionType="starred" onToggleStar={handleUnstar} />}
             </TabsContent>
         </Tabs>
     </div>

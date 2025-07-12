@@ -12,6 +12,7 @@ import { Github, Linkedin, Twitter, Edit, Code, Star, Bookmark } from 'lucide-re
 import DashboardClientPage from '../../dashboard-client-page';
 import { notFound } from 'next/navigation';
 import { EditProfileDialog } from '@/components/edit-profile-dialog';
+import type { Snippet } from '@/types/snippet';
 
 // Mock data - in a real app, this would be fetched from a database
 const users = {
@@ -32,9 +33,9 @@ const users = {
             saved: 34,
         },
         publicSnippets: [
-             { id: 1, title: 'Custom Framer Motion Animation', description: 'A reusable animation variant for stunning enter effects.', tags: ['framer-motion', 'react', 'animation'], language: 'TypeScript' },
-             { id: 3, title: 'Tailwind CSS Plugin', description: 'A simple plugin to add custom utilities for text shadows.', tags: ['tailwindcss', 'css', 'plugin'], language: 'JavaScript' },
-        ]
+             { id: '1', title: 'Custom Framer Motion Animation', description: 'A reusable animation variant for stunning enter effects.', tags: ['framer-motion', 'react', 'animation'], language: 'TypeScript' },
+             { id: '3', title: 'Tailwind CSS Plugin', description: 'A simple plugin to add custom utilities for text shadows.', tags: ['tailwindcss', 'css', 'plugin'], language: 'JavaScript' },
+        ] as Snippet[]
     },
      'currentuser': {
         name: 'Alex Johnson',
@@ -53,9 +54,9 @@ const users = {
             saved: 12,
         },
         publicSnippets: [
-             { id: 5, title: 'Async/Await Error Handling', description: 'A wrapper for cleaner async error handling.', tags: ['javascript', 'async', 'error-handling'], language: 'JavaScript' },
-             { id: 6, title: 'Docker Compose for MERN', description: 'A docker-compose file for MERN stack.', tags: ['docker', 'mern', 'devops'], language: 'YAML' },
-        ]
+             { id: '5', title: 'Async/Await Error Handling', description: 'A wrapper for cleaner async error handling.', tags: ['javascript', 'async', 'error-handling'], language: 'JavaScript' },
+             { id: '6', title: 'Docker Compose for MERN', description: 'A docker-compose file for MERN stack.', tags: ['docker', 'mern', 'devops'], language: 'YAML' },
+        ] as Snippet[]
     }
 }
 

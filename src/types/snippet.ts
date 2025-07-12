@@ -15,6 +15,7 @@ export interface Snippet {
   // Fields for community snippets
   author?: string;
   avatar?: string;
+  dataAiHint?: string;
   // Fields for user interactions
   isStarred?: boolean;
   isSaved?: boolean;
