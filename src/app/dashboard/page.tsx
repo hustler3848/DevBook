@@ -1,5 +1,4 @@
 
-import { DashboardHeader } from "@/components/dashboard-header";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { StatCard } from "@/components/dashboard/stat-card";
 import DashboardClientPage from "./dashboard-client-page";
