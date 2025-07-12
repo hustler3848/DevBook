@@ -83,7 +83,7 @@ export default function ProfilePage() {
 
     return (
         <>
-        <div className="container mx-auto py-6 sm:py-8 animate-fade-in-up">
+        <div className="animate-fade-in-up">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Profile Info & Stats */}
                 <div className="lg:col-span-1 space-y-6">

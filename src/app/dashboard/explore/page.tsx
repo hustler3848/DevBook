@@ -362,71 +362,71 @@ export default function ExplorePage() {
   }
 
   return (
-    <>
-    <div className="space-y-6 animate-fade-in-up">
-      <div className="space-y-2 pt-6">
-          <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
+    <div className="animate-fade-in-up">
+      <div className="space-y-6">
+        <div className="space-y-2 pt-6">
+            <h1 className="text-2xl sm:text-3xl font-bold font-headline">Explore Community Snippets</h1>
+        </div>
+        <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+                placeholder="Search by title, tag, language, or author..." 
+                className="pl-10 w-full md:w-2/3"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+            />
+        </div>
       </div>
-      <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input 
-              placeholder="Search by title, tag, language, or author..." 
-              className="pl-10 w-full md:w-2/3"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-          />
-      </div>
-    </div>
 
-    <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 my-6 border-b animate-fade-in-up">
-        <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3">
-        {allTags.map(tag => (
-            <Button 
-                key={tag} 
-                variant={activeTag === tag || (tag === 'All' && !activeTag) ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => handleTagClick(tag)}
-                className="shrink-0"
-            >
-                {tag}
-            </Button>
-        ))}
-        </div>
-    </div>
-        
-      {filteredSnippets.length > 0 ? (
-        <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
-            {filteredSnippets.map(snippet => (
-                <CommunitySnippetCard 
-                    key={snippet.id} 
-                    snippet={snippet} 
-                    onSelect={setSelectedSnippet}
-                    onTagClick={handleTagClick}
-                    onToggleStar={handleToggleStar}
-                    onToggleSave={handleToggleSave} 
-                />
-            ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg animate-fade-in-up">
-            <h2 className="text-xl font-semibold">No Snippets Found</h2>
-            <p className="text-muted-foreground mt-2">Try adjusting your search or filter.</p>
-        </div>
+      <div className="sticky top-[-1px] z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-3 my-6 border-b">
+          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-3">
+          {allTags.map(tag => (
+              <Button 
+                  key={tag} 
+                  variant={activeTag === tag || (tag === 'All' && !activeTag) ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => handleTagClick(tag)}
+                  className="shrink-0"
+              >
+                  {tag}
+              </Button>
+          ))}
+          </div>
+      </div>
+          
+        {filteredSnippets.length > 0 ? (
+          <div className="pb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredSnippets.map(snippet => (
+                  <CommunitySnippetCard 
+                      key={snippet.id} 
+                      snippet={snippet} 
+                      onSelect={setSelectedSnippet}
+                      onTagClick={handleTagClick}
+                      onToggleStar={handleToggleStar}
+                      onToggleSave={handleToggleSave} 
+                  />
+              ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg">
+              <h2 className="text-xl font-semibold">No Snippets Found</h2>
+              <p className="text-muted-foreground mt-2">Try adjusting your search or filter.</p>
+          </div>
+        )}
+
+      {selectedSnippet && (
+        <SnippetViewDialog
+          snippet={selectedSnippet}
+          isOpen={!!selectedSnippet}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              setSelectedSnippet(null);
+            }
+          }}
+          onToggleStar={handleToggleStar}
+          onToggleSave={handleToggleSave}
+        />
       )}
-
-    {selectedSnippet && (
-      <SnippetViewDialog
-        snippet={selectedSnippet}
-        isOpen={!!selectedSnippet}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            setSelectedSnippet(null);
-          }
-        }}
-        onToggleStar={handleToggleStar}
-        onToggleSave={handleToggleSave}
-      />
-    )}
-    </>
+    </div>
   );
 }

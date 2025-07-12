@@ -46,7 +46,7 @@ const starredSnippets = [
 
 export default function MySnippetsPage() {
   return (
-    <div className="pt-6 sm:pt-8 animate-fade-in-up">
+    <div className="animate-fade-in-up">
         <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">My Collection</h1>
         </div>

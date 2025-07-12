@@ -23,7 +23,7 @@ const userStats = {
 
 export default function DashboardPage() {
   return (
-    <div className="container mx-auto py-6 sm:py-8 animate-fade-in-up">
+    <div className="animate-fade-in-up">
         <div className="space-y-8">
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -25,8 +25,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 isSidebarCollapsed ? "md:pl-20" : "md:pl-60"
             )}>
                 <DashboardHeader />
-                <main className="flex-1 overflow-y-auto">
-                    {children}
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+                    <div className="mx-auto max-w-screen-2xl">
+                        {children}
+                    </div>
                 </main>
             </div>
         </div>
