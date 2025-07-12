@@ -59,9 +59,7 @@ export function NewSnippetForm() {
     try {
       const result = await analyzeSnippet({ codeSnippet: code });
       
-      const newTitle = result.description.split('.').slice(0,1).join('');
-      
-      form.setValue('title', newTitle, { shouldValidate: true });
+      form.setValue('title', result.title, { shouldValidate: true });
       form.setValue('description', result.description, { shouldValidate: true });
 
       // Filter out old AI-generated tags and combine with new ones
