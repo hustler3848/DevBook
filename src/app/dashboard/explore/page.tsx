@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,11 +16,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SnippetViewDialog } from '@/components/snippet-view-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ExploreLoading from './loading';
+import { useAuth } from '@/context/auth-context';
+import { starSnippet, unstarSnippet, saveSnippet, unsaveSnippet, getUserInteractionStatus } from '@/lib/firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
-
-const initialCommunitySnippets = [
+const initialCommunitySnippets: CommunitySnippet[] = [
   { 
-    id: 1, 
+    id: 'community-1', 
     title: 'Custom Framer Motion Animation', 
     description: 'A reusable animation variant for stunning enter effects. This is a very common pattern when working with Framer Motion and can be easily extended to include more complex animations and transitions.', 
     tags: ['framer-motion', 'react', 'animation', 'variants', 'ui'], 
@@ -39,7 +40,7 @@ const initialCommunitySnippets = [
 };`
   },
   { 
-    id: 2, 
+    id: 'community-2', 
     title: 'Drizzle ORM Schema', 
     description: 'Example schema for a posts and users table using Drizzle. Drizzle ORM provides a type-safe SQL-like experience for TypeScript projects, making database interactions safer and more predictable.', 
     tags: ['drizzle', 'orm', 'database', 'typescript'], 
@@ -58,7 +59,7 @@ export const users = pgTable('users', {
 });`
   },
   { 
-    id: 3, 
+    id: 'community-3', 
     title: 'Tailwind CSS Plugin', 
     description: 'A simple plugin to add custom utilities for text shadows. Tailwind plugins are a powerful way to extend the framework with your own styles and logic.', 
     tags: ['tailwindcss', 'css', 'plugin'], 
@@ -67,7 +68,7 @@ export const users = pgTable('users', {
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'woman coder',
     stars: 2300,
-    isStarred: true,
+    isStarred: false,
     isSaved: false,
     code: `const plugin = require('tailwindcss/plugin')
 
@@ -81,7 +82,7 @@ module.exports = plugin(function({ addUtilities }) {
 })`
   },
   { 
-    id: 4, 
+    id: 'community-4', 
     title: 'Python Data Class', 
     description: 'A simple dataclass for representing a user with roles. Dataclasses are a feature in Python that automatically generates special methods like __init__(), __repr__(), and more.', 
     tags: ['python', 'dataclass'], 
@@ -91,7 +92,7 @@ module.exports = plugin(function({ addUtilities }) {
     dataAiHint: 'asian developer',
     stars: 950,
     isStarred: false,
-    isSaved: true,
+    isSaved: false,
     code: `from dataclasses import dataclass, field
 from typing import List
 
@@ -101,7 +102,7 @@ class User:
     roles: List[str] = field(default_factory=list)`
   },
   {
-    id: 5,
+    id: 'community-5',
     title: 'Async Rust with Tokio',
     description: 'A basic TCP echo server implemented using Tokio, the asynchronous runtime for Rust. This example demonstrates how to bind a listener and accept incoming connections.',
     tags: ['rust', 'async', 'tokio', 'networking'],
@@ -110,8 +111,8 @@ class User:
     avatar: 'https://placehold.co/40x40.png',
     dataAiHint: 'male programmer',
     stars: 1500,
-    isStarred: true,
-    isSaved: true,
+    isStarred: false,
+    isSaved: false,
     code: `use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
@@ -123,7 +124,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }`
   },
   {
-    id: 6,
+    id: 'community-6',
     title: 'Go Gin Middleware',
     description: 'A custom logging middleware for the Gin web framework. Middleware in Gin allows you to process a request before it reaches the main handler, which is useful for logging, authentication, and more.',
     tags: ['golang', 'gin', 'middleware', 'api'],
@@ -150,7 +151,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   }
 ];
 
-export type Snippet = typeof initialCommunitySnippets[0];
+// Extend the original snippet type for this page
+export interface CommunitySnippet {
+    id: string;
+    title: string;
+    description: string;
+    tags: string[];
+    language: string;
+    author: string;
+    avatar: string;
+    dataAiHint: string;
+    stars: number;
+    isStarred: boolean;
+    isSaved: boolean;
+    code: string;
+}
+
 
 function CommunitySnippetCard({ 
     snippet, 
@@ -159,11 +175,11 @@ function CommunitySnippetCard({
     onToggleStar,
     onToggleSave,
 }: { 
-    snippet: Snippet, 
-    onSelect: (snippet: Snippet) => void, 
+    snippet: CommunitySnippet, 
+    onSelect: (snippet: CommunitySnippet) => void, 
     onTagClick: (tag: string) => void,
-    onToggleStar: (id: number) => void,
-    onToggleSave: (id: number) => void,
+    onToggleStar: (snippet: CommunitySnippet) => void,
+    onToggleSave: (snippet: CommunitySnippet) => void,
 }) {
     const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
@@ -253,9 +269,9 @@ function CommunitySnippetCard({
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <button className="flex items-center gap-1" onClick={() => onToggleStar(snippet.id)}>
+                                        <button className="flex items-center gap-1" onClick={() => onToggleStar(snippet)}>
                                             <Star className={cn("h-4 w-4 transition-colors", snippet.isStarred ? "text-yellow-400 fill-yellow-400" : "hover:text-yellow-400")} />
-                                            <span className="text-xs">{formatStars(snippet.stars + (snippet.isStarred ? 1 : 0))}</span>
+                                            <span className="text-xs">{formatStars(snippet.stars)}</span>
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -264,7 +280,7 @@ function CommunitySnippetCard({
                                 </Tooltip>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <button className="flex items-center gap-1" onClick={() => onToggleSave(snippet.id)}>
+                                        <button className="flex items-center gap-1" onClick={() => onToggleSave(snippet)}>
                                             <Bookmark className={cn("h-4 w-4 transition-colors", snippet.isSaved ? "text-primary fill-primary" : "hover:text-primary")} />
                                         </button>
                                     </TooltipTrigger>
@@ -283,20 +299,35 @@ function CommunitySnippetCard({
 
 
 export default function ExplorePage() {
-  const [communitySnippets, setCommunitySnippets] = useState(initialCommunitySnippets);
+  const [communitySnippets, setCommunitySnippets] = useState<CommunitySnippet[]>(initialCommunitySnippets);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSnippet, setSelectedSnippet] = useState<Snippet | null>(null);
+  const [selectedSnippet, setSelectedSnippet] = useState<CommunitySnippet | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const fetchUserInteractions = useCallback(async () => {
+    if (!user) return;
+    const snippetIds = initialCommunitySnippets.map(s => s.id);
+    const { starred, saved } = await getUserInteractionStatus(user.uid, snippetIds);
+    setCommunitySnippets(prev => 
+        prev.map(snippet => ({
+            ...snippet,
+            isStarred: starred.has(snippet.id),
+            isSaved: saved.has(snippet.id)
+        }))
+    );
+  }, [user]);
 
   useEffect(() => {
-    // Simulate fetching data
     const timer = setTimeout(() => {
         setIsLoading(false);
+        fetchUserInteractions();
     }, 1000); 
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [fetchUserInteractions]);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -315,25 +346,55 @@ export default function ExplorePage() {
     }
   };
 
-  const handleToggleStar = (id: number) => {
-    setCommunitySnippets(prevSnippets =>
-        prevSnippets.map(s =>
-            s.id === id ? { ...s, isStarred: !s.isStarred } : s
-        )
-    );
+  const updateSnippetState = (id: string, updates: Partial<CommunitySnippet>) => {
+    const updater = (prev: CommunitySnippet[]) => prev.map(s => s.id === id ? { ...s, ...updates } : s);
+    setCommunitySnippets(updater);
     if (selectedSnippet && selectedSnippet.id === id) {
-        setSelectedSnippet(prev => prev ? {...prev, isStarred: !prev.isStarred} : null);
+        setSelectedSnippet(prev => prev ? {...prev, ...updates} : null);
     }
   };
 
-  const handleToggleSave = (id: number) => {
-      setCommunitySnippets(prevSnippets =>
-          prevSnippets.map(s =>
-              s.id === id ? { ...s, isSaved: !s.isSaved } : s
-          )
-      );
-      if (selectedSnippet && selectedSnippet.id === id) {
-        setSelectedSnippet(prev => prev ? {...prev, isSaved: !prev.isSaved} : null);
+  const handleToggleStar = async (snippet: CommunitySnippet) => {
+    if (!user) {
+        toast({ variant: 'destructive', title: 'Please login to star snippets.' });
+        return;
+    }
+    const wasStarred = snippet.isStarred;
+    const newStarredState = !wasStarred;
+    const newStarCount = wasStarred ? snippet.stars - 1 : snippet.stars + 1;
+
+    updateSnippetState(snippet.id, { isStarred: newStarredState, stars: newStarCount });
+    
+    try {
+        if (wasStarred) {
+            await unstarSnippet(user.uid, snippet.id);
+        } else {
+            await starSnippet(user.uid, snippet);
+        }
+    } catch (error) {
+        updateSnippetState(snippet.id, { isStarred: wasStarred, stars: snippet.stars });
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not update star status.'});
+    }
+  };
+
+  const handleToggleSave = async (snippet: CommunitySnippet) => {
+      if (!user) {
+        toast({ variant: 'destructive', title: 'Please login to save snippets.' });
+        return;
+    }
+    const wasSaved = snippet.isSaved;
+    const newSavedState = !wasSaved;
+    updateSnippetState(snippet.id, { isSaved: newSavedState });
+
+    try {
+        if (wasSaved) {
+            await unsaveSnippet(user.uid, snippet.id);
+        } else {
+            await saveSnippet(user.uid, snippet);
+        }
+    } catch (error) {
+        updateSnippetState(snippet.id, { isSaved: wasSaved });
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not update save status.'});
     }
   };
 
@@ -423,8 +484,8 @@ export default function ExplorePage() {
               setSelectedSnippet(null);
             }
           }}
-          onToggleStar={handleToggleStar}
-          onToggleSave={handleToggleSave}
+          onToggleStar={() => handleToggleStar(selectedSnippet)}
+          onToggleSave={() => handleToggleSave(selectedSnippet)}
         />
       )}
     </div>

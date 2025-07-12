@@ -12,4 +12,12 @@ export interface Snippet {
   createdAt?: Timestamp;
   isPublic?: boolean;
   starCount?: number;
+  // Fields for community snippets
+  author?: string;
+  avatar?: string;
+  // Fields for user interactions
+  isStarred?: boolean;
+  isSaved?: boolean;
+  starredAt?: Timestamp;
+  savedAt?: Timestamp;
 }

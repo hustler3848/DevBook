@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -13,16 +12,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Heart, Bookmark, Copy, Star, Check, X } from 'lucide-react';
-import type { Snippet } from '@/app/dashboard/explore/page';
+import type { CommunitySnippet } from '@/app/dashboard/explore/page';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface SnippetViewDialogProps {
-  snippet: Snippet;
+  snippet: CommunitySnippet;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onToggleStar: (id: number) => void;
-  onToggleSave: (id: number) => void;
+  onToggleStar: (snippet: CommunitySnippet) => void;
+  onToggleSave: (snippet: CommunitySnippet) => void;
 }
 
 export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar, onToggleSave }: SnippetViewDialogProps) {
@@ -83,7 +82,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => onToggleStar(snippet.id)}>
+                            <Button variant="outline" size="icon" onClick={() => onToggleStar(snippet)}>
                                 <Star className={cn("h-5 w-5", snippet.isStarred && "text-yellow-400 fill-yellow-400")} />
                             </Button>
                         </TooltipTrigger>
@@ -91,7 +90,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => onToggleSave(snippet.id)}>
+                            <Button variant="outline" size="icon" onClick={() => onToggleSave(snippet)}>
                                 <Bookmark className={cn("h-5 w-5", snippet.isSaved && "text-primary fill-primary")} />
                             </Button>
                         </TooltipTrigger>
@@ -103,10 +102,12 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                   {isCopied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5"/>}
                   <span className="sr-only">Copy Code</span>
                 </Button>
-                 <DialogClose className="relative right-0 top-0 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                </DialogClose>
+                 <DialogClose asChild>
+                    <button className="relative right-0 top-0 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-1">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Close</span>
+                    </button>
+                 </DialogClose>
               </div>
             </div>
         </DialogHeader>
@@ -143,7 +144,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-2 text-muted-foreground">
                             <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                            <span className="font-medium">{formatStars(snippet.stars + (snippet.isStarred ? 1 : 0))} stars</span>
+                            <span className="font-medium">{formatStars(snippet.stars)} stars</span>
                         </div>
                         <Badge variant="secondary">{snippet.language}</Badge>
                     </div>

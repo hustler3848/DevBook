@@ -4,13 +4,18 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Plus } from 'lucide-react';
+import { Plus, MoreVertical, Trash2, Star } from 'lucide-react';
 import type { Snippet } from '@/types/snippet';
 
 interface DashboardClientPageProps {
   snippets: Snippet[];
   title?: string;
+  collectionType?: 'my-snippets' | 'saved' | 'starred';
+  onUnsave?: (snippetId: string) => void;
+  onUnstar?: (snippetId: string) => void;
+  onDelete?: (snippetId: string) => void;
 }
 
 const getLanguageColors = (language: string) => {
@@ -30,13 +35,59 @@ const getLanguageColors = (language: string) => {
     }
 };
 
-function SnippetCard({ snippet }: { snippet: Snippet }) {
+function SnippetCard({ snippet, collectionType, onUnsave, onUnstar, onDelete }: { 
+    snippet: Snippet, 
+    collectionType?: 'my-snippets' | 'saved' | 'starred',
+    onUnsave?: (snippetId: string) => void;
+    onUnstar?: (snippetId: string) => void;
+    onDelete?: (snippetId: string) => void;
+}) {
   const langColors = getLanguageColors(snippet.language);
+  
+  const handleAction = (action?: (id: string) => void) => {
+      if (action) {
+          action(snippet.id);
+      }
+  }
+
   return (
     <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent">
       <CardHeader>
-        <CardTitle className="font-headline">{snippet.title}</CardTitle>
-        <CardDescription>{snippet.description}</CardDescription>
+        <div className="flex justify-between items-start">
+            <div className="flex-1">
+                <CardTitle className="font-headline">{snippet.title}</CardTitle>
+                <CardDescription>{snippet.description}</CardDescription>
+            </div>
+            {collectionType !== 'my-snippets' && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {collectionType === 'saved' && (
+                            <DropdownMenuItem onClick={() => handleAction(onUnsave)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Unsave</span>
+                            </DropdownMenuItem>
+                        )}
+                        {collectionType === 'starred' && (
+                             <DropdownMenuItem onClick={() => handleAction(onUnstar)}>
+                                <Star className="mr-2 h-4 w-4" />
+                                <span>Unstar</span>
+                            </DropdownMenuItem>
+                        )}
+                         {collectionType === 'my-snippets' && (
+                             <DropdownMenuItem onClick={() => handleAction(onDelete)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Delete</span>
+                            </DropdownMenuItem>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+        </div>
       </CardHeader>
       <CardContent className="flex-grow">
         <div className="flex flex-wrap gap-2">
@@ -56,7 +107,7 @@ function SnippetCard({ snippet }: { snippet: Snippet }) {
   );
 }
 
-export default function DashboardClientPage({ snippets, title }: DashboardClientPageProps) {
+export default function DashboardClientPage({ snippets, title, collectionType, onUnsave, onUnstar, onDelete }: DashboardClientPageProps) {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
@@ -65,16 +116,18 @@ export default function DashboardClientPage({ snippets, title }: DashboardClient
             {title && <h1 className="text-2xl sm:text-3xl font-bold font-headline mb-4">{title}</h1>}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {snippets.map(snippet => (
-                <SnippetCard key={snippet.id} snippet={snippet} />
+                <SnippetCard key={snippet.id} snippet={snippet} collectionType={collectionType} onUnsave={onUnsave} onUnstar={onUnstar} onDelete={onDelete} />
             ))}
-            <Link href="/dashboard/new-snippet" className="hidden sm:flex w-full">
-                <Card className="glassmorphic flex flex-col h-full w-full items-center justify-center border-dashed border-2 hover:border-accent transition-colors duration-300 min-h-[150px]">
-                    <div className="text-center">
-                        <Plus className="mx-auto h-12 w-12" />
-                        <p className="mt-2 font-semibold">Add New Snippet</p>
-                    </div>
-                </Card>
-            </Link>
+            {collectionType === 'my-snippets' && (
+                <Link href="/dashboard/new-snippet" className="hidden sm:flex w-full">
+                    <Card className="glassmorphic flex flex-col h-full w-full items-center justify-center border-dashed border-2 hover:border-accent transition-colors duration-300 min-h-[150px]">
+                        <div className="text-center">
+                            <Plus className="mx-auto h-12 w-12" />
+                            <p className="mt-2 font-semibold">Add New Snippet</p>
+                        </div>
+                    </Card>
+                </Link>
+            )}
             </div>
         </>
       ) : (

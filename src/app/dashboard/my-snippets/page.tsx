@@ -1,49 +1,14 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition, useCallback } from "react";
 import { useAuth } from "@/context/auth-context";
-import { getUserSnippets } from "@/lib/firebase/firestore";
+import { getUserSnippets, getSavedSnippets, getStarredSnippets, unsaveSnippet, unstarSnippet } from "@/lib/firebase/firestore";
 import type { Snippet } from "@/types/snippet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardClientPage from "../dashboard-client-page";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Mock data for saved and starred, will be replaced later
-const savedSnippets = [
-  { 
-    id: 'community-3', 
-    title: 'Tailwind CSS Plugin', 
-    description: 'A simple plugin to add custom utilities for text shadows.', 
-    tags: ['tailwindcss', 'css', 'plugin'], 
-    language: 'JavaScript'
-  },
-  { 
-    id: 'community-4', 
-    title: 'Python Data Class', 
-    description: 'A simple dataclass for representing a user with roles.', 
-    tags: ['python', 'dataclass'], 
-    language: 'Python'
-  },
-];
-
-const starredSnippets = [
-  { 
-    id: 'community-1', 
-    title: 'Custom Framer Motion Animation', 
-    description: 'A reusable animation variant for stunning enter effects.', 
-    tags: ['framer-motion', 'react', 'animation'], 
-    language: 'TypeScript'
-  },
-  { 
-    id: 'community-5', 
-    title: 'Async Rust with Tokio', 
-    description: 'A basic TCP echo server implemented using Tokio.', 
-    tags: ['rust', 'async', 'tokio'], 
-    language: 'Rust'
-  },
-   { id: 'community-2', title: 'Python Web Scraper', description: 'Simple web scraper using BeautifulSoup.', tags: ['python', 'scraping', 'beautifulsoup'], language: 'Python' },
-];
+import { useToast } from "@/hooks/use-toast";
 
 function MySnippetsLoading() {
     return (
@@ -65,42 +30,100 @@ function MySnippetsLoading() {
 
 export default function MySnippetsPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [mySnippets, setMySnippets] = useState<Snippet[]>([]);
+  const [savedSnippets, setSavedSnippets] = useState<Snippet[]>([]);
+  const [starredSnippets, setStarredSnippets] = useState<Snippet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("my-snippets");
+  const [isPending, startTransition] = useTransition();
+
+  const fetchSnippets = useCallback(async (type: string) => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      let snippets: Snippet[] = [];
+      if (type === "my-snippets") {
+        snippets = await getUserSnippets(user.uid);
+        setMySnippets(snippets);
+      } else if (type === "saved") {
+        snippets = await getSavedSnippets(user.uid);
+        setSavedSnippets(snippets);
+      } else if (type === "starred") {
+        snippets = await getStarredSnippets(user.uid);
+        setStarredSnippets(snippets);
+      }
+    } catch (error) {
+      console.error("Failed to fetch snippets:", error);
+      toast({
+        variant: 'destructive',
+        title: "Error",
+        description: "Could not fetch your snippets. Please try again later.",
+      })
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, toast]);
   
   useEffect(() => {
     if (user) {
-      const fetchSnippets = async () => {
-        setIsLoading(true);
-        const snippets = await getUserSnippets(user.uid);
-        setMySnippets(snippets);
-        setIsLoading(false);
-      };
-      fetchSnippets();
+      fetchSnippets(activeTab);
     } else {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  }, [user]);
+  }, [user, activeTab, fetchSnippets]);
+
+  const handleUnsave = (snippetId: string) => {
+    if(!user) return;
+    startTransition(async () => {
+        try {
+            await unsaveSnippet(user.uid, snippetId);
+            setSavedSnippets(prev => prev.filter(s => s.id !== snippetId));
+            toast({ title: "Unsaved", description: "Snippet removed from your saved list." });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to unsave snippet." });
+        }
+    });
+  };
+
+  const handleUnstar = (snippetId: string) => {
+    if(!user) return;
+     startTransition(async () => {
+        try {
+            await unstarSnippet(user.uid, snippetId);
+            setStarredSnippets(prev => prev.filter(s => s.id !== snippetId));
+            toast({ title: "Unstarred", description: "Snippet removed from your starred list." });
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Error", description: "Failed to unstar snippet." });
+        }
+    });
+  };
+
+  const snippetsMap: Record<string, Snippet[]> = {
+    "my-snippets": mySnippets,
+    "saved": savedSnippets,
+    "starred": starredSnippets
+  }
 
   return (
     <div className="animate-fade-in-up">
         <div className="mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold font-headline">My Collection</h1>
         </div>
-        <Tabs defaultValue="my-snippets">
+        <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3 md:w-fit">
                 <TabsTrigger value="my-snippets">My Snippets</TabsTrigger>
                 <TabsTrigger value="saved">Saved</TabsTrigger>
                 <TabsTrigger value="starred">Starred</TabsTrigger>
             </TabsList>
             <TabsContent value="my-snippets" className="pt-6">
-                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={mySnippets} />}
+                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={mySnippets} collectionType="my-snippets" />}
             </TabsContent>
             <TabsContent value="saved" className="pt-6">
-                <DashboardClientPage snippets={savedSnippets} />
+                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={savedSnippets} collectionType="saved" onUnsave={handleUnsave} />}
             </TabsContent>
             <TabsContent value="starred" className="pt-6">
-                <DashboardClientPage snippets={starredSnippets} />
+                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={starredSnippets} collectionType="starred" onUnstar={handleUnstar} />}
             </TabsContent>
         </Tabs>
     </div>
