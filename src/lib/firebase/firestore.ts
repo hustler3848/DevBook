@@ -1,6 +1,6 @@
 
 import { db } from './config';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment } from 'firebase/firestore';
 import type { Snippet } from '@/types/snippet';
 
 // Type for the data being sent to Firestore, omitting the `id` which is auto-generated
@@ -63,17 +63,23 @@ export const getUserSnippets = async (userId: string): Promise<Snippet[]> => {
     return snippets;
 };
 
-// --- Star/Save Functionality ---
-
-// Helper to get snippet data, including community snippets
-async function getSnippetDataById(snippetId: string): Promise<Snippet | null> {
-    const docRef = doc(db, "snippets", snippetId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as Snippet;
-    }
-    return null;
+/**
+ * Fetches all public snippets for the explore page.
+ * @returns A promise that resolves to an array of public snippets.
+ */
+export const getPublicSnippets = async (): Promise<Snippet[]> => {
+    const q = query(
+        collection(db, 'snippets'),
+        where('isPublic', '==', true),
+        orderBy('createdAt', 'desc')
+    );
+    const querySnapshot = await getDocs(q);
+    
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet));
 }
+
+
+// --- Star/Save Functionality ---
 
 const getInteractionCollection = (userId: string, type: 'starred' | 'saved') => {
     return collection(db, 'users', userId, `${type}Snippets`);
@@ -81,29 +87,30 @@ const getInteractionCollection = (userId: string, type: 'starred' | 'saved') => 
 
 export const starSnippet = async (userId: string, snippet: Snippet) => {
     if (!userId || !snippet || !snippet.id) throw new Error("User ID and snippet ID are required.");
+    
+    const batch = writeBatch(db);
+    
     const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippet.id);
-    await setDoc(starDocRef, { ...snippet, starredAt: serverTimestamp() });
+    batch.set(starDocRef, { ...snippet, starredAt: serverTimestamp() });
 
-    // Optionally increment star count on the original snippet
     const snippetRef = doc(db, "snippets", snippet.id);
-    const snippetDoc = await getDoc(snippetRef);
-    if(snippetDoc.exists()) {
-        const currentStars = snippetDoc.data().starCount || 0;
-        await setDoc(snippetRef, { starCount: currentStars + 1 }, { merge: true });
-    }
+    batch.update(snippetRef, { starCount: increment(1) });
+    
+    await batch.commit();
 };
 
 export const unstarSnippet = async (userId: string, snippetId: string) => {
     if (!userId || !snippetId) throw new Error("User ID and snippet ID are required.");
+
+    const batch = writeBatch(db);
+
     const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippetId);
-    await deleteDoc(starDocRef);
+    batch.delete(starDocRef);
 
     const snippetRef = doc(db, "snippets", snippetId);
-    const snippetDoc = await getDoc(snippetRef);
-    if(snippetDoc.exists()) {
-        const currentStars = snippetDoc.data().starCount || 0;
-        await setDoc(snippetRef, { starCount: Math.max(0, currentStars - 1) }, { merge: true });
-    }
+    batch.update(snippetRef, { starCount: increment(-1) });
+
+    await batch.commit();
 };
 
 export const saveSnippet = async (userId: string, snippet: Snippet) => {
@@ -145,8 +152,10 @@ export const getUserInteractionStatus = async (userId: string, snippetIds: strin
     const starredPromises = snippetIds.map(id => getDoc(doc(starredRef, id)));
     const savedPromises = snippetIds.map(id => getDoc(doc(savedRef, id)));
 
-    const starredDocs = await Promise.all(starredPromises);
-    const savedDocs = await Promise.all(savedPromises);
+    const [starredDocs, savedDocs] = await Promise.all([
+        Promise.all(starredPromises),
+        Promise.all(savedPromises)
+    ]);
 
     const starred = new Set(starredDocs.filter(d => d.exists()).map(d => d.id));
     const saved = new Set(savedDocs.filter(d => d.exists()).map(d => d.id));
