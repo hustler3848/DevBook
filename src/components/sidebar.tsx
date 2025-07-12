@@ -93,7 +93,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
             </div>
 
 
-            <div className="absolute top-16 -right-[13px] z-10">
+            <div className="absolute top-1/2 -right-[13px] z-10 -translate-y-1/2">
                  <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
                         <button 
