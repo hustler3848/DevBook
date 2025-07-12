@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { ScrollArea } from './ui/scroll-area';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -60,72 +61,31 @@ export function EditProfileDialog({ isOpen, onOpenChange }: EditProfileDialogPro
     
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[625px]">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0">
+                <DialogHeader className="p-6 pb-4">
                     <DialogTitle className="font-headline text-2xl">Edit Profile</DialogTitle>
                     <DialogDescription>Update your public profile information here.</DialogDescription>
                 </DialogHeader>
-                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-2">
-                        <div className="flex items-center space-x-4">
-                            <Avatar className="h-20 w-20">
-                                <AvatarImage src="https://placehold.co/128x128.png" data-ai-hint="user avatar" />
-                                <AvatarFallback>AJ</AvatarFallback>
-                            </Avatar>
-                            <Button type="button" variant="outline">Change Avatar</Button>
-                        </div>
-                        
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Full Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Your Name" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <FormField
-                            control={form.control}
-                            name="username"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Username</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="your_username" {...field} />
-                                    </FormControl>
-                                    <FormDescription>This is your public display name. It can only contain lowercase letters, numbers, and underscores.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="bio"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Bio</FormLabel>
-                                    <FormControl>
-                                        <Textarea placeholder="Tell us a little about yourself" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                         <div>
-                            <h3 className="text-md font-medium font-headline">Social Links</h3>
-                            <div className="space-y-4 mt-4">
-                                 <FormField
+                <ScrollArea className="flex-grow">
+                    <div className="px-6 pb-6">
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                <div className="flex items-center space-x-4">
+                                    <Avatar className="h-20 w-20">
+                                        <AvatarImage src="https://placehold.co/128x128.png" data-ai-hint="user avatar" />
+                                        <AvatarFallback>AJ</AvatarFallback>
+                                    </Avatar>
+                                    <Button type="button" variant="outline">Change Avatar</Button>
+                                </div>
+                                
+                                <FormField
                                     control={form.control}
-                                    name="github"
+                                    name="name"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>GitHub</FormLabel>
+                                            <FormLabel>Full Name</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="https://github.com/your_username" {...field} />
+                                                <Input placeholder="Your Name" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -133,45 +93,90 @@ export function EditProfileDialog({ isOpen, onOpenChange }: EditProfileDialogPro
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="twitter"
+                                    name="username"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>X / Twitter</FormLabel>
+                                            <FormLabel>Username</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="https://x.com/your_username" {...field} />
+                                                <Input placeholder="your_username" {...field} />
                                             </FormControl>
+                                            <FormDescription>This is your public display name. It can only contain lowercase letters, numbers, and underscores.</FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="linkedin"
+                                    name="bio"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>LinkedIn</FormLabel>
+                                            <FormLabel>Bio</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="https://linkedin.com/in/your_username" {...field} />
+                                                <Textarea placeholder="Tell us a little about yourself" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                            </div>
-                         </div>
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button type="button" variant="outline">
-                                    Cancel
-                                </Button>
-                            </DialogClose>
-                            <Button type="submit" disabled={form.formState.isSubmitting} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
-                               {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Save Changes
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                                <div>
+                                    <h3 className="text-md font-medium font-headline mb-4">Social Links</h3>
+                                    <div className="space-y-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="github"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>GitHub</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="https://github.com/your_username" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="twitter"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>X / Twitter</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="https://x.com/your_username" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="linkedin"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>LinkedIn</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="https://linkedin.com/in/your_username" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </div>
+                            </form>
+                        </Form>
+                    </div>
+                </ScrollArea>
+                <DialogFooter className="p-6 pt-4 border-t">
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline">
+                            Cancel
+                        </Button>
+                    </DialogClose>
+                    <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={form.formState.isSubmitting} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
+                        {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Changes
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )
