@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition, useEffect } from 'react';
@@ -28,6 +29,7 @@ type SnippetFormValues = z.infer<typeof snippetSchema>;
 export function NewSnippetForm() {
   const [isPending, startTransition] = useTransition();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiGeneratedTags, setAiGeneratedTags] = useState<string[]>([]);
   const { toast } = useToast();
 
   const form = useForm<SnippetFormValues>({
@@ -61,7 +63,13 @@ export function NewSnippetForm() {
       
       form.setValue('title', newTitle, { shouldValidate: true });
       form.setValue('description', result.description, { shouldValidate: true });
-      form.setValue('tags', Array.from(new Set([...currentTags, ...result.tags])), { shouldValidate: true });
+
+      // Filter out old AI-generated tags and combine with new ones
+      const manualTags = currentTags.filter(tag => !aiGeneratedTags.includes(tag));
+      const newTags = Array.from(new Set([...manualTags, ...result.tags]));
+      form.setValue('tags', newTags, { shouldValidate: true });
+      setAiGeneratedTags(result.tags); // Store the new set of AI tags
+
       form.setValue('language', result.language, { shouldValidate: true });
 
     } catch (error) {
@@ -95,6 +103,7 @@ export function NewSnippetForm() {
       });
       // Here you would typically send the data to your backend/Firebase
       form.reset();
+      setAiGeneratedTags([]);
     });
   };
 
