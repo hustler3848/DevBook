@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,7 +33,7 @@ const snippetSchema = z.object({
 type SnippetFormValues = z.infer<typeof snippetSchema>;
 
 export function NewSnippetForm() {
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiGeneratedTags, setAiGeneratedTags] = useState<string[]>([]);
   const { toast } = useToast();
@@ -96,7 +96,7 @@ export function NewSnippetForm() {
     form.setValue('tags', currentTags.filter(tag => tag !== tagToRemove));
   };
 
-  const onSubmit = (data: SnippetFormValues) => {
+  const onSubmit = async (data: SnippetFormValues) => {
     if (!user) {
         toast({
             variant: 'destructive',
@@ -105,27 +105,30 @@ export function NewSnippetForm() {
         });
         return;
     }
-
-    startTransition(async () => {
-      try {
-        await addSnippet(user, data);
-        toast({
-          title: "Snippet Created!",
-          description: "Your new snippet has been successfully saved.",
-        });
-        form.reset();
-        setAiGeneratedTags([]);
-        router.push('/dashboard/my-snippets');
-      } catch (error) {
-        console.error("Error creating snippet:", error);
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to create snippet. Please try again.',
-        });
-      }
-    });
+    
+    setIsSubmitting(true);
+    try {
+      await addSnippet(user, data);
+      toast({
+        title: "Snippet Created!",
+        description: "Your new snippet has been successfully saved.",
+      });
+      form.reset();
+      setAiGeneratedTags([]);
+      router.push('/dashboard/my-snippets');
+    } catch (error) {
+      console.error("Error creating snippet:", error);
+      toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to create snippet. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const isProcessing = isSubmitting || isAnalyzing;
 
   return (
     <Form {...form}>
@@ -244,9 +247,9 @@ export function NewSnippetForm() {
           )}
         />
 
-        <Button type="submit" disabled={isPending || isAnalyzing} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
-          {(isPending || isAnalyzing) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Create Snippet
+        <Button type="submit" disabled={isProcessing} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
+          {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isSubmitting ? 'Creating...' : isAnalyzing ? 'Analyzing...' : 'Create Snippet'}
         </Button>
       </form>
     </Form>
