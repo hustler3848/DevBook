@@ -1,26 +1,29 @@
 
 import { db } from './config';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, FieldValue } from 'firebase/firestore';
 import type { Snippet } from '@/types/snippet';
+import type { User } from 'firebase/auth';
 
 // Type for the data being sent to Firestore, omitting the `id` which is auto-generated
-type SnippetData = Omit<Snippet, 'id' | 'createdAt'>;
+type SnippetData = Omit<Snippet, 'id' | 'createdAt' | 'author' | 'avatar' | 'dataAiHint'>;
 
 /**
  * Adds a new snippet to the user's collection in Firestore.
- * @param userId - The ID of the user creating the snippet.
+ * @param user - The authenticated user object.
  * @param data - The snippet data to be saved.
  */
-export const addSnippet = async (userId: string, data: SnippetData) => {
-  if (!userId) {
+export const addSnippet = async (user: User, data: SnippetData) => {
+  if (!user || !user.uid) {
     throw new Error('User ID is required to add a snippet.');
   }
   
   await addDoc(collection(db, 'snippets'), {
     ...data,
-    creatorId: userId,
+    creatorId: user.uid,
+    author: user.displayName || 'Anonymous',
+    avatar: user.photoURL || `https://placehold.co/40x40.png`,
+    dataAiHint: 'user avatar',
     createdAt: serverTimestamp(),
-    isPublic: false, // Default to private
     starCount: 0,
   });
 };
@@ -91,7 +94,10 @@ export const starSnippet = async (userId: string, snippet: Snippet) => {
     const batch = writeBatch(db);
     
     const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippet.id);
-    batch.set(starDocRef, { ...snippet, starredAt: serverTimestamp() });
+    const snippetToStar = { ...snippet, starredAt: serverTimestamp() };
+    delete snippetToStar.isStarred; // don't store interaction state in the interaction doc
+    delete snippetToStar.isSaved;
+    batch.set(starDocRef, snippetToStar);
 
     const snippetRef = doc(db, "snippets", snippet.id);
     batch.update(snippetRef, { starCount: increment(1) });
@@ -116,7 +122,10 @@ export const unstarSnippet = async (userId: string, snippetId: string) => {
 export const saveSnippet = async (userId: string, snippet: Snippet) => {
     if (!userId || !snippet || !snippet.id) throw new Error("User ID and snippet ID are required.");
     const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippet.id);
-    await setDoc(saveDocRef, { ...snippet, savedAt: serverTimestamp() });
+    const snippetToSave = { ...snippet, savedAt: serverTimestamp() };
+    delete snippetToSave.isStarred; // don't store interaction state in the interaction doc
+    delete snippetToSave.isSaved;
+    await setDoc(saveDocRef, snippetToSave);
 };
 
 export const unsaveSnippet = async (userId: string, snippetId: string) => {
