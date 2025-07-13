@@ -26,7 +26,8 @@ export default function ExplorePage() {
   const fetchExploreSnippets = useCallback(async () => {
     setIsLoading(true);
     try {
-        const publicSnippets = await getPublicSnippets();
+        // Pass user ID to pre-fetch interaction status
+        const publicSnippets = await getPublicSnippets(user?.uid);
         setCommunitySnippets(publicSnippets);
     } catch (error) {
         console.error("Failed to fetch public snippets", error);
@@ -34,7 +35,7 @@ export default function ExplorePage() {
     } finally {
         setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, user]);
 
   const fetchUserInteractions = useCallback(async (snippetsToUpdate: Snippet[]) => {
     if (!user || snippetsToUpdate.length === 0) return;
@@ -56,13 +57,20 @@ export default function ExplorePage() {
   }, [user, toast]);
 
   useEffect(() => {
-    fetchExploreSnippets();
-  }, [fetchExploreSnippets]);
+    // Wait for auth to be resolved before fetching
+    if (!authLoading) {
+      fetchExploreSnippets();
+    }
+  }, [fetchExploreSnippets, authLoading]);
 
   useEffect(() => {
-    // Only fetch interactions after auth state is resolved, we have a user, and snippets have been loaded
+    // This effect is now redundant if fetchExploreSnippets already gets the interaction status,
+    // but can be kept as a fallback or for updates if the user logs in while on the page.
     if (!authLoading && user && communitySnippets.length > 0) {
-        fetchUserInteractions(communitySnippets);
+        const needsUpdate = communitySnippets.some(s => s.isStarred === undefined || s.isSaved === undefined);
+        if (needsUpdate) {
+            fetchUserInteractions(communitySnippets);
+        }
     }
      else if (!authLoading && !user) {
       // If auth is resolved and there's no user, reset to default interaction state
