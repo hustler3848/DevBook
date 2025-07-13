@@ -70,15 +70,29 @@ export const getUserSnippets = async (userId: string): Promise<Snippet[]> => {
  * Fetches all public snippets for the explore page.
  * @returns A promise that resolves to an array of public snippets.
  */
-export const getPublicSnippets = async (): Promise<Snippet[]> => {
+export const getPublicSnippets = async (userId?: string): Promise<Snippet[]> => {
     const q = query(
         collection(db, 'snippets'),
         where('isPublic', '==', true),
         orderBy('createdAt', 'desc')
     );
     const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet));
+
+    const snippets = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet));
+
+    if (userId) {
+      const snippetIds = snippets.map(s => s.id);
+      if (snippetIds.length === 0) return snippets;
+
+      const { starred, saved } = await getUserInteractionStatus(userId, snippetIds);
+      return snippets.map(snippet => ({
+        ...snippet,
+        isStarred: starred.has(snippet.id),
+        isSaved: saved.has(snippet.id),
+      }));
+    }
+
+    return snippets;
 }
 
 
@@ -139,14 +153,14 @@ export const getStarredSnippets = async (userId: string): Promise<Snippet[]> => 
     if (!userId) return [];
     const q = query(getInteractionCollection(userId, 'starred'), orderBy('starredAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet));
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isStarred: true, isSaved: false } as Snippet));
 };
 
 export const getSavedSnippets = async (userId: string): Promise<Snippet[]> => {
     if (!userId) return [];
     const q = query(getInteractionCollection(userId, 'saved'), orderBy('savedAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet));
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isSaved: true, isStarred: false } as Snippet));
 };
 
 

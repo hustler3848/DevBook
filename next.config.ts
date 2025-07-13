@@ -1,8 +1,6 @@
-import type {NextConfig} from 'next';
-const {withGenkit} = require('@genkit-ai/next');
-
-const nextConfig: NextConfig = {
-  /* config options here */
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -21,4 +19,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withGenkit(nextConfig);
+module.exports = nextConfig;
