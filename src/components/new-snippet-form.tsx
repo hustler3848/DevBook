@@ -19,7 +19,6 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from './ui/switch';
-import { Label } from './ui/label';
 
 const snippetSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters long.'),
@@ -63,15 +62,22 @@ export function NewSnippetForm() {
       try {
         const result = await analyzeSnippet({ codeSnippet: code });
         
-        form.setValue('title', result.title, { shouldValidate: true });
-        form.setValue('description', result.description, { shouldValidate: true });
+        // Only set values if they are not already set by the user, to avoid overriding manual input.
+        if (!form.getValues('title')) {
+          form.setValue('title', result.title, { shouldValidate: true });
+        }
+        if (!form.getValues('description')) {
+          form.setValue('description', result.description, { shouldValidate: true });
+        }
 
-        const manualTags = currentTags.filter(tag => !aiGeneratedTags.includes(tag));
+        const manualTags = form.getValues('tags').filter(tag => !aiGeneratedTags.includes(tag));
         const newTags = Array.from(new Set([...manualTags, ...result.tags]));
         form.setValue('tags', newTags, { shouldValidate: true });
         setAiGeneratedTags(result.tags);
 
-        form.setValue('language', result.language, { shouldValidate: true });
+        if (!form.getValues('language')) {
+          form.setValue('language', result.language, { shouldValidate: true });
+        }
 
       } catch (error) {
         console.error('Error analyzing snippet:', error);
