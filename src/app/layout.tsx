@@ -3,6 +3,8 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/auth-context';
+import { spaceGrotesk, dmSans, firaCode } from './fonts';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'CodeSnippr',
@@ -16,12 +18,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=DM+Sans:wght@400;600&family=Fira+Code&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+      <body className={cn(
+        "font-body antialiased",
+        spaceGrotesk.variable,
+        dmSans.variable,
+        firaCode.variable
+      )}>
         <Providers attribute="class" defaultTheme="dark" enableSystem>
           <AuthProvider>
             {children}
