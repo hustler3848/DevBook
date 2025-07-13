@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
@@ -13,72 +13,75 @@ import DashboardClientPage from '../../dashboard-client-page';
 import { notFound } from 'next/navigation';
 import { EditProfileDialog } from '@/components/edit-profile-dialog';
 import type { Snippet } from '@/types/snippet';
-
-// Mock data - in a real app, this would be fetched from a database
-const users = {
-    'elenapetrova': {
-        name: 'Elena Petrova',
-        username: 'elenapetrova',
-        avatar: 'https://placehold.co/128x128.png',
-        dataAiHint: 'woman developer',
-        bio: 'Frontend Developer & UI/UX enthusiast. Turning complex problems into beautiful, intuitive designs. Lover of all things React and CSS.',
-        social: {
-            github: 'https://github.com/elenapetrova',
-            twitter: 'https://twitter.com/elenapetrova',
-            linkedin: 'https://linkedin.com/in/elenapetrova',
-        },
-        stats: {
-            created: 15,
-            starred: 52,
-            saved: 34,
-        },
-        publicSnippets: [
-             { id: '1', title: 'Custom Framer Motion Animation', description: 'A reusable animation variant for stunning enter effects.', tags: ['framer-motion', 'react', 'animation'], language: 'TypeScript' },
-             { id: '3', title: 'Tailwind CSS Plugin', description: 'A simple plugin to add custom utilities for text shadows.', tags: ['tailwindcss', 'css', 'plugin'], language: 'JavaScript' },
-        ] as Snippet[]
-    },
-     'currentuser': {
-        name: 'Alex Johnson',
-        username: 'currentuser',
-        avatar: 'https://placehold.co/128x128.png',
-        dataAiHint: 'user avatar',
-        bio: 'Full-stack developer with a passion for building scalable and maintainable applications. Currently exploring the world of Go and Rust.',
-        social: {
-            github: 'https://github.com/alexjohnson',
-            twitter: 'https://twitter.com/alexjohnson',
-            linkedin: 'https://linkedin.com/in/alexjohnson',
-        },
-        stats: {
-            created: 8,
-            starred: 21,
-            saved: 12,
-        },
-        publicSnippets: [
-             { id: '5', title: 'Async/Await Error Handling', description: 'A wrapper for cleaner async error handling.', tags: ['javascript', 'async', 'error-handling'], language: 'JavaScript' },
-             { id: '6', title: 'Docker Compose for MERN', description: 'A docker-compose file for MERN stack.', tags: ['docker', 'mern', 'devops'], language: 'YAML' },
-        ] as Snippet[]
-    }
-}
-
-type UserProfile = typeof users.elenapetrova;
+import { getUserSnippets, getPublicSnippets, getSavedSnippets, getStarredSnippets } from '@/lib/firebase/firestore';
+import ProfileLoading from './loading';
 
 
 export default function ProfilePage() {
     const params = useParams();
-    const { user: currentUser } = useAuth();
-    const username = params.username as keyof typeof users;
+    const { user: currentUser, loading: authLoading } = useAuth();
+    const username = params.username as string;
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     
     // In a real app, you would fetch user data here based on the username param
-    // For now, we use mock data
-    const profileUser: UserProfile | undefined = users[username];
+    const [profileUser, setProfileUser] = useState<any>(null);
+    const [userSnippets, setUserSnippets] = useState<Snippet[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            if (!username) return;
+            setIsLoading(true);
+            
+            // This is a simplified lookup. In a real app, you'd query Firestore for a user by their username.
+            // We'll simulate fetching based on the displayName.
+            // For this example, we'll just check if we are viewing the current user's profile.
+            
+            if (currentUser && (currentUser.displayName?.toLowerCase().replace(' ', '') === username || (currentUser.email && username === 'currentuser'))) {
+                 const [created, saved, starred, publicSnippets] = await Promise.all([
+                    getUserSnippets(currentUser.uid),
+                    getSavedSnippets(currentUser.uid),
+                    getStarredSnippets(currentUser.uid),
+                    getPublicSnippets(currentUser.uid)
+                ]);
+
+                setProfileUser({
+                    name: currentUser.displayName,
+                    username: username,
+                    avatar: currentUser.photoURL || 'https://placehold.co/128x128.png',
+                    dataAiHint: 'user avatar',
+                    bio: 'Edit your bio by clicking the button above!', // Placeholder
+                    social: {}, // Placeholder
+                    stats: {
+                        created: created.length,
+                        saved: saved.length,
+                        starred: starred.length,
+                    }
+                });
+                setUserSnippets(publicSnippets);
+            } else {
+                // Here you would fetch another user's public profile data.
+                // For now, we'll just show a not found state if it's not the current user.
+                setProfileUser(null);
+            }
+            setIsLoading(false);
+        }
+        
+        if (!authLoading) {
+            fetchProfileData();
+        }
+
+    }, [username, currentUser, authLoading]);
+
+
+    if (isLoading) {
+        return <ProfileLoading />;
+    }
 
     if (!profileUser) {
         return notFound();
     }
     
-    // A simple check to see if the logged-in user is viewing their own profile
-    // In a real app, you'd compare user IDs
     const isOwnProfile = currentUser?.displayName?.toLowerCase().replace(' ','') === profileUser.username || (currentUser?.email && profileUser.username === 'currentuser');
 
 
@@ -145,7 +148,7 @@ export default function ProfilePage() {
 
                 {/* Right Column - Public Snippets */}
                 <div className="lg:col-span-2">
-                   <DashboardClientPage snippets={profileUser.publicSnippets} title="Public Snippets" collectionType="public-profile"/>
+                   <DashboardClientPage snippets={userSnippets} title="Public Snippets" collectionType="public-profile"/>
                 </div>
             </div>
         </div>
