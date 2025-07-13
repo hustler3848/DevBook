@@ -37,11 +37,10 @@ export default function ExplorePage() {
     }
   }, [toast, user]);
 
-  const fetchUserInteractions = useCallback(async (snippetsToUpdate: Snippet[]) => {
-    if (!user || snippetsToUpdate.length === 0) return;
+  const fetchUserInteractions = useCallback(async () => {
+    if (!user || communitySnippets.length === 0) return;
     try {
-      const snippetIds = snippetsToUpdate.map(s => s.id);
-      const { starred, saved } = await getUserInteractionStatus(user.uid, snippetIds);
+      const { starred, saved } = await getUserInteractionStatus(user.uid);
       
       setCommunitySnippets(prev => 
           prev.map(snippet => ({
@@ -54,7 +53,7 @@ export default function ExplorePage() {
         console.error("Failed to fetch user interactions", error);
         toast({ variant: 'destructive', title: 'Error', description: 'Could not load your starred/saved snippets status.' });
     }
-  }, [user, toast]);
+  }, [user, communitySnippets.length, toast]);
 
   useEffect(() => {
     // Wait for auth to be resolved before fetching
@@ -69,7 +68,7 @@ export default function ExplorePage() {
     if (!authLoading && user && communitySnippets.length > 0) {
         const needsUpdate = communitySnippets.some(s => s.isStarred === undefined || s.isSaved === undefined);
         if (needsUpdate) {
-            fetchUserInteractions(communitySnippets);
+            fetchUserInteractions();
         }
     }
      else if (!authLoading && !user) {

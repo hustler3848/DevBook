@@ -86,10 +86,9 @@ export const getPublicSnippets = async (userId?: string): Promise<Snippet[]> => 
     const snippets = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet));
 
     if (userId) {
-      const snippetIds = snippets.map(s => s.id);
-      if (snippetIds.length === 0) return snippets;
+      if (snippets.length === 0) return snippets;
 
-      const { starred, saved } = await getUserInteractionStatus(userId, snippetIds);
+      const { starred, saved } = await getUserInteractionStatus(userId);
       return snippets.map(snippet => ({
         ...snippet,
         isStarred: starred.has(snippet.id),
@@ -169,24 +168,21 @@ export const getSavedSnippets = async (userId: string): Promise<Snippet[]> => {
 };
 
 
-export const getUserInteractionStatus = async (userId: string, snippetIds: string[]): Promise<{ starred: Set<string>, saved: Set<string> }> => {
-    if (!userId || snippetIds.length === 0) {
+export const getUserInteractionStatus = async (userId: string): Promise<{ starred: Set<string>, saved: Set<string> }> => {
+    if (!userId) {
         return { starred: new Set(), saved: new Set() };
     }
 
     const starredRef = getInteractionCollection(userId, 'starred');
     const savedRef = getInteractionCollection(userId, 'saved');
 
-    const starredPromises = snippetIds.map(id => getDoc(doc(starredRef, id)));
-    const savedPromises = snippetIds.map(id => getDoc(doc(savedRef, id)));
-
-    const [starredDocs, savedDocs] = await Promise.all([
-        Promise.all(starredPromises),
-        Promise.all(savedPromises)
+    const [starredSnapshot, savedSnapshot] = await Promise.all([
+        getDocs(query(starredRef)),
+        getDocs(query(savedRef))
     ]);
 
-    const starred = new Set(starredDocs.filter(d => d.exists()).map(d => d.id));
-    const saved = new Set(savedDocs.filter(d => d.exists()).map(d => d.id));
+    const starred = new Set(starredSnapshot.docs.map(d => d.id));
+    const saved = new Set(savedSnapshot.docs.map(d => d.id));
 
     return { starred, saved };
 };
