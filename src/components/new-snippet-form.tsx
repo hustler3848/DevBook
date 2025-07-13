@@ -56,36 +56,35 @@ export function NewSnippetForm() {
   const debouncedCodeSnippet = useDebounce(codeSnippetValue, 1000);
   const currentTags = form.watch('tags');
   
-  const handleAnalyzeSnippet = async (code: string) => {
-    if (!code || code.length < 50) return;
-    setIsAnalyzing(true);
-    try {
-      const result = await analyzeSnippet({ codeSnippet: code });
-      
-      form.setValue('title', result.title, { shouldValidate: true });
-      form.setValue('description', result.description, { shouldValidate: true });
-
-      const manualTags = currentTags.filter(tag => !aiGeneratedTags.includes(tag));
-      const newTags = Array.from(new Set([...manualTags, ...result.tags]));
-      form.setValue('tags', newTags, { shouldValidate: true });
-      setAiGeneratedTags(result.tags);
-
-      form.setValue('language', result.language, { shouldValidate: true });
-
-    } catch (error) {
-      console.error('Error analyzing snippet:', error);
-      toast({
-        variant: 'destructive',
-        title: 'AI Analysis Failed',
-        description: 'Could not analyze snippet. Please check your connection or try again later.',
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  // Trigger analysis when debounced value changes
   useEffect(() => {
+    const handleAnalyzeSnippet = async (code: string) => {
+      if (!code || code.length < 50) return;
+      setIsAnalyzing(true);
+      try {
+        const result = await analyzeSnippet({ codeSnippet: code });
+        
+        form.setValue('title', result.title, { shouldValidate: true });
+        form.setValue('description', result.description, { shouldValidate: true });
+
+        const manualTags = currentTags.filter(tag => !aiGeneratedTags.includes(tag));
+        const newTags = Array.from(new Set([...manualTags, ...result.tags]));
+        form.setValue('tags', newTags, { shouldValidate: true });
+        setAiGeneratedTags(result.tags);
+
+        form.setValue('language', result.language, { shouldValidate: true });
+
+      } catch (error) {
+        console.error('Error analyzing snippet:', error);
+        toast({
+          variant: 'destructive',
+          title: 'AI Analysis Failed',
+          description: 'Could not analyze snippet. Please check your connection or try again later.',
+        });
+      } finally {
+        setIsAnalyzing(false);
+      }
+    };
+    
     if (debouncedCodeSnippet) {
       handleAnalyzeSnippet(debouncedCodeSnippet);
     }
@@ -108,7 +107,12 @@ export function NewSnippetForm() {
     
     setIsSubmitting(true);
     try {
-      await addSnippet(user, data);
+      const userDetails = {
+        uid: user.uid,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+      }
+      await addSnippet(userDetails, data);
       toast({
         title: "Snippet Created!",
         description: "Your new snippet has been successfully saved.",

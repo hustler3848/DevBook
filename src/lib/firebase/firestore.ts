@@ -2,7 +2,12 @@
 import { db } from './config';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, FieldValue } from 'firebase/firestore';
 import type { Snippet } from '@/types/snippet';
-import type { User } from 'firebase/auth';
+
+type UserDetails = {
+    uid: string;
+    displayName: string | null;
+    photoURL: string | null;
+}
 
 // Type for the data being sent to Firestore, omitting the `id` which is auto-generated
 type SnippetData = Omit<Snippet, 'id' | 'createdAt' | 'author' | 'avatar' | 'dataAiHint'>;
@@ -12,7 +17,7 @@ type SnippetData = Omit<Snippet, 'id' | 'createdAt' | 'author' | 'avatar' | 'dat
  * @param user - The authenticated user object.
  * @param data - The snippet data to be saved.
  */
-export const addSnippet = async (user: User, data: SnippetData) => {
+export const addSnippet = async (user: UserDetails, data: SnippetData) => {
   if (!user || !user.uid) {
     throw new Error('User ID is required to add a snippet.');
   }
