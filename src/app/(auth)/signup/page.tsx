@@ -14,10 +14,12 @@ import { Label } from "@/components/ui/label";
 import { Github, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const getFriendlyErrorMessage = (errorCode: string) => {
+const getFriendlyErrorMessage = (errorCode: string, errorMessage?: string) => {
   switch (errorCode) {
     case 'auth/email-already-in-use':
-      return 'This email is already in use. Please log in.';
+      return 'This email is already in use by a password-based account. Please log in.';
+    case 'auth/email-already-in-use-social':
+        return errorMessage || 'This email is already linked to a social account. Please log in using that method.';
     case 'auth/weak-password':
       return 'The password is too weak. Please choose a stronger password.';
     case 'auth/invalid-email':
@@ -48,7 +50,7 @@ export default function SignupPage() {
       toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
-        description: getFriendlyErrorMessage(error.code),
+        description: getFriendlyErrorMessage(error.code, error.message),
       });
       setIsLoading(false);
     }
