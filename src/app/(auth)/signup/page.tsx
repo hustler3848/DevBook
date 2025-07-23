@@ -22,6 +22,8 @@ const getFriendlyErrorMessage = (errorCode: string) => {
       return 'The password is too weak. Please choose a stronger password.';
     case 'auth/invalid-email':
       return 'The email address is not valid.';
+    case 'auth/popup-closed-by-user':
+      return 'The sign-in pop-up was closed before completing. Please try again.';
     default:
       return 'An unexpected error occurred. Please try again.';
   }
@@ -53,8 +55,8 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       await googleSignIn();
       router.push('/dashboard');
     } catch (error: any) {
@@ -63,6 +65,7 @@ export default function SignupPage() {
         title: 'Google Sign-In Failed',
         description: getFriendlyErrorMessage(error.code),
       });
+    } finally {
       setIsLoading(false);
     }
   };

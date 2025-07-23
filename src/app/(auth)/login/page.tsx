@@ -21,6 +21,8 @@ const getFriendlyErrorMessage = (errorCode: string) => {
       return 'No account found with this email. Please sign up.';
     case 'auth/wrong-password':
       return 'Incorrect password. Please try again.';
+    case 'auth/popup-closed-by-user':
+      return 'The sign-in pop-up was closed before completing. Please try again.';
     case 'auth/too-many-requests':
       return 'Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.';
     default:
@@ -53,8 +55,8 @@ export default function LoginPage() {
   };
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       await googleSignIn();
       router.push('/dashboard');
     } catch (error: any) {
@@ -63,7 +65,8 @@ export default function LoginPage() {
         title: 'Google Sign-In Failed',
         description: getFriendlyErrorMessage(error.code),
       });
-      setIsLoading(false);
+    } finally {
+       setIsLoading(false);
     }
   };
 
