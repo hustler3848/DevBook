@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { CodeXml, LogOut, Menu, User, Settings } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
@@ -43,6 +43,9 @@ export function DashboardHeader() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-64 p-4 flex flex-col md:hidden">
+              <SheetHeader>
+                <SheetTitle className="sr-only">Main Menu</SheetTitle>
+              </SheetHeader>
               <div className="mb-6 flex items-center gap-2">
                 <Link href="/dashboard" className="flex items-center space-x-2">
                   <CodeXml className="h-6 w-6 text-primary" />
