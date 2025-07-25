@@ -66,20 +66,20 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
-        <DialogHeader className="p-8 pb-0">
-            <div className="flex items-start justify-between gap-4">
+      <DialogContent className="max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="p-4 sm:p-6 pb-0">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
               <div className="flex items-center gap-4">
-                <Avatar className="h-12 w-12">
+                <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                   <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint}/>
                   <AvatarFallback>{snippet.author?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <DialogTitle className="font-headline text-2xl font-bold">{snippet.title}</DialogTitle>
+                  <DialogTitle className="font-headline text-xl sm:text-2xl font-bold">{snippet.title}</DialogTitle>
                   <DialogDescription className="text-muted-foreground">by {snippet.author}</DialogDescription>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 self-start sm:self-center">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -104,7 +104,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                   <span className="sr-only">Copy Code</span>
                 </Button>
                  <DialogClose asChild>
-                    <button className="relative right-0 top-0 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-1">
+                    <button className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-1">
                         <X className="h-4 w-4" />
                         <span className="sr-only">Close</span>
                     </button>
@@ -114,7 +114,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
         </DialogHeader>
 
         <ScrollArea className="h-full w-full">
-          <div className="p-8 pt-6">
+          <div className="p-4 sm:p-6">
             <main>
               <div className="rounded-lg border bg-background overflow-hidden">
                 <SyntaxHighlighter
@@ -123,9 +123,9 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                   showLineNumbers
                   customStyle={{
                     margin: 0,
-                    padding: '1.5rem',
+                    padding: '1rem',
                     background: 'transparent',
-                    maxHeight: '50vh',
+                    maxHeight: 'calc(90vh - 300px)',
                     fontSize: '14px',
                   }}
                   className="custom-scrollbar"
@@ -135,7 +135,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                 </SyntaxHighlighter>
               </div>
 
-              <div className="mt-8 space-y-6">
+              <div className="mt-6 space-y-6">
                 <div>
                     <h3 className="font-headline text-lg font-semibold mb-2">Description</h3>
                     <p className="text-muted-foreground">{snippet.description}</p>
