@@ -4,17 +4,18 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogClose, DialogTitle, DialogDescription, DialogHeader } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose, DialogOverlay } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Heart, Bookmark, Copy, Star, Check, X } from 'lucide-react';
+import { Bookmark, Copy, Star, Check, X } from 'lucide-react';
 import type { Snippet } from '@/types/snippet';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { format } from 'date-fns';
 
 interface SnippetViewDialogProps {
   snippet: Snippet;
@@ -48,13 +49,13 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
         title: "Copied to clipboard!",
         description: "You can now paste the code in your editor.",
     });
-    setTimeout(() => setIsCopied(false), 2000); // Revert back to copy icon after 2 seconds
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   const syntaxTheme = theme === 'dark' ? oneDark : oneLight;
-
+  
   if (!mounted) {
-    return null; // or a skeleton loader if preferred
+    return null;
   }
 
   const formatStars = (num: number) => {
@@ -64,108 +65,103 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
     return num.toString();
   };
 
+  const formattedDate = snippet.createdAt ? format(snippet.createdAt.toDate(), "MMM dd, yyyy") : 'N/A';
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="p-4 sm:p-6 pb-4 relative">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex flex-col sm:flex-row items-start gap-4">
-                <Avatar className="h-10 w-10 sm:h-12 sm:w-12 hidden sm:flex">
-                  <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint}/>
-                  <AvatarFallback>{snippet.author?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="text-left">
-                  <DialogTitle className="font-headline text-lg sm:text-xl font-bold">{snippet.title}</DialogTitle>
-                  <DialogDescription className="text-muted-foreground mt-1">by {snippet.author}</DialogDescription>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => onToggleStar(snippet)}>
-                                <Star className={cn("h-4 w-4", snippet.isStarred && "text-yellow-400 fill-yellow-400")} />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent><p>{snippet.isStarred ? 'Unstar' : 'Star'}</p></TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={() => onToggleSave(snippet)}>
-                                <Bookmark className={cn("h-4 w-4", snippet.isSaved && "text-primary fill-primary")} />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent><p>{snippet.isSaved ? 'Unsave' : 'Save'}</p></TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-
-                <Button onClick={handleCopyCode} size="icon" className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity h-9 w-9 sm:h-10 sm:w-10">
-                  {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4"/>}
-                  <span className="sr-only">Copy Code</span>
-                </Button>
+       <DialogOverlay className="backdrop-blur-sm" />
+       <DialogContent 
+         className={cn(
+           "p-0 max-w-4xl w-full flex flex-col gap-0 max-h-screen sm:max-h-[90vh] overflow-hidden",
+           // Mobile-specific styles (bottom sheet)
+           "sm:bottom-auto sm:top-[50%] sm:translate-y-[-50%]",
+           "fixed bottom-0 left-0 right-0 translate-y-0 rounded-b-none sm:rounded-lg",
+           "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-full sm:data-[state=open]:slide-in-from-top-[48%]",
+           "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-full sm:data-[state=closed]:slide-out-to-top-[48%]"
+         )}
+       >
+        {/* Sticky Header */}
+        <header className="flex-shrink-0 flex items-center justify-between p-4 border-b">
+          <div className="flex-1 min-w-0">
+             <h2 className="font-headline text-lg font-bold truncate">{snippet.title}</h2>
+          </div>
+          <DialogClose asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full flex-shrink-0">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </Button>
+          </DialogClose>
+        </header>
+        
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="p-4 sm:p-6 space-y-6">
+            
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint}/>
+                <AvatarFallback>{snippet.author?.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-semibold text-sm">{snippet.author}</p>
+                <p className="text-xs text-muted-foreground">Published on {formattedDate}</p>
               </div>
             </div>
-             <DialogClose asChild>
-                <button className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground p-1">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                </button>
-             </DialogClose>
-        </DialogHeader>
 
-        <ScrollArea className="h-full w-full flex-grow">
-          <div className="px-4 sm:px-6 pb-6">
-            <main>
-              <div className="rounded-lg border bg-background overflow-hidden">
-                <SyntaxHighlighter
-                  language={snippet.language.toLowerCase()}
-                  style={syntaxTheme}
-                  showLineNumbers
-                  customStyle={{
-                    margin: 0,
-                    padding: '1rem',
-                    background: 'transparent',
-                    maxHeight: 'calc(90vh - 350px)',
-                    fontSize: '13px',
-                  }}
-                  className="custom-scrollbar"
-                  codeTagProps={{ className: "font-code" }}
-                >
-                  {snippet.codeSnippet || ''}
-                </SyntaxHighlighter>
-              </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">{snippet.description}</p>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary">{snippet.language}</Badge>
+                {snippet.tags.map(tag => (
+                    <Badge key={tag} variant="outline">{tag}</Badge>
+                ))}
+            </div>
 
-              <div className="mt-6 space-y-6">
-                <div>
-                    <h3 className="font-headline text-lg font-semibold mb-2">Description</h3>
-                    <p className="text-muted-foreground text-sm">{snippet.description}</p>
-                </div>
-                <div>
-                    <h3 className="font-headline text-lg font-semibold mb-2">Details</h3>
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                            <span className="font-medium text-sm">{formatStars(snippet.starCount || 0)} stars</span>
-                        </div>
-                        <Badge variant="secondary">{snippet.language}</Badge>
-                    </div>
-                </div>
-                <div>
-                    <h3 className="font-headline text-lg font-semibold mb-2">Tags</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {snippet.tags.map(tag => (
-                            <Badge key={tag} variant="secondary">
-                            {tag}
-                            </Badge>
-                        ))}
-                    </div>
-                </div>
-              </div>
-            </main>
+            <div className="rounded-lg border bg-background overflow-hidden relative">
+              <SyntaxHighlighter
+                language={snippet.language?.toLowerCase()}
+                style={syntaxTheme}
+                showLineNumbers
+                customStyle={{
+                  margin: 0,
+                  padding: '1rem',
+                  background: 'transparent',
+                  maxHeight: 'calc(90vh - 400px)', // Adjust max height
+                  fontSize: '13px',
+                }}
+                className="custom-scrollbar"
+                codeTagProps={{ className: "font-code" }}
+              >
+                {snippet.codeSnippet || ''}
+              </SyntaxHighlighter>
+              <Button onClick={handleCopyCode} size="icon" variant="secondary" className="absolute top-2 right-2 h-8 w-8">
+                  {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4"/>}
+                  <span className="sr-only">Copy Code</span>
+              </Button>
+            </div>
           </div>
-        </ScrollArea>
-      </DialogContent>
+        </div>
+
+        {/* Sticky Footer */}
+        <footer className="flex-shrink-0 flex items-center justify-between gap-2 p-3 border-t bg-background/95">
+           <div className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center gap-1.5" onClick={() => onToggleStar(snippet)}>
+                <Star className={cn("h-4 w-4", snippet.isStarred && "text-yellow-400 fill-yellow-400")} />
+                <span className="font-bold">{formatStars(snippet.starCount || 0)}</span>
+              </Button>
+               <Button variant="outline" className="flex items-center gap-1.5" onClick={() => onToggleSave(snippet)}>
+                <Bookmark className={cn("h-4 w-4", snippet.isSaved && "text-primary fill-primary")} />
+                <span>{snippet.isSaved ? 'Saved' : 'Save'}</span>
+              </Button>
+           </div>
+           <Button onClick={handleCopyCode} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
+                <Copy className="mr-2 h-4 w-4"/>
+                <span>{isCopied ? 'Copied!' : 'Copy Code'}</span>
+           </Button>
+        </footer>
+       </DialogContent>
     </Dialog>
   );
 }
-
