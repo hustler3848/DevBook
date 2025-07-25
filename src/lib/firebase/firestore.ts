@@ -1,5 +1,5 @@
 import { db } from './config';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId } from 'firebase/firestore';
 import type { Snippet } from '@/types/snippet';
 
 type UserDetails = {
@@ -145,14 +145,14 @@ export const unstarSnippet = async (userId: string, snippetId: string) => {
     await batch.commit();
 };
 
-export const saveSnippet = async (userId: string, snippetId: string) => {
-    if (!userId || !snippetId) throw new Error("User ID and snippet ID are required.");
+export const saveSnippet = async (userId: string, snippet: Snippet) => {
+    if (!userId || !snippet || !snippet.id) throw new Error("User ID and snippet ID are required.");
     const batch = writeBatch(db);
 
-    const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippetId);
-    batch.set(saveDocRef, { snippetId, savedAt: serverTimestamp() });
+    const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippet.id);
+    batch.set(saveDocRef, { snippetId: snippet.id, savedAt: serverTimestamp() });
 
-    const snippetRef = doc(db, 'snippets', snippetId);
+    const snippetRef = doc(db, 'snippets', snippet.id);
     batch.update(snippetRef, { saveCount: increment(1) });
     
     await batch.commit();
@@ -183,24 +183,30 @@ const fetchInteractionSnippets = async (userId: string, type: 'starred' | 'saved
     if (interactionSnapshot.empty) return [];
     
     const snippetIds = interactionSnapshot.docs.map(doc => doc.data().snippetId);
+    if (snippetIds.length === 0) return [];
+
 
     // Now fetch the full snippet documents
     // Firestore 'in' queries are limited to 30 items per query.
     // For a production app, this should be handled with multiple queries if needed.
-    const snippetsQuery = query(collection(db, 'snippets'), where('__name__', 'in', snippetIds));
+    const snippetsQuery = query(collection(db, 'snippets'), where(documentId(), 'in', snippetIds));
     const snippetsSnapshot = await getDocs(snippetsQuery);
     
     const snippetsMap = new Map(snippetsSnapshot.docs.map(doc => [doc.id, doc.data() as Snippet]));
     
     // Preserve the order from the interaction query
     const results = snippetIds
-        .map((id: string) => snippetsMap.get(id) ? { id, ...snippetsMap.get(id)! } : null)
+        .map((id: string) => {
+            const snippet = snippetsMap.get(id);
+            // Only return snippets that were actually found
+            return snippet ? { id, ...snippet } : null;
+        })
         .filter(Boolean) as Snippet[];
 
     return results.map(snippet => ({
         ...snippet,
-        isStarred: type === 'starred',
-        isSaved: type === 'saved'
+        isStarred: type === 'starred' ? true : undefined,
+        isSaved: type === 'saved' ? true : undefined
     }));
 };
 
