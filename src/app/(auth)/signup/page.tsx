@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Github, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const getFriendlyErrorMessage = (errorCode: string) => {
@@ -116,8 +116,7 @@ export default function SignupPage() {
                   </span>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Button variant="outline"><Github className="mr-2 h-4 w-4" /> GitHub</Button>
+              <div className="grid grid-cols-1 gap-4">
                   <Button variant="outline" onClick={handleGoogleSignIn} disabled={isLoading || isGoogleLoading}>
                     {isGoogleLoading ? 
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" /> :
