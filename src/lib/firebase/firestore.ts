@@ -1,3 +1,4 @@
+
 import { db } from './config';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId } from 'firebase/firestore';
 import type { Snippet } from '@/types/snippet';
@@ -140,7 +141,11 @@ export const unstarSnippet = async (userId: string, snippetId: string) => {
     batch.delete(starDocRef);
 
     const snippetRef = doc(db, "snippets", snippetId);
-    batch.update(snippetRef, { starCount: increment(-1) });
+    const snippetDoc = await getDoc(snippetRef);
+
+    if (snippetDoc.exists() && (snippetDoc.data().starCount || 0) > 0) {
+        batch.update(snippetRef, { starCount: increment(-1) });
+    }
 
     await batch.commit();
 };
@@ -167,7 +172,11 @@ export const unsaveSnippet = async (userId: string, snippetId: string) => {
     batch.delete(saveDocRef);
 
     const snippetRef = doc(db, 'snippets', snippetId);
-    batch.update(snippetRef, { saveCount: increment(-1) });
+    const snippetDoc = await getDoc(snippetRef);
+    
+    if (snippetDoc.exists() && (snippetDoc.data().saveCount || 0) > 0) {
+        batch.update(snippetRef, { saveCount: increment(-1) });
+    }
 
     await batch.commit();
 };
