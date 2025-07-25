@@ -98,7 +98,7 @@ export default function DashboardPage() {
             <QuickActions />
 
             {/* Recent Snippets */}
-            <DashboardClientPage snippets={mySnippets.slice(0, 4)} title="Your Snippets" />
+            <DashboardClientPage snippets={mySnippets.slice(0, 4)} title="Your Snippets" collectionType="my-snippets"/>
 
              {/* Activity Feed Placeholder */}
             <div className="space-y-4">
@@ -115,4 +115,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

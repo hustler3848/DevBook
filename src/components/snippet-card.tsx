@@ -23,7 +23,7 @@ export interface SnippetCardProps {
     onToggleStar?: (snippet: Snippet) => void;
     onToggleSave?: (snippet: Snippet) => void;
     onDelete?: (snippetId: string) => void;
-    collectionType?: 'my-snippets' | 'saved' | 'starred' | 'explore';
+    collectionType?: 'my-snippets' | 'saved' | 'starred' | 'explore' | 'public-profile';
 }
 
 export function SnippetCard({ 
@@ -64,7 +64,7 @@ export function SnippetCard({
             <CardHeader>
                 <div className="flex justify-between items-start">
                     <CardTitle className="font-headline text-lg flex-1 pr-2">{snippet.title}</CardTitle>
-                    {collectionType !== 'explore' && (
+                    {collectionType !== 'explore' && collectionType !== 'public-profile' && (
                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
@@ -120,9 +120,12 @@ export function SnippetCard({
                             <Eye className="mr-2 h-4 w-4" /> View
                         </Button>
                     )}
-                    {collectionType === 'explore' && (
-                        <Button className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
-                            <Plus className="mr-2 h-4 w-4" /> Add
+                    {collectionType === 'explore' && onToggleSave && (
+                        <Button 
+                            className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity" 
+                            onClick={() => onToggleSave(snippet)}
+                        >
+                            <Bookmark className={cn("mr-2 h-4 w-4", snippet.isSaved && "fill-current")} /> {snippet.isSaved ? 'Saved' : 'Save'}
                         </Button>
                     )}
                 </div>
@@ -165,18 +168,6 @@ export function SnippetCard({
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>{snippet.isStarred ? 'Unstar' : 'Star'} Snippet</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                )}
-                                {onToggleSave && (
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <button className="flex items-center gap-1" onClick={() => onToggleSave(snippet)}>
-                                                <Bookmark className={cn("h-4 w-4 transition-colors", snippet.isSaved ? "text-primary fill-primary" : "hover:text-primary")} />
-                                            </button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>{snippet.isSaved ? 'Unsave' : 'Save'} Snippet</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 )}
