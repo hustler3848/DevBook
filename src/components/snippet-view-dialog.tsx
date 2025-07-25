@@ -71,23 +71,21 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
        <DialogOverlay className="backdrop-blur-sm" />
        <DialogContent 
          className={cn(
-           "p-0 max-w-4xl w-full flex flex-col gap-0 max-h-screen sm:max-h-[90vh] overflow-hidden",
-           "sm:bottom-auto sm:top-[50%] sm:translate-y-[-50%] sm:rounded-lg",
-           "fixed bottom-0 left-0 right-0 translate-y-0 rounded-b-none rounded-t-2xl",
-           "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-full sm:data-[state=open]:zoom-in-95 sm:data-[state=open]:slide-in-from-top-[48%]",
-           "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-full sm:data-[state=closed]:zoom-out-95 sm:data-[state=closed]:slide-out-to-top-[48%]"
+           "p-0 max-w-4xl w-[calc(100%-2rem)] sm:w-full flex flex-col gap-0 max-h-[90vh] overflow-hidden rounded-lg",
+           "fixed sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
          )}
        >
         <DialogTitle asChild>
-            <header className="flex-shrink-0 flex items-center justify-between p-4 border-b">
-                <h2 className="font-headline text-lg font-bold truncate">{snippet.title}</h2>
-                <DialogClose asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full flex-shrink-0">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                    </Button>
-                </DialogClose>
-            </header>
+          <header className="flex-shrink-0 flex items-center justify-between p-4 border-b">
+              <h2 className="font-headline text-lg font-bold truncate pr-8">{snippet.title}</h2>
+              <DialogClose asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full flex-shrink-0">
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+                  </Button>
+              </DialogClose>
+          </header>
         </DialogTitle>
         <DialogDescription className="sr-only">
             Detailed view of the code snippet: {snippet.title}. Contains code, description, tags, and actions.
@@ -163,3 +161,5 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
     </Dialog>
   );
 }
+
+    
