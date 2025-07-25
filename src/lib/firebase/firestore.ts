@@ -1,6 +1,5 @@
-
 import { db } from './config';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, FieldValue } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp } from 'firebase/firestore';
 import type { Snippet } from '@/types/snippet';
 
 type UserDetails = {
@@ -9,15 +8,15 @@ type UserDetails = {
     photoURL: string | null;
 }
 
-// Type for the data being sent to Firestore, omitting the `id` which is auto-generated
-type SnippetData = Omit<Snippet, 'id' | 'createdAt' | 'author' | 'avatar' | 'dataAiHint'>;
+// Type for the data being sent to Firestore, omitting fields that are auto-generated or client-side
+type SnippetInput = Omit<Snippet, 'id' | 'createdAt' | 'updatedAt' | 'creatorId' | 'author' | 'avatar' | 'starCount' | 'saveCount' | 'isStarred' | 'isSaved'>;
+type SnippetUpdateData = Partial<Omit<Snippet, 'id' | 'creatorId' | 'author' | 'avatar' | 'createdAt' | 'starCount' | 'saveCount'>>;
+
 
 /**
  * Adds a new snippet to the user's collection in Firestore.
- * @param user - The authenticated user object.
- * @param data - The snippet data to be saved.
  */
-export const addSnippet = async (user: UserDetails, data: SnippetData) => {
+export const addSnippet = async (user: UserDetails, data: SnippetInput) => {
   if (!user || !user.uid) {
     throw new Error('User ID is required to add a snippet.');
   }
@@ -29,12 +28,30 @@ export const addSnippet = async (user: UserDetails, data: SnippetData) => {
     avatar: user.photoURL || `https://placehold.co/40x40.png`,
     dataAiHint: 'user avatar',
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     starCount: 0,
+    saveCount: 0,
   });
 };
 
 /**
+ * Updates an existing snippet in Firestore.
+ */
+export const updateSnippet = async (snippetId: string, updates: SnippetUpdateData) => {
+    if (!snippetId) {
+        throw new Error('Snippet ID is required to update.');
+    }
+    const snippetRef = doc(db, 'snippets', snippetId);
+    await updateDoc(snippetRef, {
+        ...updates,
+        updatedAt: serverTimestamp()
+    });
+};
+
+
+/**
  * Deletes a snippet from Firestore.
+ * This should also trigger a cloud function to delete related user interactions (stars, saves).
  * @param snippetId - The ID of the snippet to delete.
  */
 export const deleteSnippet = async (snippetId: string) => {
@@ -63,12 +80,7 @@ export const getUserSnippets = async (userId: string): Promise<Snippet[]> => {
     );
     const querySnapshot = await getDocs(q);
 
-    const snippets: Snippet[] = [];
-    querySnapshot.forEach((doc) => {
-        snippets.push({ id: doc.id, ...doc.data() } as Snippet);
-    });
-
-    return snippets;
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet));
 };
 
 /**
@@ -85,9 +97,7 @@ export const getPublicSnippets = async (userId?: string): Promise<Snippet[]> => 
 
     const snippets = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet));
 
-    if (userId) {
-      if (snippets.length === 0) return snippets;
-
+    if (userId && snippets.length > 0) {
       const { starred, saved } = await getUserInteractionStatus(userId);
       return snippets.map(snippet => ({
         ...snippet,
@@ -111,11 +121,9 @@ export const starSnippet = async (userId: string, snippet: Snippet) => {
     
     const batch = writeBatch(db);
     
+    // Use a lightweight reference in the user's subcollection
     const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippet.id);
-    const snippetToStar = { ...snippet, starredAt: serverTimestamp() };
-    delete snippetToStar.isStarred; // don't store interaction state in the interaction doc
-    delete snippetToStar.isSaved;
-    batch.set(starDocRef, snippetToStar);
+    batch.set(starDocRef, { snippetId: snippet.id, starredAt: serverTimestamp() });
 
     const snippetRef = doc(db, "snippets", snippet.id);
     batch.update(snippetRef, { starCount: increment(1) });
@@ -137,36 +145,73 @@ export const unstarSnippet = async (userId: string, snippetId: string) => {
     await batch.commit();
 };
 
-export const saveSnippet = async (userId: string, snippet: Snippet) => {
-    if (!userId || !snippet || !snippet.id) throw new Error("User ID and snippet ID are required.");
-    const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippet.id);
-    const snippetToSave = { ...snippet, savedAt: serverTimestamp() };
-    delete snippetToSave.isStarred; // don't store interaction state in the interaction doc
-    delete snippetToSave.isSaved;
-    await setDoc(saveDocRef, snippetToSave);
+export const saveSnippet = async (userId: string, snippetId: string) => {
+    if (!userId || !snippetId) throw new Error("User ID and snippet ID are required.");
+    const batch = writeBatch(db);
+
+    const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippetId);
+    batch.set(saveDocRef, { snippetId, savedAt: serverTimestamp() });
+
+    const snippetRef = doc(db, 'snippets', snippetId);
+    batch.update(snippetRef, { saveCount: increment(1) });
+    
+    await batch.commit();
 };
 
 export const unsaveSnippet = async (userId: string, snippetId: string) => {
     if (!userId || !snippetId) throw new Error("User ID and snippet ID are required.");
+    
+    const batch = writeBatch(db);
+    
     const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippetId);
-    await deleteDoc(saveDocRef);
+    batch.delete(saveDocRef);
+
+    const snippetRef = doc(db, 'snippets', snippetId);
+    batch.update(snippetRef, { saveCount: increment(-1) });
+
+    await batch.commit();
 };
 
 
-export const getStarredSnippets = async (userId: string): Promise<Snippet[]> => {
+const fetchInteractionSnippets = async (userId: string, type: 'starred' | 'saved'): Promise<Snippet[]> => {
     if (!userId) return [];
-    const q = query(getInteractionCollection(userId, 'starred'), orderBy('starredAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isStarred: true, isSaved: false } as Snippet));
+    
+    const interactionCollection = getInteractionCollection(userId, type);
+    const q = query(interactionCollection, orderBy(`${type}At`, 'desc'));
+    const interactionSnapshot = await getDocs(q);
+    
+    if (interactionSnapshot.empty) return [];
+    
+    const snippetIds = interactionSnapshot.docs.map(doc => doc.data().snippetId);
+
+    // Now fetch the full snippet documents
+    // Firestore 'in' queries are limited to 30 items per query.
+    // For a production app, this should be handled with multiple queries if needed.
+    const snippetsQuery = query(collection(db, 'snippets'), where('__name__', 'in', snippetIds));
+    const snippetsSnapshot = await getDocs(snippetsQuery);
+    
+    const snippetsMap = new Map(snippetsSnapshot.docs.map(doc => [doc.id, doc.data() as Snippet]));
+    
+    // Preserve the order from the interaction query
+    const results = snippetIds
+        .map((id: string) => snippetsMap.get(id) ? { id, ...snippetsMap.get(id)! } : null)
+        .filter(Boolean) as Snippet[];
+
+    return results.map(snippet => ({
+        ...snippet,
+        isStarred: type === 'starred',
+        isSaved: type === 'saved'
+    }));
 };
 
-export const getSavedSnippets = async (userId: string): Promise<Snippet[]> => {
-    if (!userId) return [];
-    const q = query(getInteractionCollection(userId, 'saved'), orderBy('savedAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isSaved: true, isStarred: false } as Snippet));
+
+export const getStarredSnippets = (userId: string): Promise<Snippet[]> => {
+    return fetchInteractionSnippets(userId, 'starred');
 };
 
+export const getSavedSnippets = (userId: string): Promise<Snippet[]> => {
+    return fetchInteractionSnippets(userId, 'saved');
+};
 
 export const getUserInteractionStatus = async (userId: string): Promise<{ starred: Set<string>, saved: Set<string> }> => {
     if (!userId) {

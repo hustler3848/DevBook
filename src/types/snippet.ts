@@ -1,24 +1,25 @@
-
 import { Timestamp } from 'firebase/firestore';
 
 export interface Snippet {
   id: string;
   title: string;
-  description?: string;
-  codeSnippet?: string; // On summary cards this may be omitted
+  description: string;
+  codeSnippet: string;
   tags: string[];
   language: string;
-  creatorId?: string;
-  createdAt?: Timestamp;
-  isPublic?: boolean;
-  starCount?: number;
-  // Fields for community snippets
-  author?: string;
-  avatar?: string;
+  creatorId: string;
+  author: string;
+  avatar: string;
   dataAiHint?: string;
-  // Fields for user interactions
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  isPublic: boolean;
+  starCount: number;
+  saveCount: number;
+  // Client-side only fields for user interactions
   isStarred?: boolean;
   isSaved?: boolean;
+  // Timestamps for user-specific collections
   starredAt?: Timestamp;
   savedAt?: Timestamp;
 }

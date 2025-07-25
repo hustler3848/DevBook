@@ -66,12 +66,10 @@ export default function MySnippetsPage() {
   }, [user, toast]);
   
   useEffect(() => {
-    // Wait for auth to resolve before fetching data
     if (!authLoading) {
       if (user) {
         fetchSnippets(activeTab);
       } else {
-        // If no user and auth is resolved, stop loading
         setIsLoading(false);
       }
     }
@@ -111,6 +109,7 @@ export default function MySnippetsPage() {
             setMySnippets(prev => prev.filter(s => s.id !== snippetId));
             toast({ title: "Deleted", description: "Snippet has been deleted." });
         } catch (error) {
+            console.error("Failed to delete snippet:", error);
             toast({ variant: 'destructive', title: "Error", description: "Failed to delete snippet." });
         }
     });

@@ -22,9 +22,9 @@ import { Switch } from './ui/switch';
 
 const snippetSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters long.'),
-  description: z.string().optional(),
+  description: z.string().min(10, 'Description must be at least 10 characters long.'),
   codeSnippet: z.string().min(10, 'Code snippet must be at least 10 characters long.'),
-  tags: z.array(z.string()).min(1, 'Please add at least one tag.'),
+  tags: z.array(z.string()).min(1, 'Please add at least one tag.').max(8, 'You can add a maximum of 8 tags.'),
   language: z.string().min(1, 'Please specify the language.'),
   isPublic: z.boolean().default(false),
 });
@@ -34,7 +34,7 @@ type SnippetFormValues = z.infer<typeof snippetSchema>;
 export function NewSnippetForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiGeneratedTags, setAiGeneratedTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
@@ -57,12 +57,11 @@ export function NewSnippetForm() {
   
   useEffect(() => {
     const handleAnalyzeSnippet = async (code: string) => {
-      if (!code || code.length < 50) return;
+      if (!code || code.length < 50 || isSubmitting) return;
       setIsAnalyzing(true);
       try {
         const result = await analyzeSnippet({ codeSnippet: code });
         
-        // Only set values if they are not already set by the user, to avoid overriding manual input.
         if (!form.getValues('title')) {
           form.setValue('title', result.title, { shouldValidate: true });
         }
@@ -70,10 +69,8 @@ export function NewSnippetForm() {
           form.setValue('description', result.description, { shouldValidate: true });
         }
 
-        const manualTags = form.getValues('tags').filter(tag => !aiGeneratedTags.includes(tag));
-        const newTags = Array.from(new Set([...manualTags, ...result.tags]));
-        form.setValue('tags', newTags, { shouldValidate: true });
-        setAiGeneratedTags(result.tags);
+        const newTags = Array.from(new Set([...form.getValues('tags'), ...result.tags]));
+        form.setValue('tags', newTags.slice(0, 8), { shouldValidate: true });
 
         if (!form.getValues('language')) {
           form.setValue('language', result.language, { shouldValidate: true });
@@ -97,8 +94,19 @@ export function NewSnippetForm() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedCodeSnippet]);
 
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const newTag = tagInput.trim();
+      if (newTag && !currentTags.includes(newTag) && currentTags.length < 8) {
+        form.setValue('tags', [...currentTags, newTag]);
+        setTagInput('');
+      }
+    }
+  };
+
   const removeTag = (tagToRemove: string) => {
-    form.setValue('tags', currentTags.filter(tag => tag !== tagToRemove));
+    form.setValue('tags', currentTags.filter(tag => tag !== tagToRemove), { shouldValidate: true });
   };
 
   const onSubmit = async (data: SnippetFormValues) => {
@@ -124,7 +132,6 @@ export function NewSnippetForm() {
         description: "Your new snippet has been successfully saved.",
       });
       form.reset();
-      setAiGeneratedTags([]);
       router.push('/dashboard/my-snippets');
     } catch (error) {
       console.error("Error creating snippet:", error);
@@ -196,28 +203,36 @@ export function NewSnippetForm() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <FormField
-            control={form.control}
-            name="tags"
-            render={() => (
-                <FormItem>
-                <FormLabel>Tags</FormLabel>
-                <FormControl>
-                    <div className="flex flex-wrap gap-2 p-2 rounded-md border min-h-[40px] border-input">
-                        {currentTags.map((tag) => (
-                        <Badge key={tag} variant="secondary">
-                            {tag}
-                            <button type="button" onClick={() => removeTag(tag)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                <X className="h-3 w-3" />
-                                <span className="sr-only">Remove {tag}</span>
-                            </button>
-                        </Badge>
-                        ))}
-                    </div>
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
+             <FormField
+                control={form.control}
+                name="tags"
+                render={() => (
+                    <FormItem>
+                        <FormLabel>Tags</FormLabel>
+                        <FormControl>
+                            <div>
+                                <Input 
+                                    placeholder="Add a tag and press Enter" 
+                                    value={tagInput}
+                                    onChange={(e) => setTagInput(e.target.value)}
+                                    onKeyDown={handleTagKeyDown}
+                                />
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {currentTags.map((tag) => (
+                                    <Badge key={tag} variant="secondary">
+                                        {tag}
+                                        <button type="button" onClick={() => removeTag(tag)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                            <X className="h-3 w-3" />
+                                            <span className="sr-only">Remove {tag}</span>
+                                        </button>
+                                    </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
             />
             <FormField
             control={form.control}
