@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
@@ -14,6 +15,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { CodeXml, LogOut, Menu, User, Settings } from 'lucide-react';
@@ -24,6 +35,7 @@ import { NavLinks } from './sidebar';
 export function DashboardHeader() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const [isLogoutAlertOpen, setIsLogoutAlertOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -33,6 +45,7 @@ export function DashboardHeader() {
   const username = user?.email ? 'currentuser' : 'guest';
 
   return (
+    <>
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6 md:px-8">
         <Sheet>
@@ -99,7 +112,7 @@ export function DashboardHeader() {
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setIsLogoutAlertOpen(true); }}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
                 </DropdownMenuItem>
@@ -109,5 +122,20 @@ export function DashboardHeader() {
         </div>
       </div>
     </header>
+     <AlertDialog open={isLogoutAlertOpen} onOpenChange={setIsLogoutAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will be returned to the homepage. You can always log back in later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Logout</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
