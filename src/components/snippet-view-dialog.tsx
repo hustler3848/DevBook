@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogClose, DialogOverlay } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose, DialogOverlay, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,6 @@ import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/pris
 import { Bookmark, Copy, Star, Check, X } from 'lucide-react';
 import type { Snippet } from '@/types/snippet';
 import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { format } from 'date-fns';
 
 interface SnippetViewDialogProps {
@@ -73,27 +72,27 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
        <DialogContent 
          className={cn(
            "p-0 max-w-4xl w-full flex flex-col gap-0 max-h-screen sm:max-h-[90vh] overflow-hidden",
-           // Mobile-specific styles (bottom sheet)
-           "sm:bottom-auto sm:top-[50%] sm:translate-y-[-50%]",
-           "fixed bottom-0 left-0 right-0 translate-y-0 rounded-b-none sm:rounded-lg",
-           "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-full sm:data-[state=open]:slide-in-from-top-[48%]",
-           "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-full sm:data-[state=closed]:slide-out-to-top-[48%]"
+           "sm:bottom-auto sm:top-[50%] sm:translate-y-[-50%] sm:rounded-lg",
+           "fixed bottom-0 left-0 right-0 translate-y-0 rounded-b-none rounded-t-2xl",
+           "data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-full sm:data-[state=open]:zoom-in-95 sm:data-[state=open]:slide-in-from-top-[48%]",
+           "data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-full sm:data-[state=closed]:zoom-out-95 sm:data-[state=closed]:slide-out-to-top-[48%]"
          )}
        >
-        {/* Sticky Header */}
-        <header className="flex-shrink-0 flex items-center justify-between p-4 border-b">
-          <div className="flex-1 min-w-0">
-             <h2 className="font-headline text-lg font-bold truncate">{snippet.title}</h2>
-          </div>
-          <DialogClose asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full flex-shrink-0">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </Button>
-          </DialogClose>
-        </header>
+        <DialogTitle asChild>
+            <header className="flex-shrink-0 flex items-center justify-between p-4 border-b">
+                <h2 className="font-headline text-lg font-bold truncate">{snippet.title}</h2>
+                <DialogClose asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full flex-shrink-0">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                    </Button>
+                </DialogClose>
+            </header>
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+            Detailed view of the code snippet: {snippet.title}. Contains code, description, tags, and actions.
+        </DialogDescription>
         
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-4 sm:p-6 space-y-6">
             
@@ -128,7 +127,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                   margin: 0,
                   padding: '1rem',
                   background: 'transparent',
-                  maxHeight: 'calc(90vh - 400px)', // Adjust max height
+                  maxHeight: 'calc(90vh - 400px)',
                   fontSize: '13px',
                 }}
                 className="custom-scrollbar"
@@ -144,7 +143,6 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
           </div>
         </div>
 
-        {/* Sticky Footer */}
         <footer className="flex-shrink-0 flex items-center justify-between gap-2 p-3 border-t bg-background/95">
            <div className="flex items-center gap-2">
               <Button variant="outline" className="flex items-center gap-1.5" onClick={() => onToggleStar(snippet)}>
