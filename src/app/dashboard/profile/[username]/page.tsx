@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -34,10 +33,9 @@ export default function ProfilePage() {
             setIsLoading(true);
             
             // This is a simplified lookup. In a real app, you'd query Firestore for a user by their username.
-            // We'll simulate fetching based on the displayName.
             // For this example, we'll just check if we are viewing the current user's profile.
             
-            if (currentUser && (currentUser.displayName?.toLowerCase().replace(' ', '') === username || (currentUser.email && username === 'currentuser'))) {
+            if (currentUser && (currentUser.displayName?.toLowerCase().replace(/ /g, '') === username || (currentUser.email && username === 'currentuser'))) {
                  const [created, saved, starred, publicSnippets] = await Promise.all([
                     getUserSnippets(currentUser.uid),
                     getSavedSnippets(currentUser.uid),
@@ -82,7 +80,7 @@ export default function ProfilePage() {
         return notFound();
     }
     
-    const isOwnProfile = currentUser?.displayName?.toLowerCase().replace(' ','') === profileUser.username || (currentUser?.email && profileUser.username === 'currentuser');
+    const isOwnProfile = currentUser?.displayName?.toLowerCase().replace(/ /g,'') === profileUser.username || (currentUser?.email && profileUser.username === 'currentuser');
 
 
     return (

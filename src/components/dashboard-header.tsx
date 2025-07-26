@@ -42,7 +42,7 @@ export function DashboardHeader() {
     router.push('/');
   };
   
-  const username = user?.email ? 'currentuser' : 'guest';
+  const username = user?.displayName ? user.displayName.toLowerCase().replace(/ /g, '') : 'currentuser';
 
   return (
     <>
