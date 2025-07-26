@@ -1,4 +1,5 @@
 
+
 import { db, auth } from './config';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId, runTransaction, limit } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
@@ -32,16 +33,18 @@ export const createUserProfileDocument = async (user: UserDetails, additionalDat
         
         // Improved username generation
         const baseUsername = (displayName || 'user').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        const existingUserQuery = query(collection(db, 'users'), where('username', '==', baseUsername));
-        const existingUserSnapshot = await getDocs(existingUserQuery);
         
         let username = baseUsername;
-        if (!existingUserSnapshot.empty) {
-            // If username exists, append a random string to make it unique
-            username = `${baseUsername}-${Math.random().toString(36).substring(2, 6)}`;
-        }
-
         try {
+            // Check if username exists, if so, append a random string.
+            // This is a simplified check; for production, a more robust unique username generation might be needed.
+            const q = query(collection(db, "users"), where("username", "==", baseUsername), limit(1));
+            const existingUserSnapshot = await getDocs(q);
+
+            if (!existingUserSnapshot.empty) {
+                username = `${baseUsername}-${Math.random().toString(36).substring(2, 6)}`;
+            }
+
             await setDoc(userRef, {
                 uid: user.uid,
                 name: displayName,
@@ -227,65 +230,64 @@ const getInteractionCollection = (userId: string, type: 'starred' | 'saved') => 
 
 export const starSnippet = async (userId: string, snippet: Snippet) => {
     if (!userId || !snippet || !snippet.id) throw new Error("User ID and snippet ID are required.");
-    
-    const batch = writeBatch(db);
-    
-    const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippet.id);
-    batch.set(starDocRef, { snippetId: snippet.id, starredAt: serverTimestamp() });
 
     const snippetRef = doc(db, "snippets", snippet.id);
-    batch.update(snippetRef, { starCount: increment(1) });
-    
-    await batch.commit();
+    const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippet.id);
+
+    await runTransaction(db, async (transaction) => {
+        const snippetDoc = await transaction.get(snippetRef);
+        if (!snippetDoc.exists()) {
+            throw "Snippet does not exist!";
+        }
+        transaction.update(snippetRef, { starCount: (snippetDoc.data().starCount || 0) + 1 });
+        transaction.set(starDocRef, { snippetId: snippet.id, starredAt: serverTimestamp() });
+    });
 };
 
 export const unstarSnippet = async (userId: string, snippetId: string) => {
     if (!userId || !snippetId) throw new Error("User ID and snippet ID are required.");
-
-    const batch = writeBatch(db);
-
-    const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippetId);
-    batch.delete(starDocRef);
-
+    
     const snippetRef = doc(db, "snippets", snippetId);
-    const snippetDoc = await getDoc(snippetRef);
+    const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippetId);
 
-    if (snippetDoc.exists() && (snippetDoc.data().starCount || 0) > 0) {
-        batch.update(snippetRef, { starCount: increment(-1) });
-    }
-
-    await batch.commit();
+    await runTransaction(db, async (transaction) => {
+        const snippetDoc = await transaction.get(snippetRef);
+        if (snippetDoc.exists() && (snippetDoc.data().starCount || 0) > 0) {
+            transaction.update(snippetRef, { starCount: snippetDoc.data().starCount - 1 });
+        }
+        transaction.delete(starDocRef);
+    });
 };
 
 export const saveSnippet = async (userId: string, snippet: Snippet) => {
     if (!userId || !snippet || !snippet.id) throw new Error("User ID and snippet ID are required.");
-    const batch = writeBatch(db);
 
+    const snippetRef = doc(db, "snippets", snippet.id);
     const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippet.id);
-    batch.set(saveDocRef, { snippetId: snippet.id, savedAt: serverTimestamp() });
-
-    const snippetRef = doc(db, 'snippets', snippet.id);
-    batch.update(snippetRef, { saveCount: increment(1) });
     
-    await batch.commit();
+    await runTransaction(db, async (transaction) => {
+        const snippetDoc = await transaction.get(snippetRef);
+        if (!snippetDoc.exists()) {
+            throw "Snippet does not exist!";
+        }
+        transaction.update(snippetRef, { saveCount: (snippetDoc.data().saveCount || 0) + 1 });
+        transaction.set(saveDocRef, { snippetId: snippet.id, savedAt: serverTimestamp() });
+    });
 };
 
 export const unsaveSnippet = async (userId: string, snippetId: string) => {
     if (!userId || !snippetId) throw new Error("User ID and snippet ID are required.");
     
-    const batch = writeBatch(db);
-    
+    const snippetRef = doc(db, "snippets", snippetId);
     const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippetId);
-    batch.delete(saveDocRef);
 
-    const snippetRef = doc(db, 'snippets', snippetId);
-    const snippetDoc = await getDoc(snippetRef);
-    
-    if (snippetDoc.exists() && (snippetDoc.data().saveCount || 0) > 0) {
-        batch.update(snippetRef, { saveCount: increment(-1) });
-    }
-
-    await batch.commit();
+    await runTransaction(db, async (transaction) => {
+        const snippetDoc = await transaction.get(snippetRef);
+        if (snippetDoc.exists() && (snippetDoc.data().saveCount || 0) > 0) {
+            transaction.update(snippetRef, { saveCount: snippetDoc.data().saveCount - 1 });
+        }
+        transaction.delete(saveDocRef);
+    });
 };
 
 
@@ -362,7 +364,7 @@ export const getUserProfileByUid = async (userId: string): Promise<UserProfile |
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
     if (userSnap.exists()) {
-        return { id: userSnap.id, ...userSnap.data() } as UserProfile;
+        return { uid: userSnap.id, ...userSnap.data() } as UserProfile;
     }
     return null;
 }
