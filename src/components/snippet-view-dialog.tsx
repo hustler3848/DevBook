@@ -12,10 +12,13 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Bookmark, Copy, Star, Check, X } from 'lucide-react';
+import { Bookmark, Copy, Star, Check, X, Wand2 } from 'lucide-react';
 import type { Snippet } from '@/types/snippet';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { explainAndReviewCode, type ExplainCodeOutput } from '@/ai/flows/explain-code';
+import { CodeExplanationDialog } from './code-explanation-dialog';
+
 
 interface SnippetViewDialogProps {
   snippet: Snippet;
@@ -31,6 +34,11 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
   const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
 
+  const [isExplanationOpen, setIsExplanationOpen] = useState(false);
+  const [explanationResult, setExplanationResult] = useState<ExplainCodeOutput | null>(null);
+  const [isExplanationLoading, setIsExplanationLoading] = useState(false);
+
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -40,6 +48,12 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
         setIsCopied(false);
     }
   },[isOpen]);
+  
+  useEffect(() => {
+    if (!isExplanationOpen) {
+      setExplanationResult(null);
+    }
+  }, [isExplanationOpen]);
 
   const handleCopyCode = () => {
     if(!snippet.codeSnippet) return;
@@ -51,6 +65,28 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
     });
     setTimeout(() => setIsCopied(false), 2000);
   };
+
+  const handleExplainCode = async () => {
+    setIsExplanationOpen(true);
+    setIsExplanationLoading(true);
+    try {
+        const result = await explainAndReviewCode({
+            codeSnippet: snippet.codeSnippet,
+            language: snippet.language
+        });
+        setExplanationResult(result);
+    } catch (error) {
+        console.error("Failed to get code explanation:", error);
+        toast({
+            variant: "destructive",
+            title: "AI Analysis Failed",
+            description: "Could not get an explanation for this snippet."
+        });
+        setIsExplanationOpen(false);
+    } finally {
+        setIsExplanationLoading(false);
+    }
+  }
 
   const syntaxTheme = theme === 'dark' ? oneDark : oneLight;
   
@@ -68,6 +104,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
   const formattedDate = snippet.createdAt ? format(snippet.createdAt.toDate(), "MMM dd, yyyy") : 'N/A';
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
        <DialogOverlay className="backdrop-blur-sm" />
        <DialogContent 
@@ -97,7 +134,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
             
             <Link href={`/dashboard/profile/${snippet.authorUsername}`} className="inline-flex items-center gap-3 group">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint}/>
+                <AvatarImage src={snippet.avatar} alt={snippet.author} />
                 <AvatarFallback>{snippet.author?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
@@ -152,6 +189,10 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                 <Bookmark className={cn("h-4 w-4", snippet.isSaved && "text-primary fill-primary")} />
                 <span>{snippet.isSaved ? 'Saved' : 'Save'}</span>
               </Button>
+              <Button variant="outline" className="flex items-center gap-1.5" onClick={handleExplainCode}>
+                <Wand2 className="h-4 w-4 text-primary"/>
+                <span>Explain</span>
+              </Button>
            </div>
            <Button onClick={handleCopyCode} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
                 <Copy className="mr-2 h-4 w-4"/>
@@ -160,5 +201,13 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
         </footer>
        </DialogContent>
     </Dialog>
+    <CodeExplanationDialog 
+        isOpen={isExplanationOpen} 
+        onOpenChange={setIsExplanationOpen}
+        isLoading={isExplanationLoading}
+        result={explanationResult}
+        snippetLanguage={snippet.language}
+    />
+    </>
   );
 }
