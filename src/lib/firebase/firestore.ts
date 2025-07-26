@@ -12,7 +12,7 @@ type UserDetails = {
 }
 
 // Type for the data being sent to Firestore, omitting fields that are auto-generated or client-side
-type SnippetInput = Omit<Snippet, 'id' | 'createdAt' | 'updatedAt' | 'creatorId' | 'author' | 'authorUsername' | 'avatar' | 'starCount' | 'saveCount' | 'isStarred' | 'isSaved'>;
+type SnippetInput = Omit<Snippet, 'id' | 'createdAt' | 'updatedAt' | 'creatorId' | 'author' | 'authorUsername' | 'avatar' | 'starCount' | 'saveCount' | 'isStarred' | 'isSaved' | 'dataAiHint'>;
 type SnippetUpdateData = Partial<Omit<Snippet, 'id' | 'creatorId' | 'author' | 'avatar' | 'createdAt' | 'starCount' | 'saveCount'>>;
 
 /**
@@ -339,11 +339,13 @@ export const getUserInteractionStatus = async (userId: string): Promise<{ starre
 };
 
 /**
- * Finds a user profile by their username.
+ * Finds a user profile by their username. If an authenticated user ID is provided and matches
+ * the profile user's ID, it will also fetch their private stats.
  * @param username The username to search for.
+ * @param authUserId (Optional) The ID of the currently authenticated user.
  * @returns The user profile object or null if not found.
  */
-export const findUserByUsername = async (username: string): Promise<UserProfile | null> => {
+export const findUserByUsername = async (username: string, authUserId?: string): Promise<UserProfile | null> => {
     if (!username) return null;
     const q = query(collection(db, 'users'), where('username', '==', username), limit(1));
     const querySnapshot = await getDocs(q);
@@ -353,7 +355,20 @@ export const findUserByUsername = async (username: string): Promise<UserProfile 
     }
 
     const userDoc = querySnapshot.docs[0];
-    return { id: userDoc.id, ...userDoc.data() } as UserProfile;
+    const userProfile = { id: userDoc.id, ...userDoc.data() } as UserProfile;
+
+    // If the authenticated user is viewing their own profile, fetch their stats
+    if (authUserId && authUserId === userProfile.uid) {
+        const savedSnippets = await getSavedSnippets(authUserId);
+        const starredSnippets = await getStarredSnippets(authUserId);
+        userProfile.stats = {
+            created: 0, // This will be counted from public snippets on the client
+            saved: savedSnippets.length,
+            starred: starredSnippets.length,
+        };
+    }
+
+    return userProfile;
 }
 
 /**

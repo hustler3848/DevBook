@@ -11,7 +11,7 @@ import { Github, Linkedin, Twitter, Edit, Code, Star, Bookmark } from 'lucide-re
 import DashboardClientPage from '../../dashboard-client-page';
 import { EditProfileDialog } from '@/components/edit-profile-dialog';
 import type { Snippet } from '@/types/snippet';
-import { getPublicSnippetsForUser, getSavedSnippets, getStarredSnippets, findUserByUsername, updateUserProfile as updateUserProfileInDb } from '@/lib/firebase/firestore';
+import { getPublicSnippetsForUser, findUserByUsername, updateUserProfile as updateUserProfileInDb } from '@/lib/firebase/firestore';
 import ProfileLoading from './loading';
 import { UserProfile } from '@/types/user';
 import { useToast } from '@/hooks/use-toast';
@@ -34,44 +34,28 @@ export default function ProfilePage() {
         setIsLoading(true);
         
         try {
-            const foundUser = await findUserByUsername(username);
+            // Pass current user's ID to conditionally fetch protected data like stats
+            const foundUser = await findUserByUsername(username, currentUser?.uid);
 
             if (foundUser) {
-                setProfileUser(foundUser); // Set user early to determine isOwnProfile
-                
-                const viewingOwnProfile = currentUser?.uid === foundUser.uid;
-
+                setProfileUser(foundUser);
                 const publicSnippets = await getPublicSnippetsForUser(foundUser.uid);
-                let savedSnippets: Snippet[] = [];
-                let starredSnippets: Snippet[] = [];
-
-                if (viewingOwnProfile) {
-                    [savedSnippets, starredSnippets] = await Promise.all([
-                        getSavedSnippets(foundUser.uid),
-                        getStarredSnippets(foundUser.uid)
-                    ]);
-                }
-                
-                setProfileUser({
-                    ...foundUser,
-                    stats: {
-                        created: publicSnippets.length,
-                        saved: savedSnippets.length,
-                        starred: starredSnippets.length,
-                    }
-                });
                 setUserSnippets(publicSnippets);
             } else {
                 setProfileUser(null);
             }
         } catch (error) {
             console.error("Failed to fetch profile data", error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not load profile.',
+            });
             setProfileUser(null);
         } finally {
             setIsLoading(false);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [username, currentUser?.uid]);
+    }, [username, currentUser?.uid, toast]);
 
     useEffect(() => {
         if (!authLoading) {
@@ -92,8 +76,8 @@ export default function ProfilePage() {
 
                 // If username changed, we might need to redirect, but for now we just update state
                 if (updatedProfile.username && updatedProfile.username !== username) {
-                    // router.push(`/dashboard/profile/${updatedProfile.username}`);
                     // For simplicity, we'll just refetch data for the new username state
+                    // A redirect would also be a good option here.
                     fetchProfileData();
                 }
 
@@ -159,7 +143,7 @@ export default function ProfilePage() {
                                 <span className="flex items-center text-muted-foreground">
                                     <Code className="mr-2 h-4 w-4" /> Public Snippets
                                 </span>
-                                <span className="font-semibold">{profileUser.stats?.created ?? 0}</span>
+                                <span className="font-semibold">{userSnippets.length}</span>
                            </div>
                            {isOwnProfile && (
                              <>
