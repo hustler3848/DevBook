@@ -102,7 +102,7 @@ function CreateFolderDialog({ isOpen, onOpenChange, onFolderCreated }: { isOpen:
                     <DialogTitle className="font-headline text-xl">Create New Folder</DialogTitle>
                     <DialogDescription>Organize your snippets into folders for easy access.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+                <form onSubmit={handleSubmit} className="space-y-4 pt-2 px-1">
                     <div className="space-y-2">
                         <Label htmlFor="folder-name">Folder Name</Label>
                         <Input id="folder-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., React Hooks" required />
@@ -192,7 +192,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                                 <TooltipContent side="right" className="ml-2">Create Folder</TooltipContent>
                              </Tooltip>
                         </div>
-                        {isFoldersLoading && authLoading ? (
+                        {isFoldersLoading ? (
                             <div className="px-3 space-y-2 mt-2">
                                 <Skeleton className="h-8 w-full" />
                                 <Skeleton className="h-8 w-full" />
