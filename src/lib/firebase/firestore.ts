@@ -3,6 +3,7 @@
 
 
 
+
 import { db, auth } from './config';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId, runTransaction, limit, onSnapshot, Unsubscribe, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
@@ -237,63 +238,53 @@ const getInteractionCollection = (userId: string, type: 'starred' | 'saved') => 
 export const starSnippet = async (userId: string, snippet: Snippet) => {
     if (!userId || !snippet || !snippet.id) throw new Error("User ID and snippet ID are required.");
 
+    const batch = writeBatch(db);
     const snippetRef = doc(db, "snippets", snippet.id);
     const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippet.id);
 
-    await runTransaction(db, async (transaction) => {
-        const snippetDoc = await transaction.get(snippetRef);
-        if (!snippetDoc.exists()) {
-            throw "Snippet does not exist!";
-        }
-        transaction.update(snippetRef, { starCount: increment(1) });
-        transaction.set(starDocRef, { snippetId: snippet.id, starredAt: serverTimestamp() });
-    });
+    batch.update(snippetRef, { starCount: increment(1) });
+    batch.set(starDocRef, { snippetId: snippet.id, starredAt: serverTimestamp() });
+
+    await batch.commit();
 };
 
 export const unstarSnippet = async (userId: string, snippetId: string) => {
     if (!userId || !snippetId) throw new Error("User ID and snippet ID are required.");
     
+    const batch = writeBatch(db);
     const snippetRef = doc(db, "snippets", snippetId);
     const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippetId);
 
-    await runTransaction(db, async (transaction) => {
-        const snippetDoc = await transaction.get(snippetRef);
-        if (snippetDoc.exists() && (snippetDoc.data().starCount || 0) > 0) {
-            transaction.update(snippetRef, { starCount: increment(-1) });
-        }
-        transaction.delete(starDocRef);
-    });
+    batch.update(snippetRef, { starCount: increment(-1) });
+    batch.delete(starDocRef);
+    
+    await batch.commit();
 };
 
 export const saveSnippet = async (userId: string, snippet: Snippet) => {
     if (!userId || !snippet || !snippet.id) throw new Error("User ID and snippet ID are required.");
 
+    const batch = writeBatch(db);
     const snippetRef = doc(db, "snippets", snippet.id);
     const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippet.id);
-    
-    await runTransaction(db, async (transaction) => {
-        const snippetDoc = await transaction.get(snippetRef);
-        if (!snippetDoc.exists()) {
-            throw "Snippet does not exist!";
-        }
-        transaction.update(snippetRef, { saveCount: increment(1) });
-        transaction.set(saveDocRef, { snippetId: snippet.id, savedAt: serverTimestamp() });
-    });
+
+    batch.update(snippetRef, { saveCount: increment(1) });
+    batch.set(saveDocRef, { snippetId: snippet.id, savedAt: serverTimestamp() });
+
+    await batch.commit();
 };
 
 export const unsaveSnippet = async (userId: string, snippetId: string) => {
     if (!userId || !snippetId) throw new Error("User ID and snippet ID are required.");
     
+    const batch = writeBatch(db);
     const snippetRef = doc(db, "snippets", snippetId);
     const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippetId);
 
-    await runTransaction(db, async (transaction) => {
-        const snippetDoc = await transaction.get(snippetRef);
-        if (snippetDoc.exists() && (snippetDoc.data().saveCount || 0) > 0) {
-            transaction.update(snippetRef, { saveCount: increment(-1) });
-        }
-        transaction.delete(saveDocRef);
-    });
+    batch.update(snippetRef, { saveCount: increment(-1) });
+    batch.delete(saveDocRef);
+
+    await batch.commit();
 };
 
 
