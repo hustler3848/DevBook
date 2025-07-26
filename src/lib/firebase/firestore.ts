@@ -2,6 +2,7 @@
 
 
 
+
 import { db, auth } from './config';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId, runTransaction, limit, onSnapshot, Unsubscribe, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
@@ -244,7 +245,7 @@ export const starSnippet = async (userId: string, snippet: Snippet) => {
         if (!snippetDoc.exists()) {
             throw "Snippet does not exist!";
         }
-        transaction.update(snippetRef, { starCount: (snippetDoc.data().starCount || 0) + 1 });
+        transaction.update(snippetRef, { starCount: increment(1) });
         transaction.set(starDocRef, { snippetId: snippet.id, starredAt: serverTimestamp() });
     });
 };
@@ -275,7 +276,7 @@ export const saveSnippet = async (userId: string, snippet: Snippet) => {
         if (!snippetDoc.exists()) {
             throw "Snippet does not exist!";
         }
-        transaction.update(snippetRef, { saveCount: (snippetDoc.data().saveCount || 0) + 1 });
+        transaction.update(snippetRef, { saveCount: increment(1) });
         transaction.set(saveDocRef, { snippetId: snippet.id, savedAt: serverTimestamp() });
     });
 };

@@ -313,18 +313,18 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                 <Star className={cn("h-4 w-4", snippet.isStarred && "text-yellow-400 fill-yellow-400")} />
                 <span className="font-bold">{formatStars(snippet.starCount || 0)}</span>
               </Button>
-               <Button variant="outline" className="flex items-center gap-1.5" onClick={() => onToggleSave(snippet)}>
-                <Bookmark className={cn("h-4 w-4", snippet.isSaved && "text-primary fill-primary")} />
-                <span>{snippet.isSaved ? 'Saved' : 'Save'}</span>
-              </Button>
+               <Button variant="outline" className="flex items-center gap-1.5 px-3 sm:px-4" onClick={() => onToggleSave(snippet)}>
+                    <Bookmark className={cn("h-4 w-4", snippet.isSaved && "text-primary fill-primary")} />
+                    <span className="hidden sm:inline">{snippet.isSaved ? 'Saved' : 'Save'}</span>
+                </Button>
               <Button variant="outline" className="flex items-center gap-1.5" onClick={handleExplainCode}>
                 <Wand2 className="h-4 w-4 text-primary"/>
                 <span>Explain</span>
               </Button>
            </div>
-           <Button onClick={handleCopyCode} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
-                <Copy className="mr-2 h-4 w-4"/>
-                <span>{isCopied ? 'Copied!' : 'Copy Code'}</span>
+           <Button onClick={handleCopyCode} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity px-3 sm:px-4">
+                <Copy className="mr-0 sm:mr-2 h-4 w-4"/>
+                <span className="hidden sm:inline">{isCopied ? 'Copied!' : 'Copy Code'}</span>
            </Button>
         </footer>
        </DialogContent>
