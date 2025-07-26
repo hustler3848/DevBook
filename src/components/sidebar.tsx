@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from './ui/skeleton';
 
 const links = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -127,14 +128,31 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
     const { user } = useAuth();
     const pathname = usePathname();
     const [folders, setFolders] = useState<Folder[]>([]);
+    const [isFoldersLoading, setIsFoldersLoading] = useState(true);
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
 
-    useEffect(() => {
+    const fetchFolders = useCallback(() => {
         if (user) {
-            const unsubscribe = getFolders(user.uid, setFolders);
-            return () => unsubscribe();
+            setIsFoldersLoading(true);
+            const unsubscribe = getFolders(user.uid, (fetchedFolders) => {
+                setFolders(fetchedFolders);
+                setIsFoldersLoading(false);
+            });
+            return unsubscribe;
+        } else {
+            setFolders([]);
+            setIsFoldersLoading(false);
         }
     }, [user]);
+
+    useEffect(() => {
+        const unsubscribe = fetchFolders();
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, [fetchFolders]);
 
     return (
         <>
@@ -165,30 +183,37 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                                 <TooltipContent side="right" className="ml-2">Create Folder</TooltipContent>
                              </Tooltip>
                         </div>
-                        {folders.map(folder => (
-                             <Tooltip key={folder.id} delayDuration={0}>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        asChild
-                                        variant={pathname === `/dashboard/folders/${folder.id}` ? 'secondary' : 'ghost'}
-                                        className={cn(
-                                            "w-full justify-start h-10",
-                                            isCollapsed ? "justify-center px-0" : "px-3"
-                                        )}
-                                    >
-                                        <Link href={`/dashboard/folders/${folder.id}`}>
-                                            <FolderIcon className={cn("h-5 w-5", !isCollapsed && "mr-2")} />
-                                            <span className={cn("truncate", isCollapsed && "sr-only")}>{folder.name}</span>
-                                        </Link>
-                                    </Button>
-                                </TooltipTrigger>
-                                {isCollapsed && (
-                                    <TooltipContent side="right" className="ml-2">
-                                        {folder.name}
-                                    </TooltipContent>
-                                )}
-                            </Tooltip>
-                        ))}
+                        {isFoldersLoading ? (
+                            <div className="px-3 space-y-2">
+                                <Skeleton className="h-8 w-full" />
+                                <Skeleton className="h-8 w-full" />
+                            </div>
+                        ) : (
+                            folders.map(folder => (
+                                <Tooltip key={folder.id} delayDuration={0}>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            asChild
+                                            variant={pathname === `/dashboard/folders/${folder.id}` ? 'secondary' : 'ghost'}
+                                            className={cn(
+                                                "w-full justify-start h-10",
+                                                isCollapsed ? "justify-center px-0" : "px-3"
+                                            )}
+                                        >
+                                            <Link href={`/dashboard/folders/${folder.id}`}>
+                                                <FolderIcon className={cn("h-5 w-5", !isCollapsed && "mr-2")} />
+                                                <span className={cn("truncate", isCollapsed && "sr-only")}>{folder.name}</span>
+                                            </Link>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    {isCollapsed && (
+                                        <TooltipContent side="right" className="ml-2">
+                                            {folder.name}
+                                        </TooltipContent>
+                                    )}
+                                </Tooltip>
+                            ))
+                        )}
                     </nav>
                     <nav className="px-4 py-4 space-y-1 border-t mt-auto">
                         <Tooltip delayDuration={0}>
@@ -225,7 +250,11 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                      </Tooltip>
                 </div>
             </aside>
-            <CreateFolderDialog isOpen={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen} onFolderCreated={() => {}}/>
+            <CreateFolderDialog 
+                isOpen={isCreateFolderOpen} 
+                onOpenChange={setIsCreateFolderOpen} 
+                onFolderCreated={fetchFolders}
+            />
         </>
     );
 }
