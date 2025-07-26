@@ -87,6 +87,10 @@ export function SnippetCard({
     }
 
     const displayedTags = showAllTags ? snippet.tags : snippet.tags.slice(0, 2);
+    
+    const showSaveButton = onToggleSave && (collectionType === 'explore' || collectionType === 'my-snippets' || collectionType === 'starred');
+    const showStarButton = onToggleStar && (collectionType === 'explore' || collectionType === 'my-snippets' || collectionType === 'saved');
+
 
     return (
         <Card className="glassmorphic flex flex-col h-full transition-all duration-300 ease-in-out hover:border-accent hover:shadow-lg sm:max-w-none hover:-translate-y-1">
@@ -167,8 +171,8 @@ export function SnippetCard({
                             <Eye className="mr-2 h-4 w-4" /> View
                         </Button>
                     )}
-                    {collectionType === 'explore' && onToggleSave && (
-                        <Button 
+                    {(collectionType === 'explore' || collectionType === 'my-snippets' || collectionType === 'starred') && onToggleSave && (
+                         <Button 
                             className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity" 
                             onClick={() => onToggleSave(snippet)}
                         >
@@ -205,10 +209,10 @@ export function SnippetCard({
                         </Link>
                         <div className="flex items-center gap-2 text-muted-foreground">
                             <TooltipProvider>
-                                {onToggleStar && (
+                                {showStarButton && (
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <button className="flex items-center gap-1" onClick={() => onToggleStar(snippet)}>
+                                            <button className="flex items-center gap-1" onClick={() => onToggleStar && onToggleStar(snippet)}>
                                                 <Star className={cn("h-4 w-4 transition-colors", snippet.isStarred ? "text-yellow-400 fill-yellow-400" : "hover:text-yellow-400")} />
                                                 <span className="text-xs">{formatStars(snippet.starCount || 0)}</span>
                                             </button>

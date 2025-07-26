@@ -75,12 +75,12 @@ export default function MySnippetsPage() {
     }
   }, [user, authLoading, activeTab, fetchSnippets]);
 
-  const handleUnsave = (snippet: Snippet) => {
+  const handleUnsave = (snippetId: string) => {
     if(!user) return;
     startTransition(async () => {
         try {
-            await unsaveSnippet(user.uid, snippet.id);
-            setSavedSnippets(prev => prev.filter(s => s.id !== snippet.id));
+            await unsaveSnippet(user.uid, snippetId);
+            setSavedSnippets(prev => prev.filter(s => s.id !== snippetId));
             toast({ title: "Unsaved", description: "Snippet removed from your saved list." });
         } catch (error) {
             toast({ variant: 'destructive', title: "Error", description: "Failed to unsave snippet." });
@@ -88,12 +88,12 @@ export default function MySnippetsPage() {
     });
   };
 
-  const handleUnstar = (snippet: Snippet) => {
+  const handleUnstar = (snippetId: string) => {
     if(!user) return;
      startTransition(async () => {
         try {
-            await unstarSnippet(user.uid, snippet.id);
-            setStarredSnippets(prev => prev.filter(s => s.id !== snippet.id));
+            await unstarSnippet(user.uid, snippetId);
+            setStarredSnippets(prev => prev.filter(s => s.id !== snippetId));
             toast({ title: "Unstarred", description: "Snippet removed from your starred list." });
         } catch (error) {
             toast({ variant: 'destructive', title: "Error", description: "Failed to unstar snippet." });
@@ -115,12 +115,6 @@ export default function MySnippetsPage() {
     });
   }
 
-  const snippetsMap: Record<string, Snippet[]> = {
-    "my-snippets": mySnippets,
-    "saved": savedSnippets,
-    "starred": starredSnippets
-  }
-
   return (
     <div className="animate-fade-in-up">
         <div className="mb-6">
@@ -136,10 +130,10 @@ export default function MySnippetsPage() {
                 {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={mySnippets} collectionType="my-snippets" onDelete={handleDelete} />}
             </TabsContent>
             <TabsContent value="saved" className="pt-6">
-                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={savedSnippets} collectionType="saved" onToggleSave={handleUnsave} />}
+                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={savedSnippets} collectionType="saved" onUnsave={handleUnsave} />}
             </TabsContent>
             <TabsContent value="starred" className="pt-6">
-                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={starredSnippets} collectionType="starred" onToggleStar={handleUnstar} />}
+                {isLoading ? <MySnippetsLoading /> : <DashboardClientPage snippets={starredSnippets} collectionType="starred" onUnstar={handleUnstar} />}
             </TabsContent>
         </Tabs>
     </div>

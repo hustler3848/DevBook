@@ -75,13 +75,13 @@ export default function FolderPage() {
         }
     }, [authLoading, user, fetchFolderData]);
 
-    const handleRemoveFromFolder = (snippet: Snippet) => {
+    const handleRemoveFromFolder = (snippetId: string) => {
         if (!user || !folder) return;
         startTransition(async () => {
             try {
-                await removeSnippetFromFolder(user.uid, folder.id, snippet.id);
-                setSnippets(prev => prev.filter(s => s.id !== snippet.id));
-                toast({ title: "Removed", description: `${snippet.title} removed from ${folder.name}.` });
+                await removeSnippetFromFolder(user.uid, folder.id, snippetId);
+                setSnippets(prev => prev.filter(s => s.id !== snippetId));
+                toast({ title: "Removed", description: `Snippet removed from ${folder.name}.` });
             } catch (error) {
                 toast({ variant: 'destructive', title: 'Error', description: "Failed to remove snippet." });
             }
@@ -111,7 +111,7 @@ export default function FolderPage() {
             <DashboardClientPage 
                 snippets={snippets} 
                 collectionType="saved"
-                onToggleSave={handleRemoveFromFolder}
+                onUnsave={handleRemoveFromFolder}
             />
             
             {snippets.length === 0 && (
@@ -123,4 +123,3 @@ export default function FolderPage() {
         </div>
     );
 }
-
