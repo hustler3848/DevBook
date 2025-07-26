@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
@@ -30,19 +30,30 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { CodeXml, LogOut, Menu, User, Settings } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import { NavLinks } from './sidebar';
+import type { UserProfile } from '@/types/user';
+import { getUserProfileByUid } from '@/lib/firebase/firestore';
 
 
 export function DashboardHeader() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [isLogoutAlertOpen, setIsLogoutAlertOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      getUserProfileByUid(user.uid).then(profile => {
+        setUserProfile(profile);
+      });
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
     router.push('/');
   };
   
-  const username = user?.displayName ? user.displayName.toLowerCase().replace(/ /g, '') : 'currentuser';
+  const username = userProfile?.username || user?.displayName?.toLowerCase().replace(/ /g, '') || 'currentuser';
 
   return (
     <>

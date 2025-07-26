@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
     const params = useParams();
+    const router = useRouter();
     const { toast } = useToast();
     const { user: currentUser, loading: authLoading } = useAuth();
     const username = params.username as string;
@@ -44,8 +45,10 @@ export default function ProfilePage() {
 
                 // If it's the user's own profile, fetch their private stats
                 if (currentUser?.uid === foundUser.uid) {
-                    const saved = await getSavedSnippets(currentUser.uid);
-                    const starred = await getStarredSnippets(currentUser.uid);
+                    const [saved, starred] = await Promise.all([
+                        getSavedSnippets(currentUser.uid),
+                        getStarredSnippets(currentUser.uid)
+                    ]);
                     setStats({ saved: saved.length, starred: starred.length });
                 }
 
@@ -75,18 +78,20 @@ export default function ProfilePage() {
         if (profileUser && currentUser) {
             try {
                 await updateUserProfileInDb(currentUser.uid, updatedProfile);
+                
+                const newUsername = updatedProfile.username;
+                const oldUsername = profileUser.username;
+
                 setProfileUser(prev => prev ? { ...prev, ...updatedProfile } : null);
+                
                 toast({
                     title: "Profile Updated",
                     description: "Your profile has been successfully updated.",
                 });
                 setIsEditDialogOpen(false);
 
-                // If username changed, we might need to redirect, but for now we just update state
-                if (updatedProfile.username && updatedProfile.username !== username) {
-                    // For simplicity, we'll just refetch data for the new username state
-                    // A redirect would also be a good option here.
-                    fetchProfileData();
+                if (newUsername && newUsername !== oldUsername) {
+                    router.replace(`/dashboard/profile/${newUsername}`);
                 }
 
             } catch (error: any) {

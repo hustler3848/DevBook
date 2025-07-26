@@ -29,7 +29,17 @@ export const createUserProfileDocument = async (user: UserDetails, additionalDat
     if (!snapshot.exists()) {
         const { displayName, photoURL } = user;
         const createdAt = serverTimestamp();
-        const username = (displayName || 'user').toLowerCase().replace(/[^a-z0-9]/g, '') + Math.random().toString(36).substring(2, 6);
+        
+        // Improved username generation
+        const baseUsername = (displayName || 'user').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const existingUserQuery = query(collection(db, 'users'), where('username', '==', baseUsername));
+        const existingUserSnapshot = await getDocs(existingUserQuery);
+        
+        let username = baseUsername;
+        if (!existingUserSnapshot.empty) {
+            // If username exists, append a random string to make it unique
+            username = `${baseUsername}-${Math.random().toString(36).substring(2, 6)}`;
+        }
 
         try {
             await setDoc(userRef, {
@@ -64,7 +74,8 @@ export const updateUserProfile = async (userId: string, profileData: Partial<Use
     if (profileData.username) {
         const q = query(collection(db, 'users'), where('username', '==', profileData.username));
         const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty && querySnapshot.docs[0].id !== userId) {
+        const isTaken = querySnapshot.docs.some(doc => doc.id !== userId);
+        if (isTaken) {
             throw new Error('Username is already taken. Please choose another.');
         }
     }
@@ -87,16 +98,21 @@ export const updateUserProfile = async (userId: string, profileData: Partial<Use
         if (profileData.name) updateData.author = profileData.name;
         if (profileData.username) updateData.authorUsername = profileData.username;
         if (profileData.avatar) updateData.avatar = profileData.avatar;
-        batch.update(snippetRef, updateData);
+        if(Object.keys(updateData).length > 0) {
+            batch.update(snippetRef, updateData);
+        }
     });
 
     await batch.commit();
 
     // 3. Update Firebase Auth profile
-    await updateProfile(user, {
-        displayName: profileData.name,
-        photoURL: profileData.avatar,
-    });
+    const authProfileUpdate: { displayName?: string | null, photoURL?: string | null } = {};
+    if (profileData.name) authProfileUpdate.displayName = profileData.name;
+    if (profileData.avatar) authProfileUpdate.photoURL = profileData.avatar;
+
+    if (Object.keys(authProfileUpdate).length > 0) {
+        await updateProfile(user, authProfileUpdate);
+    }
 };
 
 
@@ -110,6 +126,9 @@ export const addSnippet = async (user: UserDetails, data: SnippetInput) => {
 
   const userProfileRef = doc(db, 'users', user.uid);
   const userProfileSnap = await getDoc(userProfileRef);
+  if(!userProfileSnap.exists()) {
+    throw new Error("User profile does not exist.");
+  }
   const userProfile = userProfileSnap.data() as UserProfile;
   
   await addDoc(collection(db, 'snippets'), {
@@ -338,6 +357,16 @@ export const getUserInteractionStatus = async (userId: string): Promise<{ starre
     return { starred, saved };
 };
 
+export const getUserProfileByUid = async (userId: string): Promise<UserProfile | null> => {
+    if (!userId) return null;
+    const userRef = doc(db, 'users', userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+        return { id: userSnap.id, ...userSnap.data() } as UserProfile;
+    }
+    return null;
+}
+
 /**
  * Finds a user profile by their username.
  * @param username The username to search for.
@@ -353,7 +382,7 @@ export const findUserByUsername = async (username: string): Promise<UserProfile 
     }
 
     const userDoc = querySnapshot.docs[0];
-    const userProfile = { id: userDoc.id, ...userDoc.data() } as UserProfile;
+    const userProfile = { uid: userDoc.id, ...userDoc.data() } as UserProfile;
     
     return userProfile;
 }
