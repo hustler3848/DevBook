@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
+import { useAuth } from '@/context/auth-context';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,11 +12,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { Snippet } from '@/types/snippet';
-import { Search, Star, Eye, Plus, ChevronDown, ChevronUp, Bookmark, Trash2, MoreVertical } from 'lucide-react';
+import type { Folder } from '@/types/folder';
+import { Eye, Star, ChevronDown, ChevronUp, Bookmark, Trash2, MoreVertical, FolderPlus } from 'lucide-react';
+import { getFolders, addSnippetToFolder } from '@/lib/firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 export interface SnippetCardProps {
     snippet: Snippet;
@@ -37,12 +41,18 @@ export function SnippetCard({
     collectionType = 'explore'
 }: SnippetCardProps) {
     const { theme } = useTheme();
+    const { user } = useAuth();
+    const { toast } = useToast();
     const [mounted, setMounted] = useState(false);
     const [showAllTags, setShowAllTags] = useState(false);
+    const [folders, setFolders] = useState<Folder[]>([]);
 
     useEffect(() => {
         setMounted(true);
-    }, []);
+        if (user) {
+            getFolders(user.uid, setFolders);
+        }
+    }, [user]);
 
     const syntaxTheme = theme === 'dark' ? oneDark : oneLight;
     const cardBg = theme === 'dark' ? 'bg-black/10' : 'bg-gray-50/50';
@@ -52,6 +62,24 @@ export function SnippetCard({
             return (num / 1000).toFixed(1) + 'k';
         }
         return num.toString();
+    };
+
+    const handleAddToFolder = async (folderId: string, folderName: string) => {
+        if (!user) return;
+        try {
+            await addSnippetToFolder(user.uid, folderId, snippet.id);
+            toast({
+                title: 'Snippet Added',
+                description: `"${snippet.title}" has been added to the "${folderName}" folder.`,
+            });
+        } catch (error) {
+            console.error(error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Failed to add snippet to folder.',
+            });
+        }
     };
 
     if (!mounted) {
@@ -65,35 +93,53 @@ export function SnippetCard({
             <CardHeader>
                 <div className="flex justify-between items-start">
                     <CardTitle className="font-headline text-lg flex-1 pr-2">{snippet.title}</CardTitle>
-                    {collectionType !== 'explore' && collectionType !== 'public-profile' && (
-                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                                    <MoreVertical className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {collectionType === 'my-snippets' && onDelete && (
-                                    <DropdownMenuItem onClick={() => onDelete(snippet.id)}>
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        <span>Delete</span>
-                                    </DropdownMenuItem>
-                                )}
-                                {collectionType === 'saved' && onToggleSave && (
-                                    <DropdownMenuItem onClick={() => onToggleSave(snippet)}>
-                                        <Bookmark className="mr-2 h-4 w-4" />
-                                        <span>Unsave</span>
-                                    </DropdownMenuItem>
-                                )}
-                                {collectionType === 'starred' && onToggleStar &&(
-                                     <DropdownMenuItem onClick={() => onToggleStar(snippet)}>
-                                        <Star className="mr-2 h-4 w-4" />
-                                        <span>Unstar</span>
-                                    </DropdownMenuItem>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {onSelect && <DropdownMenuItem onClick={() => onSelect(snippet)}><Eye className="mr-2 h-4 w-4" /> View Snippet</DropdownMenuItem>}
+                            {collectionType === 'my-snippets' && onDelete && (
+                                <DropdownMenuItem onClick={() => onDelete(snippet.id)} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>Delete</span>
+                                </DropdownMenuItem>
+                            )}
+                            {collectionType === 'saved' && onToggleSave && (
+                                <DropdownMenuItem onClick={() => onToggleSave(snippet)}>
+                                    <Bookmark className="mr-2 h-4 w-4" />
+                                    <span>Unsave</span>
+                                </DropdownMenuItem>
+                            )}
+                            {collectionType === 'starred' && onToggleStar &&(
+                                 <DropdownMenuItem onClick={() => onToggleStar(snippet)}>
+                                    <Star className="mr-2 h-4 w-4" />
+                                    <span>Unstar</span>
+                                </DropdownMenuItem>
+                            )}
+                            {user && (
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger>
+                                        <FolderPlus className="mr-2 h-4 w-4" />
+                                        <span>Add to Folder</span>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent>
+                                            {folders.length > 0 ? folders.map(folder => (
+                                                <DropdownMenuItem key={folder.id} onClick={() => handleAddToFolder(folder.id, folder.name)}>
+                                                    <span>{folder.name}</span>
+                                                </DropdownMenuItem>
+                                            )) : (
+                                                <DropdownMenuItem disabled>No folders created</DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
                 <div className="flex pt-2">
                      <div className={cn(badgeVariants({ variant: "secondary" }))}>

@@ -1,12 +1,14 @@
 
 
 
+
 import { db, auth } from './config';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId, runTransaction, limit, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId, runTransaction, limit, onSnapshot, Unsubscribe, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import type { Snippet } from '@/types/snippet';
 import type { UserProfile } from '@/types/user';
 import type { Comment } from '@/types/comment';
+import type { Folder } from '@/types/folder';
 
 type UserDetails = {
     uid: string;
@@ -465,4 +467,109 @@ export const getComments = (snippetId: string, callback: (comments: Comment[]) =
         const comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment));
         callback(comments);
     });
+};
+
+// --- Folder Functionality ---
+
+const getFoldersCollection = (userId: string) => collection(db, 'users', userId, 'folders');
+
+/**
+ * Listens for real-time updates to a user's folders.
+ */
+export const getFolders = (userId: string, callback: (folders: Folder[]) => void): Unsubscribe => {
+    const foldersQuery = query(getFoldersCollection(userId), orderBy('createdAt', 'desc'));
+
+    return onSnapshot(foldersQuery, (snapshot) => {
+        const folders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Folder));
+        callback(folders);
+    });
+};
+
+/**
+ * Get a single folder's details.
+ */
+export const getFolder = async (userId: string, folderId: string): Promise<Folder | null> => {
+    const folderRef = doc(getFoldersCollection(userId), folderId);
+    const folderSnap = await getDoc(folderRef);
+
+    if (folderSnap.exists()) {
+        return { id: folderSnap.id, ...folderSnap.data() } as Folder;
+    }
+    return null;
+}
+
+/**
+ * Creates a new folder for a user.
+ */
+export const createFolder = async (userId: string, folderName: string, description: string = '') => {
+    await addDoc(getFoldersCollection(userId), {
+        name: folderName,
+        description: description,
+        creatorId: userId,
+        snippetIds: [],
+        createdAt: serverTimestamp(),
+    });
+};
+
+/**
+ * Deletes a folder.
+ */
+export const deleteFolder = async (userId: string, folderId: string) => {
+    await deleteDoc(doc(getFoldersCollection(userId), folderId));
+};
+
+/**
+ * Updates a folder's details.
+ */
+export const updateFolder = async (userId: string, folderId: string, data: Partial<Folder>) => {
+    await updateDoc(doc(getFoldersCollection(userId), folderId), data);
+};
+
+/**
+ * Adds a snippet to a folder.
+ */
+export const addSnippetToFolder = async (userId: string, folderId: string, snippetId: string) => {
+    const folderRef = doc(getFoldersCollection(userId), folderId);
+    await updateDoc(folderRef, {
+        snippetIds: arrayUnion(snippetId)
+    });
+};
+
+/**
+ * Removes a snippet from a folder.
+ */
+export const removeSnippetFromFolder = async (userId: string, folderId: string, snippetId: string) => {
+    const folderRef = doc(getFoldersCollection(userId), folderId);
+    await updateDoc(folderRef, {
+        snippetIds: arrayRemove(snippetId)
+    });
+};
+
+/**
+ * Fetches all snippets contained within a specific folder.
+ */
+export const getSnippetsInFolder = async (userId: string, folderId: string): Promise<Snippet[]> => {
+    const folder = await getFolder(userId, folderId);
+    if (!folder || folder.snippetIds.length === 0) {
+        return [];
+    }
+
+    const snippetIds = folder.snippetIds;
+    const snippetsData: Snippet[] = [];
+
+    for (let i = 0; i < snippetIds.length; i += 30) {
+        const chunk = snippetIds.slice(i, i + 30);
+        const snippetsQuery = query(collection(db, 'snippets'), where(documentId(), 'in', chunk));
+        const snippetsSnapshot = await getDocs(snippetsQuery);
+        snippetsSnapshot.forEach(doc => {
+            snippetsData.push({ id: doc.id, ...doc.data() } as Snippet);
+        });
+    }
+
+    const snippetsMap = new Map(snippetsData.map(snippet => [snippet.id, snippet]));
+    
+    // Preserve the order from the folder's snippetIds array
+    return snippetIds
+        .map(id => snippetsMap.get(id))
+        .filter(Boolean) as Snippet[];
 };

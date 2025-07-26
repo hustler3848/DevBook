@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useTransition, useCallback } from "react";
 import { useAuth } from "@/context/auth-context";
-import { getUserSnippets, getSavedSnippets, getStarredSnippets, unsaveSnippet, unstarSnippet, deleteSnippet } from "@/lib/firebase/firestore";
+import { getUserSnippets, getSavedSnippets, getStarredSnippets, unsaveSnippet, unstarSnippet, deleteSnippet, removeSnippetFromFolder } from "@/lib/firebase/firestore";
 import type { Snippet } from "@/types/snippet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardClientPage from "../dashboard-client-page";
