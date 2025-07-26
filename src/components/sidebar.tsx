@@ -78,8 +78,6 @@ function CreateFolderDialog({ isOpen, onOpenChange, onFolderCreated }: { isOpen:
             toast({ title: "Folder Created", description: `"${name}" has been created.` });
             onFolderCreated();
             onOpenChange(false);
-            setName('');
-            setDescription('');
         } catch (error) {
             console.error("Failed to create folder:", error);
             toast({ variant: "destructive", title: "Error", description: "Could not create folder." });
@@ -88,27 +86,36 @@ function CreateFolderDialog({ isOpen, onOpenChange, onFolderCreated }: { isOpen:
         }
     }
 
+    // Reset state when dialog closes
+    useEffect(() => {
+        if (!isOpen) {
+            setName('');
+            setDescription('');
+            setIsSubmitting(false);
+        }
+    }, [isOpen]);
+
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Create New Folder</DialogTitle>
-                    <DialogDescription>Organize your snippets into folders.</DialogDescription>
+                    <DialogTitle className="font-headline text-xl">Create New Folder</DialogTitle>
+                    <DialogDescription>Organize your snippets into folders for easy access.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 pt-2">
                     <div className="space-y-2">
                         <Label htmlFor="folder-name">Folder Name</Label>
                         <Input id="folder-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., React Hooks" required />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="folder-description">Description (Optional)</Label>
-                        <Input id="folder-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A brief description" />
+                        <Input id="folder-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="A brief description of this folder" />
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="pt-4">
                         <DialogClose asChild>
                             <Button type="button" variant="outline">Cancel</Button>
                         </DialogClose>
-                        <Button type="submit" disabled={isSubmitting || !name.trim()}>
+                        <Button type="submit" disabled={isSubmitting || !name.trim()} className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Create
                         </Button>
@@ -125,7 +132,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const pathname = usePathname();
     const [folders, setFolders] = useState<Folder[]>([]);
     const [isFoldersLoading, setIsFoldersLoading] = useState(true);
@@ -146,13 +153,15 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
     }, [user]);
 
     useEffect(() => {
-        const unsubscribe = fetchFolders();
-        return () => {
-            if (unsubscribe) {
-                unsubscribe();
-            }
-        };
-    }, [fetchFolders]);
+        if (!authLoading) {
+            const unsubscribe = fetchFolders();
+            return () => {
+                if (unsubscribe) {
+                    unsubscribe();
+                }
+            };
+        }
+    }, [authLoading, user, fetchFolders]);
 
     return (
         <>
@@ -183,8 +192,8 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                                 <TooltipContent side="right" className="ml-2">Create Folder</TooltipContent>
                              </Tooltip>
                         </div>
-                        {isFoldersLoading ? (
-                            <div className="px-3 space-y-2">
+                        {isFoldersLoading && authLoading ? (
+                            <div className="px-3 space-y-2 mt-2">
                                 <Skeleton className="h-8 w-full" />
                                 <Skeleton className="h-8 w-full" />
                             </div>
