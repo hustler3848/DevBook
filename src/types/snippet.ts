@@ -16,6 +16,7 @@ export interface Snippet {
   isPublic: boolean;
   starCount: number;
   saveCount: number;
+  commentCount: number;
   // Client-side only fields for user interactions
   isStarred?: boolean;
   isSaved?: boolean;

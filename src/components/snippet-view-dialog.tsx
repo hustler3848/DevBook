@@ -1,22 +1,27 @@
 
+
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/auth-context';
 import { Dialog, DialogContent, DialogClose, DialogOverlay, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Bookmark, Copy, Star, Check, X, Wand2 } from 'lucide-react';
+import { Bookmark, Copy, Star, Check, X, Wand2, MessageSquare, Send, Trash2, Loader2 } from 'lucide-react';
 import type { Snippet } from '@/types/snippet';
+import type { Comment } from '@/types/comment';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { explainAndReviewCode, type ExplainCodeOutput } from '@/ai/flows/explain-code';
+import { addComment, deleteComment, getComments } from '@/lib/firebase/firestore';
 import { CodeExplanationDialog } from './code-explanation-dialog';
 
 
@@ -26,6 +31,128 @@ interface SnippetViewDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onToggleStar: (snippet: Snippet) => void;
   onToggleSave: (snippet: Snippet) => void;
+}
+
+const CommentsSection = ({ snippetId }: { snippetId: string }) => {
+    const { user, loading: authLoading } = useAuth();
+    const { toast } = useToast();
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [newComment, setNewComment] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!snippetId) return;
+
+        setIsLoading(true);
+        const unsubscribe = getComments(snippetId, (fetchedComments) => {
+            setComments(fetchedComments);
+            setIsLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [snippetId]);
+
+    const handleAddComment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user || !newComment.trim()) return;
+
+        setIsSubmitting(true);
+        try {
+            await addComment(snippetId, user.uid, newComment.trim());
+            setNewComment('');
+        } catch (error) {
+            console.error("Error adding comment:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Failed to add your comment. Please try again.'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    const handleDeleteComment = async (commentId: string) => {
+        try {
+            await deleteComment(snippetId, commentId);
+            toast({ title: "Comment deleted." });
+        } catch (error) {
+            console.error("Error deleting comment:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Failed to delete the comment.'
+            });
+        }
+    };
+
+
+    return (
+        <div className="space-y-6 pt-4">
+            <h3 className="font-headline text-lg font-semibold flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                Discussion
+            </h3>
+
+            {user && (
+                <form onSubmit={handleAddComment} className="flex items-start gap-3">
+                    <Avatar className="h-9 w-9 mt-1">
+                        <AvatarImage src={user.photoURL || undefined} />
+                        <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                        <Textarea
+                            placeholder="Add your comment..."
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            className="min-h-[60px]"
+                        />
+                         <Button type="submit" size="sm" disabled={isSubmitting || !newComment.trim()} className="mt-2">
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                            Post Comment
+                        </Button>
+                    </div>
+                </form>
+            )}
+
+            <div className="space-y-4">
+                {isLoading && <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />}
+                {!isLoading && comments.length === 0 && (
+                    <p className="text-sm text-center py-4 text-muted-foreground">Be the first to comment.</p>
+                )}
+                {comments.map(comment => (
+                     <div key={comment.id} className="flex items-start gap-3">
+                        <Link href={`/dashboard/profile/${comment.authorUsername}`}>
+                            <Avatar className="h-9 w-9">
+                                <AvatarImage src={comment.authorAvatar} />
+                                <AvatarFallback>{comment.authorName.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                        </Link>
+                        <div className="flex-1 bg-muted/50 rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                     <Link href={`/dashboard/profile/${comment.authorUsername}`} className="font-semibold text-sm hover:underline">
+                                        {comment.authorName}
+                                    </Link>
+                                    <span className="text-xs text-muted-foreground">
+                                        {formatDistanceToNow(comment.createdAt.toDate(), { addSuffix: true })}
+                                    </span>
+                                </div>
+                                {user?.uid === comment.authorId && (
+                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteComment(comment.id)}>
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Delete comment</span>
+                                    </Button>
+                                )}
+                            </div>
+                            <p className="text-sm mt-1">{comment.text}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
 }
 
 export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar, onToggleSave }: SnippetViewDialogProps) {
@@ -176,6 +303,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
                   <span className="sr-only">Copy Code</span>
               </Button>
             </div>
+             <CommentsSection snippetId={snippet.id} />
           </div>
         </div>
 

@@ -1,10 +1,12 @@
 
 
+
 import { db, auth } from './config';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId, runTransaction, limit } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId, runTransaction, limit, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import type { Snippet } from '@/types/snippet';
 import type { UserProfile } from '@/types/user';
+import type { Comment } from '@/types/comment';
 
 type UserDetails = {
     uid: string;
@@ -13,8 +15,8 @@ type UserDetails = {
 }
 
 // Type for the data being sent to Firestore, omitting fields that are auto-generated or client-side
-type SnippetInput = Omit<Snippet, 'id' | 'createdAt' | 'updatedAt' | 'creatorId' | 'author' | 'authorUsername' | 'avatar' | 'starCount' | 'saveCount' | 'isStarred' | 'isSaved' | 'dataAiHint'>;
-type SnippetUpdateData = Partial<Omit<Snippet, 'id' | 'creatorId' | 'author' | 'avatar' | 'createdAt' | 'starCount' | 'saveCount'>>;
+type SnippetInput = Omit<Snippet, 'id' | 'createdAt' | 'updatedAt' | 'creatorId' | 'author' | 'authorUsername' | 'avatar' | 'starCount' | 'saveCount' | 'commentCount' | 'isStarred' | 'isSaved' | 'dataAiHint'>;
+type SnippetUpdateData = Partial<Omit<Snippet, 'id' | 'creatorId' | 'author' | 'avatar' | 'createdAt' | 'starCount' | 'saveCount' | 'commentCount'>>;
 
 /**
  * Creates a user profile document in Firestore if it doesn't already exist.
@@ -144,6 +146,7 @@ export const addSnippet = async (user: UserDetails, data: SnippetInput) => {
     updatedAt: serverTimestamp(),
     starCount: 0,
     saveCount: 0,
+    commentCount: 0,
   });
 };
 
@@ -253,7 +256,7 @@ export const unstarSnippet = async (userId: string, snippetId: string) => {
     await runTransaction(db, async (transaction) => {
         const snippetDoc = await transaction.get(snippetRef);
         if (snippetDoc.exists() && (snippetDoc.data().starCount || 0) > 0) {
-            transaction.update(snippetRef, { starCount: snippetDoc.data().starCount - 1 });
+            transaction.update(snippetRef, { starCount: increment(-1) });
         }
         transaction.delete(starDocRef);
     });
@@ -284,7 +287,7 @@ export const unsaveSnippet = async (userId: string, snippetId: string) => {
     await runTransaction(db, async (transaction) => {
         const snippetDoc = await transaction.get(snippetRef);
         if (snippetDoc.exists() && (snippetDoc.data().saveCount || 0) > 0) {
-            transaction.update(snippetRef, { saveCount: snippetDoc.data().saveCount - 1 });
+            transaction.update(snippetRef, { saveCount: increment(-1) });
         }
         transaction.delete(saveDocRef);
     });
@@ -405,4 +408,61 @@ export const getPublicSnippetsForUser = async (userId: string): Promise<Snippet[
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Snippet));
+};
+
+// --- Comments Functionality ---
+
+/**
+ * Adds a comment to a snippet.
+ */
+export const addComment = async (snippetId: string, userId: string, text: string) => {
+    if (!snippetId || !userId || !text) throw new Error("Missing required fields for comment.");
+
+    const userProfile = await getUserProfileByUid(userId);
+    if (!userProfile) throw new Error("User profile not found.");
+
+    const commentCollection = collection(db, 'snippets', snippetId, 'comments');
+    const snippetRef = doc(db, 'snippets', snippetId);
+
+    await runTransaction(db, async (transaction) => {
+        transaction.update(snippetRef, { commentCount: increment(1) });
+        transaction.set(doc(commentCollection), {
+            text,
+            authorId: userId,
+            authorName: userProfile.name,
+            authorAvatar: userProfile.avatar,
+            authorUsername: userProfile.username,
+            createdAt: serverTimestamp(),
+        });
+    });
+};
+
+/**
+ * Deletes a comment from a snippet.
+ */
+export const deleteComment = async (snippetId: string, commentId: string) => {
+    if (!snippetId || !commentId) throw new Error("Snippet ID and Comment ID are required.");
+    
+    const commentRef = doc(db, 'snippets', snippetId, 'comments', commentId);
+    const snippetRef = doc(db, 'snippets', snippetId);
+
+    await runTransaction(db, async (transaction) => {
+        const snippetDoc = await transaction.get(snippetRef);
+        if (snippetDoc.exists() && (snippetDoc.data().commentCount || 0) > 0) {
+            transaction.update(snippetRef, { commentCount: increment(-1) });
+        }
+        transaction.delete(commentRef);
+    });
+};
+
+/**
+ * Listens for real-time updates to a snippet's comments.
+ */
+export const getComments = (snippetId: string, callback: (comments: Comment[]) => void): Unsubscribe => {
+    const commentsQuery = query(collection(db, 'snippets', snippetId, 'comments'), orderBy('createdAt', 'desc'));
+
+    return onSnapshot(commentsQuery, (snapshot) => {
+        const comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment));
+        callback(comments);
+    });
 };
