@@ -32,8 +32,8 @@ const ContentDisplay = ({ result, snippetLanguage }: { result: ExplainCodeOutput
     const syntaxTheme = theme === 'dark' ? oneDark : oneLight;
 
     return (
-        <ScrollArea className="flex-grow h-1">
-            <div className="p-6 space-y-8">
+        <ScrollArea className="flex-grow h-1 px-6">
+            <div className="py-6 space-y-8">
                 <div className="space-y-4">
                     <h3 className="font-headline text-xl font-semibold flex items-center gap-2">
                         <FileText className="h-5 w-5 text-primary" />
@@ -108,4 +108,3 @@ export function CodeExplanationDialog({ isOpen, onOpenChange, isLoading, result,
         </Dialog>
     );
 }
-

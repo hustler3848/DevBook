@@ -19,8 +19,8 @@ const ExplainCodeInputSchema = z.object({
 export type ExplainCodeInput = z.infer<typeof ExplainCodeInputSchema>;
 
 const ExplainCodeOutputSchema = z.object({
-  explanation: z.string().describe("A detailed but easy-to-understand explanation of the code. Use markdown for formatting, including bullet points for key concepts."),
-  review: z.string().describe("A constructive review of the code, suggesting improvements for performance, readability, or best practices. Provide corrected code blocks using markdown fences where applicable."),
+  explanation: z.string().describe("A brief, one to two-sentence explanation of the code. Use markdown for formatting."),
+  review: z.string().describe("A constructive review of the code, suggesting 1-2 key improvements for performance, readability, or best practices. Provide corrected code blocks using markdown fences where applicable. Keep it concise."),
 });
 export type ExplainCodeOutput = z.infer<typeof ExplainCodeOutputSchema>;
 
@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   input: {schema: ExplainCodeInputSchema},
   output: {schema: ExplainCodeOutputSchema},
   prompt: `You are a world-class software engineering expert and a senior code reviewer at Google.
-  Your task is to analyze a given code snippet and provide a clear explanation and a constructive review.
+  Your task is to analyze a given code snippet and provide a clear, concise explanation and a constructive review.
 
   Language: {{{language}}}
   Code Snippet:
@@ -42,16 +42,14 @@ const prompt = ai.definePrompt({
   \`\`\`
 
   1.  **Explanation**:
-      -   Start with a one-sentence summary of what the code does.
-      -   Explain the core concepts and logic in a simple, easy-to-understand way.
-      -   Use markdown, such as bullet points, to break down complex parts.
+      -   Provide a brief, one to two-sentence summary of what the code does.
 
   2.  **Code Review**:
-      -   Identify areas for improvement. This could include performance, readability, security, or modern best practices.
-      -   Provide specific, actionable suggestions.
+      -   Identify 1-2 critical areas for improvement (e.g., performance, readability, security).
+      -   Provide specific, actionable suggestions. Keep them concise.
       -   When suggesting code changes, include the corrected code block using markdown fences with the correct language identifier.
 
-  Return the result in a valid JSON object matching the required schema.`,
+  Return the result in a valid JSON object matching the required schema. Be brief.`,
 });
 
 const explainCodeFlow = ai.defineFlow(
