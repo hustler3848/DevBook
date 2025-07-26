@@ -13,14 +13,18 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
+import { UserProfile } from '@/types/user';
+import { useAuth } from '@/context/auth-context';
+import { updateUserProfile } from '@/lib/firebase/firestore';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  username: z.string().min(3, { message: "Username must be at least 3 characters." }).regex(/^[a-z0-9_]+$/, "Username can only contain lowercase letters, numbers, and underscores."),
+  username: z.string().min(3, { message: "Username must be at least 3 characters." }).regex(/^[a-z0-9_.-]+$/, "Username can only contain lowercase letters, numbers, underscores, periods, and hyphens."),
   bio: z.string().max(160, { message: "Bio must not be longer than 160 characters." }).optional(),
   github: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   twitter: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   linkedin: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+  avatar: z.string().url().optional().or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -28,35 +32,71 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 interface EditProfileDialogProps {
     isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
+    currentUserProfile: UserProfile;
+    onProfileUpdate: (updatedProfile: Partial<UserProfile>) => void;
 }
 
-export function EditProfileDialog({ isOpen, onOpenChange }: EditProfileDialogProps) {
+export function EditProfileDialog({ isOpen, onOpenChange, currentUserProfile, onProfileUpdate }: EditProfileDialogProps) {
     const { toast } = useToast();
-
-    // In a real app, you would fetch the user's current data
-    const defaultValues: Partial<ProfileFormValues> = {
-        name: 'Alex Johnson',
-        username: 'currentuser',
-        bio: 'Full-stack developer with a passion for building scalable and maintainable applications. Currently exploring the world of Go and Rust.',
-        github: 'https://github.com/alexjohnson',
-        twitter: 'https://twitter.com/alexjohnson',
-        linkedin: 'https://linkedin.com/in/alexjohnson',
-    };
+    const { user } = useAuth();
 
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
-        defaultValues,
+        defaultValues: {
+            name: currentUserProfile.name || '',
+            username: currentUserProfile.username || '',
+            bio: currentUserProfile.bio || '',
+            github: currentUserProfile.social?.github || '',
+            twitter: currentUserProfile.social?.twitter || '',
+            linkedin: currentUserProfile.social?.linkedin || '',
+            avatar: currentUserProfile.avatar || '',
+        },
         mode: "onChange",
     });
 
-    const onSubmit = (data: ProfileFormValues) => {
-        console.log(data);
-        toast({
-            title: "Profile Updated",
-            description: "Your changes have been saved successfully.",
-        });
-        onOpenChange(false);
-        // Here you would call your backend to save the data
+    const onSubmit = async (data: ProfileFormValues) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: "Not authenticated" });
+            return;
+        }
+
+        try {
+            await updateUserProfile(user.uid, {
+                name: data.name,
+                username: data.username,
+                bio: data.bio,
+                avatar: data.avatar,
+                social: {
+                    github: data.github,
+                    twitter: data.twitter,
+                    linkedin: data.linkedin,
+                }
+            });
+
+            onProfileUpdate({
+                 name: data.name,
+                 username: data.username,
+                 bio: data.bio,
+                 avatar: data.avatar,
+                 social: {
+                    github: data.github,
+                    twitter: data.twitter,
+                    linkedin: data.linkedin,
+                 }
+            });
+
+            toast({
+                title: "Profile Updated",
+                description: "Your changes have been saved successfully.",
+            });
+            onOpenChange(false);
+        } catch (error: any) {
+             toast({
+                variant: 'destructive',
+                title: "Update Failed",
+                description: error.message || "Could not update profile.",
+            });
+        }
     };
     
     return (
@@ -72,10 +112,22 @@ export function EditProfileDialog({ isOpen, onOpenChange }: EditProfileDialogPro
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                                 <div className="flex items-center space-x-4">
                                     <Avatar className="h-20 w-20">
-                                        <AvatarImage src="https://placehold.co/128x128.png" data-ai-hint="user avatar" />
-                                        <AvatarFallback>AJ</AvatarFallback>
+                                        <AvatarImage src={form.watch('avatar') || "https://placehold.co/128x128.png"} />
+                                        <AvatarFallback>{form.watch('name')?.substring(0,2) || 'U'}</AvatarFallback>
                                     </Avatar>
-                                    <Button type="button" variant="outline">Change Avatar</Button>
+                                     <FormField
+                                        control={form.control}
+                                        name="avatar"
+                                        render={({ field }) => (
+                                            <FormItem className="flex-grow">
+                                                <FormLabel>Avatar URL</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="https://..." {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                 </div>
                                 
                                 <FormField
@@ -100,7 +152,7 @@ export function EditProfileDialog({ isOpen, onOpenChange }: EditProfileDialogPro
                                             <FormControl>
                                                 <Input placeholder="your_username" {...field} />
                                             </FormControl>
-                                            <FormDescription>This is your public display name. It can only contain lowercase letters, numbers, and underscores.</FormDescription>
+                                            <FormDescription>This is your public display name. Must be unique.</FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}

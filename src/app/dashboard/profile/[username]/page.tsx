@@ -1,20 +1,19 @@
 
 "use client"
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, notFound } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Github, Linkedin, Twitter, Edit, Code, Star, Bookmark } from 'lucide-react';
 import DashboardClientPage from '../../dashboard-client-page';
-import { notFound } from 'next/navigation';
 import { EditProfileDialog } from '@/components/edit-profile-dialog';
 import type { Snippet } from '@/types/snippet';
-import { getUserSnippets, getPublicSnippets, getSavedSnippets, getStarredSnippets } from '@/lib/firebase/firestore';
+import { getPublicSnippetsForUser, getSavedSnippets, getStarredSnippets, findUserByUsername } from '@/lib/firebase/firestore';
 import ProfileLoading from './loading';
-
+import { UserProfile } from '@/types/user';
 
 export default function ProfilePage() {
     const params = useParams();
@@ -22,54 +21,58 @@ export default function ProfilePage() {
     const username = params.username as string;
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     
-    // In a real app, you would fetch user data here based on the username param
-    const [profileUser, setProfileUser] = useState<any>(null);
+    const [profileUser, setProfileUser] = useState<UserProfile | null>(null);
     const [userSnippets, setUserSnippets] = useState<Snippet[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchProfileData = async () => {
-            if (!username) return;
-            setIsLoading(true);
-            
-            // This is a simplified lookup. In a real app, you'd query Firestore for a user by their username.
-            // For this example, we'll just check if we are viewing the current user's profile.
-            
-            if (currentUser && (currentUser.displayName?.toLowerCase().replace(/ /g, '') === username || (currentUser.email && username === 'currentuser'))) {
-                 const [created, saved, starred, publicSnippets] = await Promise.all([
-                    getUserSnippets(currentUser.uid),
-                    getSavedSnippets(currentUser.uid),
-                    getStarredSnippets(currentUser.uid),
-                    getPublicSnippets(currentUser.uid)
-                ]);
+    const isOwnProfile = currentUser?.uid === profileUser?.uid;
 
+    const fetchProfileData = useCallback(async () => {
+        if (!username) return;
+        setIsLoading(true);
+        
+        try {
+            const foundUser = await findUserByUsername(username);
+
+            if (foundUser) {
+                const [publicSnippets, savedSnippets, starredSnippets] = await Promise.all([
+                    getPublicSnippetsForUser(foundUser.uid),
+                    isOwnProfile ? getSavedSnippets(foundUser.uid) : [],
+                    isOwnProfile ? getStarredSnippets(foundUser.uid) : []
+                ]);
+                
                 setProfileUser({
-                    name: currentUser.displayName,
-                    username: username,
-                    avatar: currentUser.photoURL || 'https://placehold.co/128x128.png',
-                    dataAiHint: 'user avatar',
-                    bio: 'Edit your bio by clicking the button above!', // Placeholder
-                    social: {}, // Placeholder
+                    ...foundUser,
                     stats: {
-                        created: created.length,
-                        saved: saved.length,
-                        starred: starred.length,
+                        created: publicSnippets.length,
+                        saved: savedSnippets.length,
+                        starred: starredSnippets.length,
                     }
                 });
                 setUserSnippets(publicSnippets);
             } else {
-                // Here you would fetch another user's public profile data.
-                // For now, we'll just show a not found state if it's not the current user.
                 setProfileUser(null);
             }
+        } catch (error) {
+            console.error("Failed to fetch profile data", error);
+            setProfileUser(null);
+        } finally {
             setIsLoading(false);
         }
-        
+    }, [username, isOwnProfile]);
+
+    useEffect(() => {
+        // Fetch data when component mounts or username changes
         if (!authLoading) {
             fetchProfileData();
         }
+    }, [username, authLoading, fetchProfileData]);
 
-    }, [username, currentUser, authLoading]);
+    const handleProfileUpdate = (updatedProfile: Partial<UserProfile>) => {
+        if (profileUser) {
+            setProfileUser(prev => prev ? { ...prev, ...updatedProfile } : null);
+        }
+    }
 
 
     if (isLoading) {
@@ -79,9 +82,6 @@ export default function ProfilePage() {
     if (!profileUser) {
         return notFound();
     }
-    
-    const isOwnProfile = currentUser?.displayName?.toLowerCase().replace(/ /g,'') === profileUser.username || (currentUser?.email && profileUser.username === 'currentuser');
-
 
     return (
         <>
@@ -93,8 +93,8 @@ export default function ProfilePage() {
                         <CardContent className="p-6">
                             <div className="flex flex-col items-center space-y-4">
                                 <Avatar className="h-24 w-24 border-2 border-primary">
-                                    <AvatarImage src={profileUser.avatar} alt={profileUser.name} data-ai-hint={profileUser.dataAiHint} />
-                                    <AvatarFallback>{profileUser.name.charAt(0)}</AvatarFallback>
+                                    <AvatarImage src={profileUser.avatar} alt={profileUser.name} />
+                                    <AvatarFallback>{profileUser.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div className="text-center">
                                     <h1 className="text-2xl font-bold font-headline">{profileUser.name}</h1>
@@ -109,9 +109,9 @@ export default function ProfilePage() {
                                 )}
 
                                 <div className="flex space-x-4 pt-2">
-                                    <a href={profileUser.social.github} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Github /></a>
-                                    <a href={profileUser.social.twitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Twitter /></a>
-                                    <a href={profileUser.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Linkedin /></a>
+                                    {profileUser.social?.github && <a href={profileUser.social.github} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Github /></a>}
+                                    {profileUser.social?.twitter && <a href={profileUser.social.twitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Twitter /></a>}
+                                    {profileUser.social?.linkedin && <a href={profileUser.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Linkedin /></a>}
                                 </div>
                             </div>
                         </CardContent>
@@ -124,21 +124,21 @@ export default function ProfilePage() {
                         <CardContent className="space-y-4 text-sm">
                            <div className="flex items-center justify-between">
                                 <span className="flex items-center text-muted-foreground">
-                                    <Code className="mr-2 h-4 w-4" /> Snippets Created
+                                    <Code className="mr-2 h-4 w-4" /> Public Snippets
                                 </span>
-                                <span className="font-semibold">{profileUser.stats.created}</span>
+                                <span className="font-semibold">{profileUser.stats?.created ?? 0}</span>
                            </div>
                            <div className="flex items-center justify-between">
                                 <span className="flex items-center text-muted-foreground">
                                     <Star className="mr-2 h-4 w-4" /> Snippets Starred
                                 </span>
-                                <span className="font-semibold">{profileUser.stats.starred}</span>
+                                <span className="font-semibold">{profileUser.stats?.starred ?? 0}</span>
                            </div>
                            <div className="flex items-center justify-between">
                                 <span className="flex items-center text-muted-foreground">
                                     <Bookmark className="mr-2 h-4 w-4" /> Snippets Saved
                                 </span>
-                                <span className="font-semibold">{profileUser.stats.saved}</span>
+                                <span className="font-semibold">{profileUser.stats?.saved ?? 0}</span>
                            </div>
                         </CardContent>
                     </Card>
@@ -150,10 +150,12 @@ export default function ProfilePage() {
                 </div>
             </div>
         </div>
-        {isOwnProfile && (
+        {isOwnProfile && profileUser && (
             <EditProfileDialog 
                 isOpen={isEditDialogOpen} 
                 onOpenChange={setIsEditDialogOpen} 
+                currentUserProfile={profileUser}
+                onProfileUpdate={handleProfileUpdate}
             />
         )}
         </>

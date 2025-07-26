@@ -2,8 +2,9 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile, fetchSignInMethodsForEmail } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
+import { createUserProfileDocument } from '@/lib/firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface AuthContextType {
@@ -35,12 +36,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const signup = async (email: string, pass: string, fullName: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    if (userCredential.user) {
-        await updateProfile(userCredential.user, {
+    const { user } = userCredential;
+    if (user) {
+        await updateProfile(user, {
             displayName: fullName,
         });
+        await createUserProfileDocument(user, { name: fullName });
         // Manually trigger a state update to reflect the new displayName
-        setUser({ ...userCredential.user, displayName: fullName });
+        setUser({ ...user, displayName: fullName });
     }
     return userCredential;
   };
@@ -49,9 +52,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return signOut(auth);
   };
 
-  const googleSignIn = () => {
+  const googleSignIn = async () => {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    const { user } = result;
+    if (user) {
+      await createUserProfileDocument(user, { name: user.displayName });
+    }
+    return result;
   };
 
   const value = {

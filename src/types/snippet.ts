@@ -9,8 +9,8 @@ export interface Snippet {
   language: string;
   creatorId: string;
   author: string;
+  authorUsername: string;
   avatar: string;
-  dataAiHint?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
   isPublic: boolean;

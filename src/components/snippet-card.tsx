@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -149,13 +150,13 @@ export function SnippetCard({
                     </div>
 
                     <div className="flex justify-between items-center w-full pt-1">
-                        <div className="flex items-center gap-2">
+                        <Link href={`/dashboard/profile/${snippet.authorUsername}`} className="flex items-center gap-2 group">
                             <Avatar className="h-6 w-6">
-                                <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint} />
+                                <AvatarImage src={snippet.avatar} alt={snippet.author} />
                                 <AvatarFallback>{snippet.author?.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <span className="text-xs font-medium text-muted-foreground">{snippet.author}</span>
-                        </div>
+                            <span className="text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors">@{snippet.authorUsername}</span>
+                        </Link>
                         <div className="flex items-center gap-2 text-muted-foreground">
                             <TooltipProvider>
                                 {onToggleStar && (
