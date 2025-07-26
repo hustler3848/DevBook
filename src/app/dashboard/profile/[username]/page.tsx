@@ -11,7 +11,7 @@ import { Github, Linkedin, Twitter, Edit, Code, Star, Bookmark } from 'lucide-re
 import DashboardClientPage from '../../dashboard-client-page';
 import { EditProfileDialog } from '@/components/edit-profile-dialog';
 import type { Snippet } from '@/types/snippet';
-import { getPublicSnippetsForUser, findUserByUsername, updateUserProfile as updateUserProfileInDb } from '@/lib/firebase/firestore';
+import { getPublicSnippetsForUser, findUserByUsername, updateUserProfile as updateUserProfileInDb, getSavedSnippets, getStarredSnippets } from '@/lib/firebase/firestore';
 import ProfileLoading from './loading';
 import { UserProfile } from '@/types/user';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +26,7 @@ export default function ProfilePage() {
     const [profileUser, setProfileUser] = useState<UserProfile | null>(null);
     const [userSnippets, setUserSnippets] = useState<Snippet[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [stats, setStats] = useState({ saved: 0, starred: 0 });
 
     const isOwnProfile = currentUser?.uid === profileUser?.uid;
 
@@ -34,13 +35,20 @@ export default function ProfilePage() {
         setIsLoading(true);
         
         try {
-            // Pass current user's ID to conditionally fetch protected data like stats
-            const foundUser = await findUserByUsername(username, currentUser?.uid);
+            const foundUser = await findUserByUsername(username);
 
             if (foundUser) {
                 setProfileUser(foundUser);
                 const publicSnippets = await getPublicSnippetsForUser(foundUser.uid);
                 setUserSnippets(publicSnippets);
+
+                // If it's the user's own profile, fetch their private stats
+                if (currentUser?.uid === foundUser.uid) {
+                    const saved = await getSavedSnippets(currentUser.uid);
+                    const starred = await getStarredSnippets(currentUser.uid);
+                    setStats({ saved: saved.length, starred: starred.length });
+                }
+
             } else {
                 setProfileUser(null);
             }
@@ -151,13 +159,13 @@ export default function ProfilePage() {
                                     <span className="flex items-center text-muted-foreground">
                                         <Star className="mr-2 h-4 w-4" /> Snippets Starred
                                     </span>
-                                    <span className="font-semibold">{profileUser.stats?.starred ?? 0}</span>
+                                    <span className="font-semibold">{stats.starred}</span>
                                </div>
                                <div className="flex items-center justify-between">
                                     <span className="flex items-center text-muted-foreground">
                                         <Bookmark className="mr-2 h-4 w-4" /> Snippets Saved
                                     </span>
-                                    <span className="font-semibold">{profileUser.stats?.saved ?? 0}</span>
+                                    <span className="font-semibold">{stats.saved}</span>
                                </div>
                              </>
                            )}
