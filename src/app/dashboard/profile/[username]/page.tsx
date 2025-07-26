@@ -11,7 +11,7 @@ import { Github, Linkedin, Twitter, Edit, Code, Star, Bookmark } from 'lucide-re
 import DashboardClientPage from '../../dashboard-client-page';
 import { EditProfileDialog } from '@/components/edit-profile-dialog';
 import type { Snippet } from '@/types/snippet';
-import { getPublicSnippetsForUser, findUserByUsername, updateUserProfile as updateUserProfileInDb, getSavedSnippets, getStarredSnippets } from '@/lib/firebase/firestore';
+import { findUserByUsername, updateUserProfile as updateUserProfileInDb, getSavedSnippets, getStarredSnippets, getPublicSnippetsForUser } from '@/lib/firebase/firestore';
 import ProfileLoading from './loading';
 import { UserProfile } from '@/types/user';
 import { useToast } from '@/hooks/use-toast';
@@ -43,7 +43,6 @@ export default function ProfilePage() {
                 const publicSnippets = await getPublicSnippetsForUser(foundUser.uid);
                 setUserSnippets(publicSnippets);
 
-                // If it's the user's own profile, fetch their private stats
                 if (currentUser?.uid === foundUser.uid) {
                     const [saved, starred] = await Promise.all([
                         getSavedSnippets(currentUser.uid),
@@ -116,10 +115,10 @@ export default function ProfilePage() {
     return (
         <>
         <div className="animate-fade-in-up">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column - Profile Info & Stats */}
-                <div className="lg:col-span-1 space-y-6">
-                    <Card>
+                <div className="lg:col-span-4 xl:col-span-3 space-y-6">
+                     <Card className="glassmorphic">
                         <CardContent className="p-6">
                             <div className="flex flex-col items-center space-y-4">
                                 <Avatar className="h-24 w-24 border-2 border-primary">
@@ -133,7 +132,7 @@ export default function ProfilePage() {
                                 <p className="text-center text-sm text-muted-foreground">{profileUser.bio}</p>
 
                                  {isOwnProfile && (
-                                    <Button onClick={() => setIsEditDialogOpen(true)} className="w-full">
+                                    <Button onClick={() => setIsEditDialogOpen(true)} className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:opacity-90 transition-opacity">
                                         <Edit className="mr-2 h-4 w-4" /> Edit Profile
                                     </Button>
                                 )}
@@ -147,7 +146,7 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
 
-                     <Card>
+                     <Card className="glassmorphic">
                         <CardHeader>
                             <CardTitle className="font-headline text-lg">Stats</CardTitle>
                         </CardHeader>
@@ -179,8 +178,8 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Right Column - Public Snippets */}
-                <div className="lg:col-span-2">
-                   <DashboardClientPage snippets={userSnippets} title="Public Snippets" collectionType="public-profile"/>
+                <div className="lg:col-span-8 xl:col-span-9">
+                   <DashboardClientPage snippets={userSnippets} title={`${isOwnProfile ? 'Your' : ''} Public Snippets`} collectionType="public-profile"/>
                 </div>
             </div>
         </div>

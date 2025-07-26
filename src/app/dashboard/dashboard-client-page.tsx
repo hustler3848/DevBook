@@ -75,7 +75,7 @@ export default function DashboardClientPage({ snippets, title, collectionType = 
       {title && <h1 className="text-2xl sm:text-3xl font-bold font-headline mb-4">{title}</h1>}
       {snippets.length > 0 ? (
         <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {snippets.map(snippet => (
                 <SnippetCard 
                     key={snippet.id} 
@@ -100,7 +100,8 @@ export default function DashboardClientPage({ snippets, title, collectionType = 
         </>
       ) : (
         currentEmptyState && (
-         <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg">
+         <div className="flex flex-col items-center justify-center text-center py-16 px-4 border-2 border-dashed rounded-lg bg-card/50">
+            {EmptyIcon && <EmptyIcon className="w-12 h-12 mb-4 text-muted-foreground" />}
             <h2 className="text-xl font-semibold">{currentEmptyState.title}</h2>
             <p className="text-muted-foreground mt-2 mb-4">{currentEmptyState.description}</p>
             {currentEmptyState.buttonText && currentEmptyState.buttonLink && EmptyIcon && (
