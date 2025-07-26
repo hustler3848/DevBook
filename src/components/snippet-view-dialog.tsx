@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogClose, DialogOverlay, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -94,16 +95,16 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-4 sm:p-6 space-y-6">
             
-            <div className="flex items-center gap-3">
+            <Link href={`/dashboard/profile/${snippet.authorUsername}`} className="inline-flex items-center gap-3 group">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={snippet.avatar} alt={snippet.author} data-ai-hint={snippet.dataAiHint}/>
                 <AvatarFallback>{snippet.author?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-sm">{snippet.author}</p>
+                <p className="font-semibold text-sm group-hover:text-primary transition-colors">{snippet.author}</p>
                 <p className="text-xs text-muted-foreground">Published on {formattedDate}</p>
               </div>
-            </div>
+            </Link>
 
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">{snippet.description}</p>
@@ -161,5 +162,3 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
     </Dialog>
   );
 }
-
-    
