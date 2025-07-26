@@ -11,12 +11,14 @@ import { Github, Linkedin, Twitter, Edit, Code, Star, Bookmark } from 'lucide-re
 import DashboardClientPage from '../../dashboard-client-page';
 import { EditProfileDialog } from '@/components/edit-profile-dialog';
 import type { Snippet } from '@/types/snippet';
-import { getPublicSnippetsForUser, getSavedSnippets, getStarredSnippets, findUserByUsername } from '@/lib/firebase/firestore';
+import { getPublicSnippetsForUser, getSavedSnippets, getStarredSnippets, findUserByUsername, updateUserProfile as updateUserProfileInDb } from '@/lib/firebase/firestore';
 import ProfileLoading from './loading';
 import { UserProfile } from '@/types/user';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
     const params = useParams();
+    const { toast } = useToast();
     const { user: currentUser, loading: authLoading } = useAuth();
     const username = params.username as string;
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -35,11 +37,20 @@ export default function ProfilePage() {
             const foundUser = await findUserByUsername(username);
 
             if (foundUser) {
-                const [publicSnippets, savedSnippets, starredSnippets] = await Promise.all([
-                    getPublicSnippetsForUser(foundUser.uid),
-                    isOwnProfile ? getSavedSnippets(foundUser.uid) : [],
-                    isOwnProfile ? getStarredSnippets(foundUser.uid) : []
-                ]);
+                setProfileUser(foundUser); // Set user early to determine isOwnProfile
+                
+                const viewingOwnProfile = currentUser?.uid === foundUser.uid;
+
+                const publicSnippets = await getPublicSnippetsForUser(foundUser.uid);
+                let savedSnippets: Snippet[] = [];
+                let starredSnippets: Snippet[] = [];
+
+                if (viewingOwnProfile) {
+                    [savedSnippets, starredSnippets] = await Promise.all([
+                        getSavedSnippets(foundUser.uid),
+                        getStarredSnippets(foundUser.uid)
+                    ]);
+                }
                 
                 setProfileUser({
                     ...foundUser,
@@ -59,18 +70,40 @@ export default function ProfilePage() {
         } finally {
             setIsLoading(false);
         }
-    }, [username, isOwnProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [username, currentUser?.uid]);
 
     useEffect(() => {
-        // Fetch data when component mounts or username changes
         if (!authLoading) {
             fetchProfileData();
         }
     }, [username, authLoading, fetchProfileData]);
 
-    const handleProfileUpdate = (updatedProfile: Partial<UserProfile>) => {
-        if (profileUser) {
-            setProfileUser(prev => prev ? { ...prev, ...updatedProfile } : null);
+    const handleProfileUpdate = async (updatedProfile: Partial<UserProfile>) => {
+        if (profileUser && currentUser) {
+            try {
+                await updateUserProfileInDb(currentUser.uid, updatedProfile);
+                setProfileUser(prev => prev ? { ...prev, ...updatedProfile } : null);
+                toast({
+                    title: "Profile Updated",
+                    description: "Your profile has been successfully updated.",
+                });
+                setIsEditDialogOpen(false);
+
+                // If username changed, we might need to redirect, but for now we just update state
+                if (updatedProfile.username && updatedProfile.username !== username) {
+                    // router.push(`/dashboard/profile/${updatedProfile.username}`);
+                    // For simplicity, we'll just refetch data for the new username state
+                    fetchProfileData();
+                }
+
+            } catch (error: any) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Update Failed',
+                    description: error.message || "Could not update profile.",
+                });
+            }
         }
     }
 
@@ -128,18 +161,22 @@ export default function ProfilePage() {
                                 </span>
                                 <span className="font-semibold">{profileUser.stats?.created ?? 0}</span>
                            </div>
-                           <div className="flex items-center justify-between">
-                                <span className="flex items-center text-muted-foreground">
-                                    <Star className="mr-2 h-4 w-4" /> Snippets Starred
-                                </span>
-                                <span className="font-semibold">{profileUser.stats?.starred ?? 0}</span>
-                           </div>
-                           <div className="flex items-center justify-between">
-                                <span className="flex items-center text-muted-foreground">
-                                    <Bookmark className="mr-2 h-4 w-4" /> Snippets Saved
-                                </span>
-                                <span className="font-semibold">{profileUser.stats?.saved ?? 0}</span>
-                           </div>
+                           {isOwnProfile && (
+                             <>
+                                <div className="flex items-center justify-between">
+                                    <span className="flex items-center text-muted-foreground">
+                                        <Star className="mr-2 h-4 w-4" /> Snippets Starred
+                                    </span>
+                                    <span className="font-semibold">{profileUser.stats?.starred ?? 0}</span>
+                               </div>
+                               <div className="flex items-center justify-between">
+                                    <span className="flex items-center text-muted-foreground">
+                                        <Bookmark className="mr-2 h-4 w-4" /> Snippets Saved
+                                    </span>
+                                    <span className="font-semibold">{profileUser.stats?.saved ?? 0}</span>
+                               </div>
+                             </>
+                           )}
                         </CardContent>
                     </Card>
                 </div>

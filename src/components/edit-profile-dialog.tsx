@@ -9,13 +9,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
 import { UserProfile } from '@/types/user';
-import { useAuth } from '@/context/auth-context';
-import { updateUserProfile } from '@/lib/firebase/firestore';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -24,7 +21,7 @@ const profileSchema = z.object({
   github: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   twitter: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   linkedin: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
-  avatar: z.string().url().optional().or(z.literal('')),
+  avatar: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -33,13 +30,11 @@ interface EditProfileDialogProps {
     isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
     currentUserProfile: UserProfile;
-    onProfileUpdate: (updatedProfile: Partial<UserProfile>) => void;
+    onProfileUpdate: (updatedProfile: Partial<UserProfile>) => Promise<void>;
 }
 
 export function EditProfileDialog({ isOpen, onOpenChange, currentUserProfile, onProfileUpdate }: EditProfileDialogProps) {
-    const { toast } = useToast();
-    const { user } = useAuth();
-
+    
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileSchema),
         defaultValues: {
@@ -55,48 +50,17 @@ export function EditProfileDialog({ isOpen, onOpenChange, currentUserProfile, on
     });
 
     const onSubmit = async (data: ProfileFormValues) => {
-        if (!user) {
-            toast({ variant: 'destructive', title: "Not authenticated" });
-            return;
-        }
-
-        try {
-            await updateUserProfile(user.uid, {
-                name: data.name,
-                username: data.username,
-                bio: data.bio,
-                avatar: data.avatar,
-                social: {
-                    github: data.github,
-                    twitter: data.twitter,
-                    linkedin: data.linkedin,
-                }
-            });
-
-            onProfileUpdate({
-                 name: data.name,
-                 username: data.username,
-                 bio: data.bio,
-                 avatar: data.avatar,
-                 social: {
-                    github: data.github,
-                    twitter: data.twitter,
-                    linkedin: data.linkedin,
-                 }
-            });
-
-            toast({
-                title: "Profile Updated",
-                description: "Your changes have been saved successfully.",
-            });
-            onOpenChange(false);
-        } catch (error: any) {
-             toast({
-                variant: 'destructive',
-                title: "Update Failed",
-                description: error.message || "Could not update profile.",
-            });
-        }
+        await onProfileUpdate({
+            name: data.name,
+            username: data.username,
+            bio: data.bio,
+            avatar: data.avatar,
+            social: {
+                github: data.github,
+                twitter: data.twitter,
+                linkedin: data.linkedin,
+            }
+        });
     };
     
     return (
