@@ -11,7 +11,6 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
 import { SplashScreen } from '@/components/splash-screen';
-import { Testimonials } from '@/components/landing/testimonials';
 
 const initialSnippets = [
   {
@@ -290,7 +289,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <Testimonials />
       </main>
     </div>
   );
