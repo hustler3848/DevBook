@@ -11,6 +11,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
 import { SplashScreen } from '@/components/splash-screen';
+import { TrendingSnippets } from '@/components/landing/trending-snippets';
 
 const initialSnippets = [
   {
@@ -264,7 +265,7 @@ export default function Home() {
                   </Link>
                 </Button>
                 <Button asChild variant="link" size="lg" className="hidden sm:flex">
-                  <Link href="/dashboard">
+                  <Link href="/dashboard/explore">
                     Explore Snippets <span aria-hidden="true">→</span>
                   </Link>
                 </Button>
@@ -289,6 +290,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <TrendingSnippets />
       </main>
     </div>
   );
