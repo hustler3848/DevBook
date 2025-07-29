@@ -11,6 +11,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from 'next-themes';
 import { SplashScreen } from '@/components/splash-screen';
+import { Testimonials } from '@/components/landing/testimonials';
 
 const initialSnippets = [
   {
@@ -233,7 +234,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1">
-        <div className="relative isolate overflow-hidden h-full">
+        <div className="relative isolate overflow-hidden">
           <div
             className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
             aria-hidden="true"
@@ -246,8 +247,7 @@ export default function Home() {
               }}
             />
           </div>
-
-          <div className="container mx-auto px-6 lg:px-8 py-24 sm:py-48 lg:flex lg:items-center lg:gap-x-10 h-full">
+          <div className="container mx-auto px-6 lg:px-8 pt-24 pb-12 sm:pt-48 sm:pb-24 lg:flex lg:items-center lg:gap-x-10">
             <div className={cn(
                 "mx-auto max-w-2xl lg:mx-0 lg:flex-auto text-center lg:text-left mb-24 lg:mb-0 transition-opacity duration-1000",
                 isAnimating ? 'opacity-100' : 'opacity-0'
@@ -290,6 +290,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <Testimonials />
       </main>
     </div>
   );
