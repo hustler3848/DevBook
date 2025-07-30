@@ -22,7 +22,7 @@ import { Skeleton } from './ui/skeleton';
 const links = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dashboard/my-snippets', label: 'My Collection', icon: FileCode },
-    { href: '/dashboard/explore', label: 'Explore', icon: Compass },
+    { href: '/explore', label: 'Explore', icon: Compass },
 ];
 
 interface NavLinksProps {
@@ -139,17 +139,17 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
 
     const fetchFolders = useCallback(() => {
-        if (user) {
-            setIsFoldersLoading(true);
-            const unsubscribe = getFolders(user.uid, (fetchedFolders) => {
-                setFolders(fetchedFolders);
-                setIsFoldersLoading(false);
-            });
-            return unsubscribe;
-        } else {
+        if (!user) {
             setFolders([]);
             setIsFoldersLoading(false);
+            return;
         }
+        setIsFoldersLoading(true);
+        const unsubscribe = getFolders(user.uid, (fetchedFolders) => {
+            setFolders(fetchedFolders);
+            setIsFoldersLoading(false);
+        });
+        return unsubscribe;
     }, [user]);
 
     useEffect(() => {

@@ -5,6 +5,7 @@
 
 
 
+
 import { db, auth } from './config';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, doc, setDoc, deleteDoc, getDoc, writeBatch, updateDoc, increment, Timestamp, documentId, runTransaction, limit, onSnapshot, Unsubscribe, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
@@ -244,7 +245,7 @@ export const starSnippet = async (userId: string, snippetId: string) => {
     const starDocRef = doc(getInteractionCollection(userId, 'starred'), snippetId);
 
     batch.update(snippetRef, { starCount: increment(1) });
-    batch.set(starDocRef, { snippetId: snippetId, starredAt: serverTimestamp() });
+    batch.set(starDocRef, { snippetId, starredAt: serverTimestamp() });
 
     await batch.commit();
 };
@@ -270,7 +271,7 @@ export const saveSnippet = async (userId: string, snippetId: string) => {
     const saveDocRef = doc(getInteractionCollection(userId, 'saved'), snippetId);
 
     batch.update(snippetRef, { saveCount: increment(1) });
-    batch.set(saveDocRef, { snippetId: snippetId, savedAt: serverTimestamp() });
+    batch.set(saveDocRef, { snippetId, savedAt: serverTimestamp() });
 
     await batch.commit();
 };
@@ -486,6 +487,11 @@ const getFoldersCollection = (userId: string) => collection(db, 'users', userId,
  * Listens for real-time updates to a user's folders.
  */
 export const getFolders = (userId: string, callback: (folders: Folder[]) => void): Unsubscribe => {
+    if (!userId) {
+        callback([]);
+        // Return a no-op unsubscribe function
+        return () => {};
+    }
     const foldersQuery = query(getFoldersCollection(userId), orderBy('createdAt', 'desc'));
 
     return onSnapshot(foldersQuery, (snapshot) => {
