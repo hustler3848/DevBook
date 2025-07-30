@@ -50,7 +50,8 @@ export function SnippetCard({
     useEffect(() => {
         setMounted(true);
         if (user) {
-            getFolders(user.uid, setFolders);
+            const unsubscribe = getFolders(user.uid, setFolders);
+            return () => unsubscribe();
         }
     }, [user]);
 
