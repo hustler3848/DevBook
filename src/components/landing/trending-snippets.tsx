@@ -17,6 +17,8 @@ import { SnippetViewDialog } from '../snippet-view-dialog';
 import { useAuth } from '@/context/auth-context';
 import { starSnippet, unstarSnippet, saveSnippet, unsaveSnippet } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
+
 
 function SnippetPreviewCard({ snippet, onSelect }: { snippet: Snippet; onSelect: (snippet: Snippet) => void; }) {
     const { theme } = useTheme();
@@ -35,36 +37,34 @@ function SnippetPreviewCard({ snippet, onSelect }: { snippet: Snippet; onSelect:
     }
 
     return (
-        <div className="flex-shrink-0 w-[90%] sm:w-[400px] snap-center">
-            <div className="glassmorphic rounded-lg flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:-translate-y-2">
-                <div className="p-4 space-y-3">
-                    <h3 className="font-headline text-lg font-semibold truncate">{snippet.title}</h3>
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                            <AvatarImage src={snippet.avatar} alt={snippet.author} />
-                            <AvatarFallback>{snippet.author?.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs text-muted-foreground">@{snippet.authorUsername}</span>
-                    </div>
+        <div className="glassmorphic rounded-lg flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:-translate-y-2">
+            <div className="p-4 space-y-3">
+                <h3 className="font-headline text-lg font-semibold truncate">{snippet.title}</h3>
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                        <AvatarImage src={snippet.avatar} alt={snippet.author} />
+                        <AvatarFallback>{snippet.author?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs text-muted-foreground">@{snippet.authorUsername}</span>
                 </div>
-                <div className="relative px-4">
-                     <div className={cn("rounded-lg overflow-hidden text-sm", theme === 'dark' ? 'bg-black/10' : 'bg-gray-50/50')}>
-                        <SyntaxHighlighter
-                            language={snippet.language?.toLowerCase()}
-                            style={syntaxTheme}
-                            customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }}
-                            className="custom-scrollbar h-[150px]"
-                            codeTagProps={{className: "font-code text-xs"}}
-                        >
-                            {truncatedCode}
-                        </SyntaxHighlighter>
-                     </div>
-                     <div className="absolute bottom-0 left-4 right-4 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none"></div>
-                </div>
-                <div className="p-4 mt-auto flex justify-between items-center">
-                    <Badge variant="secondary">{snippet.language}</Badge>
-                    <Button variant="ghost" onClick={() => onSelect(snippet)}>View Full Snippet</Button>
-                </div>
+            </div>
+            <div className="relative px-4">
+                 <div className={cn("rounded-lg overflow-hidden text-sm", theme === 'dark' ? 'bg-black/10' : 'bg-gray-50/50')}>
+                    <SyntaxHighlighter
+                        language={snippet.language?.toLowerCase()}
+                        style={syntaxTheme}
+                        customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }}
+                        className="custom-scrollbar h-[150px]"
+                        codeTagProps={{className: "font-code text-xs"}}
+                    >
+                        {truncatedCode}
+                    </SyntaxHighlighter>
+                 </div>
+                 <div className="absolute bottom-0 left-4 right-4 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none"></div>
+            </div>
+            <div className="p-4 mt-auto flex justify-between items-center">
+                <Badge variant="secondary">{snippet.language}</Badge>
+                <Button variant="ghost" onClick={() => onSelect(snippet)}>View Full Snippet</Button>
             </div>
         </div>
     );
@@ -72,7 +72,7 @@ function SnippetPreviewCard({ snippet, onSelect }: { snippet: Snippet; onSelect:
 
 const SnippetCardSkeleton = () => {
     return (
-        <div className="flex-shrink-0 w-[90%] sm:w-[400px] snap-center">
+        <div className="flex-shrink-0 w-full">
             <div className="bg-card/60 rounded-lg flex flex-col h-full p-4">
                  <Skeleton className="h-6 w-3/4 mb-3" />
                  <div className="flex items-center gap-2 mb-4">
@@ -179,19 +179,32 @@ export function TrendingSnippets() {
                     </p>
                 </div>
 
-                <div className="flex items-center">
-                    <div className="flex w-full gap-6 pb-6 overflow-x-auto snap-x snap-mandatory custom-scrollbar">
+                <Carousel
+                  opts={{
+                    align: "start",
+                    loop: true,
+                  }}
+                  className="w-full"
+                >
+                    <CarouselContent className="-ml-4">
                         {isLoading ? (
-                            Array.from({ length: 4 }).map((_, i) => <SnippetCardSkeleton key={i} />)
+                            Array.from({ length: 4 }).map((_, i) => (
+                                <CarouselItem key={i} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                                  <SnippetCardSkeleton />
+                                </CarouselItem>
+                            ))
                         ) : (
                             snippets.map(snippet => (
-                                <SnippetPreviewCard key={snippet.id} snippet={snippet} onSelect={setSelectedSnippet} />
+                                <CarouselItem key={snippet.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                                  <SnippetPreviewCard snippet={snippet} onSelect={setSelectedSnippet} />
+                                </CarouselItem>
                             ))
                         )}
-                    </div>
-                </div>
+                    </CarouselContent>
+                </Carousel>
+                
                  {snippets.length > 0 && (
-                    <div className="text-center mt-8">
+                    <div className="text-center mt-12">
                         <Button asChild size="lg">
                             <Link href="/dashboard/explore">
                                 Explore All Snippets
