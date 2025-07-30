@@ -265,7 +265,7 @@ export default function Home() {
                   </Link>
                 </Button>
                 <Button asChild variant="link" size="lg" className="hidden sm:flex">
-                  <Link href="/dashboard/explore">
+                  <Link href="/explore">
                     Explore Snippets <span aria-hidden="true">→</span>
                   </Link>
                 </Button>

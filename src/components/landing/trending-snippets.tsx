@@ -206,7 +206,7 @@ export function TrendingSnippets() {
                  {snippets.length > 0 && (
                     <div className="text-center mt-12">
                         <Button asChild size="lg">
-                            <Link href="/dashboard/explore">
+                            <Link href="/explore">
                                 Explore All Snippets
                             </Link>
                         </Button>
