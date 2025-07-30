@@ -15,7 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Bookmark, Copy, Star, Check, X, Wand2, MessageSquare, Send, Trash2, Loader2 } from 'lucide-react';
+import { Bookmark, Copy, Star, Check, X, Wand2, MessageSquare, Send, Trash2, Loader2, LogIn } from 'lucide-react';
 import type { Snippet } from '@/types/snippet';
 import type { Comment } from '@/types/comment';
 import { useToast } from '@/hooks/use-toast';
@@ -42,7 +42,10 @@ const CommentsSection = ({ snippetId }: { snippetId: string }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!snippetId) return;
+        if (!snippetId || !user) {
+            setIsLoading(false);
+            return;
+        }
 
         setIsLoading(true);
         const unsubscribe = getComments(snippetId, (fetchedComments) => {
@@ -51,7 +54,7 @@ const CommentsSection = ({ snippetId }: { snippetId: string }) => {
         });
 
         return () => unsubscribe();
-    }, [snippetId]);
+    }, [snippetId, user]);
 
     const handleAddComment = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -95,7 +98,8 @@ const CommentsSection = ({ snippetId }: { snippetId: string }) => {
                 Discussion
             </h3>
 
-            {user && (
+            {user ? (
+                <>
                 <form onSubmit={handleAddComment} className="flex items-start gap-3">
                     <Avatar className="h-9 w-9 mt-1">
                         <AvatarImage src={user.photoURL || undefined} />
@@ -114,43 +118,50 @@ const CommentsSection = ({ snippetId }: { snippetId: string }) => {
                         </Button>
                     </div>
                 </form>
-            )}
 
-            <div className="space-y-4">
-                {isLoading && <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />}
-                {!isLoading && comments.length === 0 && (
-                    <p className="text-sm text-center py-4 text-muted-foreground">Be the first to comment.</p>
-                )}
-                {comments.map(comment => (
-                     <div key={comment.id} className="flex items-start gap-3">
-                        <Link href={`/dashboard/profile/${comment.authorUsername}`}>
-                            <Avatar className="h-9 w-9">
-                                <AvatarImage src={comment.authorAvatar} />
-                                <AvatarFallback>{comment.authorName.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                        </Link>
-                        <div className="flex-1 bg-muted/50 rounded-lg p-3">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                     <Link href={`/dashboard/profile/${comment.authorUsername}`} className="font-semibold text-sm hover:underline">
-                                        {comment.authorName}
-                                    </Link>
-                                    <span className="text-xs text-muted-foreground">
-                                        {formatDistanceToNow(comment.createdAt.toDate(), { addSuffix: true })}
-                                    </span>
+                <div className="space-y-4">
+                    {isLoading && <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />}
+                    {!isLoading && comments.length === 0 && (
+                        <p className="text-sm text-center py-4 text-muted-foreground">Be the first to comment.</p>
+                    )}
+                    {comments.map(comment => (
+                         <div key={comment.id} className="flex items-start gap-3">
+                            <Link href={`/dashboard/profile/${comment.authorUsername}`}>
+                                <Avatar className="h-9 w-9">
+                                    <AvatarImage src={comment.authorAvatar} />
+                                    <AvatarFallback>{comment.authorName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                            </Link>
+                            <div className="flex-1 bg-muted/50 rounded-lg p-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                         <Link href={`/dashboard/profile/${comment.authorUsername}`} className="font-semibold text-sm hover:underline">
+                                            {comment.authorName}
+                                        </Link>
+                                        <span className="text-xs text-muted-foreground">
+                                            {formatDistanceToNow(comment.createdAt.toDate(), { addSuffix: true })}
+                                        </span>
+                                    </div>
+                                    {user?.uid === comment.authorId && (
+                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteComment(comment.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                            <span className="sr-only">Delete comment</span>
+                                        </Button>
+                                    )}
                                 </div>
-                                {user?.uid === comment.authorId && (
-                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteComment(comment.id)}>
-                                        <Trash2 className="h-4 w-4" />
-                                        <span className="sr-only">Delete comment</span>
-                                    </Button>
-                                )}
+                                <p className="text-sm mt-1">{comment.text}</p>
                             </div>
-                            <p className="text-sm mt-1">{comment.text}</p>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+                </>
+            ) : (
+                <div className="text-center py-6 border-2 border-dashed rounded-lg bg-card/50">
+                    <p className="text-muted-foreground">
+                        <Button variant="link" asChild><Link href="/login"><LogIn className="mr-2 h-4 w-4"/>Login to join the discussion</Link></Button>
+                    </p>
+                </div>
+            )}
         </div>
     )
 }
