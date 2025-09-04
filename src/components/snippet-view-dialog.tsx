@@ -20,7 +20,7 @@ import type { Snippet } from '@/types/snippet';
 import type { Comment } from '@/types/comment';
 import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow } from 'date-fns';
-import { explainAndReviewCode, type ExplainCodeOutput } from '@/ai/flows/explain-code';
+import { explainAndReviewCodeAction, type ExplainCodeOutput } from '@/app/actions/explain-code-action';
 import { addComment, deleteComment, getComments } from '@/lib/firebase/firestore';
 import { CodeExplanationDialog } from './code-explanation-dialog';
 
@@ -208,7 +208,7 @@ export function SnippetViewDialog({ snippet, isOpen, onOpenChange, onToggleStar,
     setIsExplanationOpen(true);
     setIsExplanationLoading(true);
     try {
-        const result = await explainAndReviewCode({
+        const result = await explainAndReviewCodeAction({
             codeSnippet: snippet.codeSnippet,
             language: snippet.language
         });

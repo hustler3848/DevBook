@@ -10,7 +10,7 @@ import { Loader2, X, FileText, Sparkles, Lightbulb, Copy, Check } from 'lucide-r
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import type { ExplainCodeOutput } from '@/ai/flows/explain-code';
+import type { ExplainCodeOutput } from '@/app/actions/explain-code-action';
 import { useToast } from '@/hooks/use-toast';
 
 interface CodeExplanationDialogProps {

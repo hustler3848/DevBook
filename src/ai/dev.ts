@@ -1,6 +1,0 @@
-import { config } from 'dotenv';
-config();
-
-import '@/ai/flows/suggest-tags.ts';
-import '@/ai/flows/analyze-snippet.ts';
-import '@/ai/flows/explain-code.ts';

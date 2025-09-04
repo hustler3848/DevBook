@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { analyzeSnippet } from '@/ai/flows/analyze-snippet';
+import { analyzeSnippetAction } from '@/app/actions/analyze-snippet-action';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { addSnippet } from '@/lib/firebase/firestore';
 import { useAuth } from '@/context/auth-context';
@@ -60,19 +60,21 @@ export function NewSnippetForm() {
       if (!code || code.length < 50 || isSubmitting) return;
       setIsAnalyzing(true);
       try {
-        const result = await analyzeSnippet({ codeSnippet: code });
+        const result = await analyzeSnippetAction({ codeSnippet: code });
         
-        if (!form.getValues('title')) {
+        if (result && result.title && !form.getValues('title')) {
           form.setValue('title', result.title, { shouldValidate: true });
         }
-        if (!form.getValues('description')) {
+        if (result && result.description && !form.getValues('description')) {
           form.setValue('description', result.description, { shouldValidate: true });
         }
 
-        const newTags = Array.from(new Set([...form.getValues('tags'), ...result.tags]));
-        form.setValue('tags', newTags.slice(0, 8), { shouldValidate: true });
+        if (result && result.tags) {
+            const newTags = Array.from(new Set([...form.getValues('tags'), ...result.tags]));
+            form.setValue('tags', newTags.slice(0, 8), { shouldValidate: true });
+        }
 
-        if (!form.getValues('language')) {
+        if (result && result.language && !form.getValues('language')) {
           form.setValue('language', result.language, { shouldValidate: true });
         }
 
